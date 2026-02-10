@@ -17,6 +17,8 @@ async def get_redis() -> redis.Redis:
             encoding="utf-8",
             decode_responses=True,
             max_connections=50,
+            socket_connect_timeout=1,
+            socket_timeout=1,
         )
     return _pool
 

@@ -22,6 +22,7 @@ dependencies = [
     "cryptography>=42.0",
     "stripe>=8.0",
     "python-multipart>=0.0.9",
+    "email-validator>=2.0",
 ]
 
 [project.optional-dependencies]
@@ -32,11 +33,12 @@ dev = [
     "httpx",
     "ruff>=0.5",
     "mypy>=1.11",
+    "aiosqlite>=0.20",
 ]
 
 [build-system]
 requires = ["setuptools>=70"]
-build-backend = "setuptools.backends._legacy:_Backend"
+build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["packages/api"]

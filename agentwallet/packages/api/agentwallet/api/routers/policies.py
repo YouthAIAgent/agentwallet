@@ -115,6 +115,7 @@ async def update_policy(
     for key, value in req.model_dump(exclude_none=True).items():
         setattr(policy, key, value)
     await db.flush()
+    await db.refresh(policy)
     return _policy_to_response(policy)
 
 

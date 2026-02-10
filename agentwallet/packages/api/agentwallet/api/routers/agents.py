@@ -52,6 +52,7 @@ async def create_agent(
     )
     agent.default_wallet_id = wallet.id
     await db.flush()
+    await db.refresh(agent)
 
     return AgentResponse(
         id=agent.id,

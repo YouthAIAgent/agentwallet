@@ -3,8 +3,8 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, String, func
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy import JSON, DateTime, ForeignKey, String, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..core.database import Base
@@ -18,7 +18,7 @@ class ApiKey(Base):
     key_hash: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     key_prefix: Mapped[str] = mapped_column(String(20), nullable=False)  # "aw_live_abc" for display
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    permissions: Mapped[dict] = mapped_column(JSONB, default=dict)  # e.g. {"wallets": "rw", "agents": "rw"}
+    permissions: Mapped[dict] = mapped_column(JSON, default=dict)  # e.g. {"wallets": "rw", "agents": "rw"}
     is_active: Mapped[bool] = mapped_column(default=True)
     last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

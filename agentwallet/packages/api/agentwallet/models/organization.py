@@ -3,8 +3,8 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, String, func
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy import JSON, DateTime, String, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..core.database import Base
@@ -18,7 +18,7 @@ class Organization(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     tier: Mapped[str] = mapped_column(String(50), default="free")  # free, pro, enterprise
     stripe_customer_id: Mapped[str | None] = mapped_column(String(255))
-    settings: Mapped[dict] = mapped_column(JSONB, default=dict)
+    settings: Mapped[dict] = mapped_column(JSON, default=dict)
     is_active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
@@ -26,7 +26,7 @@ class Organization(Base):
     )
 
     # Relationships
-    users = relationship("User", back_populates="organization", lazy="selectin")
-    api_keys = relationship("ApiKey", back_populates="organization", lazy="selectin")
-    agents = relationship("Agent", back_populates="organization", lazy="selectin")
-    wallets = relationship("Wallet", back_populates="organization", lazy="selectin")
+    users = relationship("User", back_populates="organization", lazy="noload")
+    api_keys = relationship("ApiKey", back_populates="organization", lazy="noload")
+    agents = relationship("Agent", back_populates="organization", lazy="noload")
+    wallets = relationship("Wallet", back_populates="organization", lazy="noload")

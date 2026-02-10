@@ -5,6 +5,7 @@ Ported from moltfarm lib/common.py, adapted to use structlog.
 
 import asyncio
 import functools
+import inspect
 import random
 import time
 
@@ -81,7 +82,7 @@ def retry(
                     time.sleep(delay)
             raise RetryExhausted(func.__name__, max_attempts, last_error)
 
-        if asyncio.iscoroutinefunction(func):
+        if inspect.iscoroutinefunction(func):
             return async_wrapper
         return sync_wrapper
     return decorator

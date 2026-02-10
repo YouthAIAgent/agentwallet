@@ -3,8 +3,8 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, func
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..core.database import Base
@@ -17,7 +17,7 @@ class Policy(Base):
     org_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("organizations.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    rules: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    rules: Mapped[dict] = mapped_column(JSON, nullable=False)
     # Example rules:
     # {
     #   "spending_limit_lamports": 1000000000,  # 1 SOL per tx

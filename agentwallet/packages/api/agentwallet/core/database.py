@@ -34,13 +34,18 @@ def get_engine():
     global _engine
     if _engine is None:
         settings = get_settings()
-        _engine = create_async_engine(
-            settings.database_url,
-            echo=False,
-            pool_size=20,
-            max_overflow=10,
-            pool_pre_ping=True,
-        )
+        kwargs = {"echo": False}
+        if "sqlite" in settings.database_url:
+            # SQLite needs StaticPool for async usage to avoid MissingGreenlet
+            from sqlalchemy.pool import StaticPool
+
+            kwargs.update(
+                connect_args={"check_same_thread": False},
+                poolclass=StaticPool,
+            )
+        else:
+            kwargs.update(pool_size=20, max_overflow=10, pool_pre_ping=True)
+        _engine = create_async_engine(settings.database_url, **kwargs)
     return _engine
 
 

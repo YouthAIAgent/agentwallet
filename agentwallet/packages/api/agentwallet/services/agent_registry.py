@@ -93,6 +93,7 @@ class AgentRegistry:
             if value is not None and hasattr(agent, key):
                 setattr(agent, key, value)
         await self.db.flush()
+        await self.db.refresh(agent)
         logger.info("agent_updated", agent_id=str(agent_id), updates=list(updates.keys()))
         return agent
 

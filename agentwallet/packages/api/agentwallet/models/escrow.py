@@ -3,8 +3,8 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, String, Text, func
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy import JSON, BigInteger, DateTime, ForeignKey, String, Text, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..core.database import Base
@@ -27,7 +27,7 @@ class Escrow(Base):
     status: Mapped[str] = mapped_column(String(50), default="created")
     # States: created -> funded -> released | refunded | disputed -> resolved | expired
 
-    conditions: Mapped[dict] = mapped_column(JSONB, default=dict)
+    conditions: Mapped[dict] = mapped_column(JSON, default=dict)
     # e.g. {"task_description": "...", "completion_criteria": "..."}
 
     fund_signature: Mapped[str | None] = mapped_column(String(128))
