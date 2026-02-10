@@ -5,9 +5,9 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "alembic upgrade head && uvicorn agentwallet.main:app --host 0.0.0.0 --port $PORT",
+    "startCommand": "alembic upgrade head 2>&1; echo 'Migration done, starting uvicorn on port '$PORT; uvicorn agentwallet.main:app --host 0.0.0.0 --port ${PORT:-8000}",
     "healthcheckPath": "/health",
-    "healthcheckTimeout": 120,
+    "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 5
   }
