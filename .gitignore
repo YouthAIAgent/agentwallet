@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+
+# Node
+node_modules/
+packages/dashboard/dist/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+*.db
+*.sqlite3
+
+# Rust/Anchor
+packages/programs/agentwallet/target/
+packages/programs/agentwallet/.anchor/
+
+# Test
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Logs
+*.log

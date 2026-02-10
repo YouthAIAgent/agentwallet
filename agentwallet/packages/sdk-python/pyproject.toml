@@ -1,0 +1,21 @@
+[project]
+name = "agentwallet"
+version = "0.1.0"
+description = "Python SDK for AgentWallet Protocol - AI Agent Wallet Infrastructure on Solana"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.27",
+]
+readme = "README.md"
+license = {text = "MIT"}
+
+[project.urls]
+Homepage = "https://agentwallet.dev"
+Repository = "https://github.com/agentwallet/agentwallet-python"
+
+[build-system]
+requires = ["setuptools>=70"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[tool.setuptools.packages.find]
+where = ["src"]
