@@ -11,11 +11,11 @@ license = {text = "MIT"}
 
 [project.urls]
 Homepage = "https://agentwallet.dev"
-Repository = "https://github.com/agentwallet/agentwallet-python"
+Repository = "https://github.com/YouthAIAgent/agentwallet"
 
 [build-system]
 requires = ["setuptools>=70"]
-build-backend = "setuptools.backends._legacy:_Backend"
+build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
