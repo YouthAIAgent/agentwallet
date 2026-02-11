@@ -1,23 +1,45 @@
 ```
-     _                    _   __        __    _ _      _
-    / \   __ _  ___ _ __ | |_ \ \      / /_ _| | | ___| |_
-   / _ \ / _` |/ _ \ '_ \| __| \ \ /\ / / _` | | |/ _ \ __|
-  / ___ \ (_| |  __/ | | | |_   \ V  V / (_| | | |  __/ |_
- /_/   \_\__, |\___|_| |_|\__|   \_/\_/ \__,_|_|_|\___|\__|
-         |___/
+     █████╗  ██████╗ ███████╗███╗   ██╗████████╗    ██╗    ██╗ █████╗ ██╗     ██╗     ███████╗████████╗
+    ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝    ██║    ██║██╔══██╗██║     ██║     ██╔════╝╚══██╔══╝
+    ███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║       ██║ █╗ ██║███████║██║     ██║     █████╗     ██║
+    ██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║       ██║███╗██║██╔══██║██║     ██║     ██╔══╝     ██║
+    ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║       ╚███╔███╔╝██║  ██║███████╗███████╗███████╗   ██║
+    ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝        ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝   ╚═╝
 ```
 
 # AgentWallet Protocol
 
 **Autonomous financial infrastructure for AI agents on Solana.**
 
+[![Solana Devnet](https://img.shields.io/badge/Solana-Devnet%20Deployed-9945FF?style=for-the-badge&logo=solana)](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet)
+[![PyPI Package](https://img.shields.io/pypi/v/aw-protocol-sdk?style=for-the-badge&logo=pypi&logoColor=white&label=PyPI)](https://pypi.org/project/aw-protocol-sdk/)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![Rust Anchor](https://img.shields.io/badge/Rust-Anchor%200.30-000000?style=for-the-badge&logo=rust)](https://anchor-lang.com)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
+[![License](https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge)](https://github.com/YouthAIAgent/agentwallet)
+
 > _"Your agents don't need permission. They need a wallet."_
 
-[![Solana](https://img.shields.io/badge/Solana-Devnet%20%7C%20Mainnet-9945FF?style=flat-square&logo=solana)](https://solana.com)
-[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
-[![Rust](https://img.shields.io/badge/Rust-Anchor%200.30-000000?style=flat-square&logo=rust)](https://anchor-lang.com)
-[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
-[![License](https://img.shields.io/badge/License-Proprietary-red?style=flat-square)]()
+---
+
+## 🔥 Live on Devnet
+
+**Program ID:** `CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6`
+
+- **Solana Explorer:** [View on Devnet](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet)
+- **Backend API:** `https://trustworthy-celebration-production-6a3e.up.railway.app`
+- **SDK on PyPI:** `pip install aw-protocol-sdk==0.1.0`
+
+**Production-ready on Solana devnet.** Mainnet deployment scheduled for Q2 2026.
+
+---
+
+## Why AgentWallet?
+
+- **🤖 Agent-Native:** Built specifically for autonomous AI agents, not human wallets
+- **⚡ Programmable Limits:** Spending caps, time windows, whitelist/blacklist per agent
+- **🔐 Trustless Escrow:** On-chain PDAs for agent-to-agent task payments
+- **📊 Real-time Analytics:** Complete audit trail and compliance reporting
 
 ---
 
@@ -57,7 +79,54 @@ AgentWallet is a **wallet-as-a-service protocol** built for autonomous AI agents
 
 ---
 
-## Quickstart
+## Quick Install & Deploy
+
+### Install SDK
+
+```bash
+pip install aw-protocol-sdk==0.1.0
+```
+
+### Deploy Your First Agent
+
+```python
+from agentwallet import AgentWallet
+
+async with AgentWallet(api_key="aw_live_...") as aw:
+
+    # Spawn agent with its own wallet
+    agent = await aw.agents.create(
+        name="trading-bot-alpha",
+        capabilities=["trading", "payments"]
+    )
+
+    # Agent's wallet is ready
+    wallet = (await aw.wallets.list(agent_id=agent.id)).data[0]
+    print(f"Agent wallet: {wallet.address}")
+
+    # Send SOL (policy-enforced, fee-deducted, audit-logged)
+    tx = await aw.transactions.transfer_sol(
+        from_wallet=wallet.id,
+        to_address="RecipientPubkey...",
+        amount_sol=0.5,
+    )
+    print(f"TX: {tx.signature}")
+
+    # Lock funds in escrow for a task
+    escrow = await aw.escrow.create(
+        funder_wallet=wallet.id,
+        recipient_address="WorkerAgentPubkey...",
+        amount_sol=1.0,
+        expires_in_hours=24,
+    )
+
+    # Release on task completion
+    await aw.escrow.release(escrow.id)
+```
+
+---
+
+## Self-Hosted Deployment
 
 ### 1. Clone & Boot
 
@@ -100,42 +169,21 @@ curl -X POST http://localhost:8000/v1/auth/register \
 }
 ```
 
-### 4. Deploy an Agent
+**You're live.** Your agents now have wallets.
 
-```python
-from agentwallet import AgentWallet
+---
 
-async with AgentWallet(api_key="aw_live_...") as aw:
+## Roadmap
 
-    # Spawn agent with its own wallet
-    agent = await aw.agents.create(
-        name="trading-bot-alpha",
-        capabilities=["trading", "payments"]
-    )
-
-    # Agent's wallet is ready
-    wallet = (await aw.wallets.list(agent_id=agent.id)).data[0]
-    print(f"Agent wallet: {wallet.address}")
-
-    # Send SOL (policy-enforced, fee-deducted, audit-logged)
-    tx = await aw.transactions.transfer_sol(
-        from_wallet=wallet.id,
-        to_address="RecipientPubkey...",
-        amount_sol=0.5,
-    )
-    print(f"TX: {tx.signature}")
-
-    # Lock funds in escrow for a task
-    escrow = await aw.escrow.create(
-        funder_wallet=wallet.id,
-        recipient_address="WorkerAgentPubkey...",
-        amount_sol=1.0,
-        expires_in_hours=24,
-    )
-
-    # Release on task completion
-    await aw.escrow.release(escrow.id)
-```
+- ✅ **Core Protocol** — Wallets, escrow, policies, analytics
+- ✅ **Python SDK** — Published on PyPI (`pip install aw-protocol-sdk`)
+- ✅ **Devnet Deployment** — Live on Solana devnet with program ID
+- ✅ **Security Audit & Hardening** — Production-ready security model
+- 🔄 **MCP Integration** — AI agent native tool for Claude/GPT/etc
+- 🔄 **A2A Commerce Protocol** — Agent-to-agent marketplaces
+- 📋 **Multi-chain Support** — EVM L2s (Arbitrum, Base, Polygon)
+- 📋 **Agent Reputation System** — On-chain reputation scoring
+- 📋 **Mainnet Launch** — Production deployment (Q2 2026)
 
 ---
 
@@ -240,6 +288,9 @@ agentwallet/
     │               ├── transfer_with_limit.rs
     │               ├── update_limits.rs
     │               └── escrow.rs
+    │
+    ├── landing/                # ── MARKETING SITE ───────────────
+    │   └── src/                # Landing page and docs
     │
     └── cli/                    # ── OPERATOR CLI ─────────────────
         └── agentwallet_cli/
@@ -420,7 +471,7 @@ Base URL: `http://localhost:8000/v1`
 ## SDK Usage
 
 ```bash
-pip install agentwallet
+pip install aw-protocol-sdk==0.1.0
 ```
 
 ```python
@@ -540,23 +591,6 @@ python -m agentwallet_cli dashboard
 
 ---
 
-## Revenue Model
-
-| | **Free** | **Pro** ($49/mo) | **Enterprise** ($299+/mo) |
-|---|:---:|:---:|:---:|
-| Agents | 3 | 25 | Unlimited |
-| Wallets | 5 | 50 | Unlimited |
-| TX / month | 1,000 | 50,000 | Unlimited |
-| TX fee | 0.5% | 0.25% | 0.1% |
-| Rate limit | 60/min | 600/min | 6,000/min |
-| Escrow | -- | Yes | Yes |
-| Policies | 3 | Unlimited | Unlimited |
-| Human Approvals | -- | Yes | Yes |
-| Analytics retention | 7d | 90d | 1yr |
-| Compliance reports | -- | Basic | Full |
-
----
-
 ## Tech Stack
 
 ```
@@ -659,7 +693,54 @@ organizations ─┬─► users
 
 ---
 
+## Contributing
+
+We welcome contributions! Please see our [contributing guidelines](CONTRIBUTING.md) for details.
+
+### Getting Started
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes and add tests
+4. Ensure tests pass: `pytest packages/api/tests/`
+5. Lint your code: `ruff check packages/api/`
+6. Commit your changes: `git commit -m 'Add amazing feature'`
+7. Push to the branch: `git push origin feature/amazing-feature`
+8. Open a Pull Request
+
+### Development Setup
+
+```bash
+# Clone your fork
+git clone https://github.com/yourusername/agentwallet.git
+cd agentwallet
+
+# Install dependencies
+pip install -e ".[dev]"
+
+# Start development environment
+docker compose up -d postgres redis
+uvicorn agentwallet.main:app --reload --port 8000
+```
+
+---
+
+## Built By
+
+**[@Web3__Youth](https://twitter.com/Web3__Youth)** — Building autonomous infrastructure for the agentic economy.
+
+6 years in blockchain & crypto. Now building the financial rails that AI agents deserve.
+
+---
+
 <p align="center">
   <strong>Built for the agentic economy.</strong><br>
   <sub>Every agent deserves a wallet. Every wallet deserves limits. Every transaction deserves a trail.</sub>
+</p>
+
+<p align="center">
+  <a href="https://github.com/YouthAIAgent/agentwallet">⭐ Star us on GitHub</a> · 
+  <a href="https://pypi.org/project/aw-protocol-sdk/">📦 PyPI</a> · 
+  <a href="https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet">🔗 Solana Explorer</a> · 
+  <a href="https://twitter.com/Web3__Youth">🐦 Twitter</a>
 </p>
