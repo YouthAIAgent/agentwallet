@@ -173,6 +173,43 @@ TOOLS: list[Tool] = [
         },
     ),
 
+    # ── Tokens ─────────────────────────────────────────────────
+    Tool(
+        name="transfer_token",
+        description="Send USDC or USDT from an agent wallet to a destination address. Enforces spending policies, deducts platform fees in SOL, and creates an audit trail.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "from_wallet_id": {"type": "string", "description": "Source wallet UUID"},
+                "to_address": {"type": "string", "description": "Destination Solana address (base58)"},
+                "token_symbol": {"type": "string", "description": "Token symbol (USDC or USDT)"},
+                "amount": {"type": "number", "description": "Amount in human-readable format (e.g. 10.50)"},
+                "memo": {"type": "string", "description": "Transaction memo / reason"},
+                "idempotency_key": {"type": "string", "description": "Unique key to prevent duplicate sends"},
+            },
+            "required": ["from_wallet_id", "to_address", "token_symbol", "amount"],
+        },
+    ),
+    Tool(
+        name="get_token_balances",
+        description="Get all supported token balances (USDC, USDT) for a wallet, plus SOL balance.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "wallet_id": {"type": "string", "description": "Wallet UUID"},
+            },
+            "required": ["wallet_id"],
+        },
+    ),
+    Tool(
+        name="list_supported_tokens",
+        description="List all supported stablecoins with their mint addresses and decimals.",
+        inputSchema={
+            "type": "object",
+            "properties": {},
+        },
+    ),
+
     # ── Transactions ───────────────────────────────────────────
     Tool(
         name="transfer_sol",
@@ -404,6 +441,63 @@ TOOLS: list[Tool] = [
         },
     ),
 
+    # ── x402 Auto-Pay ──────────────────────────────────────────
+    Tool(
+        name="configure_x402_pricing",
+        description="Configure x402 payment requirements for API endpoints. Set per-route pricing in SOL or USDC. When enabled, the server returns 402 Payment Required for matching routes without valid payment.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "pricing": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "route_pattern": {"type": "string", "description": "Route pattern (e.g. '/api/data/*', exact path, or regex)"},
+                            "method": {"type": "string", "description": "HTTP method (* for all)", "default": "*"},
+                            "price_lamports": {"type": "integer", "description": "Price in lamports (SOL)"},
+                            "price_usdc": {"type": "number", "description": "Price in USDC"},
+                            "description": {"type": "string", "description": "Human-readable description"},
+                            "pay_to": {"type": "string", "description": "Solana address to receive payments"},
+                            "max_deadline_seconds": {"type": "integer", "description": "Max seconds for payment validity", "default": 60},
+                        },
+                        "required": ["route_pattern", "pay_to"],
+                    },
+                    "description": "List of route pricing entries",
+                },
+                "enabled": {"type": "boolean", "description": "Enable/disable x402 middleware", "default": True},
+                "network": {"type": "string", "description": "Solana network (solana-mainnet, solana-devnet)", "default": "solana-mainnet"},
+                "default_pay_to": {"type": "string", "description": "Default payment address if not set per route"},
+            },
+            "required": ["pricing"],
+        },
+    ),
+    Tool(
+        name="get_x402_status",
+        description="Check x402 configuration and payment history. Returns current pricing rules, enabled status, and payment stats.",
+        inputSchema={
+            "type": "object",
+            "properties": {},
+        },
+    ),
+    Tool(
+        name="make_x402_request",
+        description="Make an HTTP request with automatic x402 payment. If the server returns 402 Payment Required, automatically creates a Solana payment and retries with proof. Supports SOL and USDC payments.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "url": {"type": "string", "description": "URL to request"},
+                "method": {"type": "string", "description": "HTTP method (GET, POST, etc.)", "default": "GET"},
+                "headers": {"type": "object", "description": "Additional request headers", "default": {}},
+                "body": {"type": "string", "description": "Request body (for POST/PUT)"},
+                "wallet_id": {"type": "string", "description": "Wallet UUID to pay from"},
+                "max_amount_lamports": {"type": "integer", "description": "Maximum lamports willing to pay per request"},
+                "max_amount_usdc": {"type": "number", "description": "Maximum USDC willing to pay per request"},
+            },
+            "required": ["url", "wallet_id"],
+        },
+    ),
+
     # ── Compliance ─────────────────────────────────────────────
     Tool(
         name="get_audit_log",
@@ -488,6 +582,26 @@ async def handle_tool(client: AgentWalletClient, name: str, args: dict) -> list[
 
             case "get_balance":
                 data = await client.get(f"/wallets/{args['wallet_id']}/balance")
+                return _ok(data)
+
+            # Tokens
+            case "transfer_token":
+                data = await client.post("/tokens/transfer", json=_strip_none({
+                    "from_wallet_id": args["from_wallet_id"],
+                    "to_address": args["to_address"],
+                    "token_symbol": args["token_symbol"],
+                    "amount": args["amount"],
+                    "memo": args.get("memo"),
+                    "idempotency_key": args.get("idempotency_key"),
+                }))
+                return _ok(data)
+
+            case "get_token_balances":
+                data = await client.get(f"/tokens/balances/{args['wallet_id']}")
+                return _ok(data)
+
+            case "list_supported_tokens":
+                data = await client.get("/tokens/supported")
                 return _ok(data)
 
             # Transactions
@@ -604,6 +718,32 @@ async def handle_tool(client: AgentWalletClient, name: str, args: dict) -> list[
 
             case "get_agent_analytics":
                 data = await client.get("/analytics/agents", params={"days": args.get("days", 30)})
+                return _ok(data)
+
+            # x402 Auto-Pay
+            case "configure_x402_pricing":
+                data = await client.post("/x402/configure", json=_strip_none({
+                    "pricing": args["pricing"],
+                    "enabled": args.get("enabled", True),
+                    "network": args.get("network", "solana-mainnet"),
+                    "default_pay_to": args.get("default_pay_to"),
+                }))
+                return _ok(data)
+
+            case "get_x402_status":
+                data = await client.get("/x402/status")
+                return _ok(data)
+
+            case "make_x402_request":
+                data = await client.post("/x402/request", json=_strip_none({
+                    "url": args["url"],
+                    "method": args.get("method", "GET"),
+                    "headers": args.get("headers", {}),
+                    "body": args.get("body"),
+                    "wallet_id": args["wallet_id"],
+                    "max_amount_lamports": args.get("max_amount_lamports"),
+                    "max_amount_usdc": args.get("max_amount_usdc"),
+                }))
                 return _ok(data)
 
             # Compliance
