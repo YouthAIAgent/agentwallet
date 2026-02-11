@@ -720,16 +720,35 @@ pip install -e ".[dev]"
 
 # Start development environment
 docker compose up -d postgres redis
-uvicorn agentwallet.main:app --reload --port 8000
+uvicorn agentwallet.main:app --reload
 ```
+
+### Code Style
+
+- Python: `ruff` for linting and formatting
+- TypeScript: `eslint` + `prettier` for frontend
+- Rust: `rustfmt` for Solana programs
+- Commit messages: [Conventional Commits](https://conventionalcommits.org/)
 
 ---
 
-## Built By
+## Built by
 
-**[@Web3__Youth](https://twitter.com/Web3__Youth)** — Building autonomous infrastructure for the agentic economy.
+**[@Web3__Youth](https://twitter.com/Web3__Youth)** — Building the financial infrastructure for the agentic economy.
 
-6 years in blockchain & crypto. Now building the financial rails that AI agents deserve.
+AgentWallet is part of our mission to enable autonomous AI agents to participate meaningfully in digital economies. We're building the tools that let agents be economic actors, not just assistants.
+
+---
+
+## Get Involved
+
+⭐ **Star this repository** if you believe in agent-native financial infrastructure
+
+🐦 **Follow us on Twitter:** [@Web3__Youth](https://twitter.com/Web3__Youth)
+
+💬 **Join our community:** [Discord](https://discord.gg/agentwallet) (coming soon)
+
+🔗 **Connect:** [LinkedIn](https://linkedin.com/company/youthaiagent)
 
 ---
 
@@ -739,8 +758,8 @@ uvicorn agentwallet.main:app --reload --port 8000
 </p>
 
 <p align="center">
-  <a href="https://github.com/YouthAIAgent/agentwallet">⭐ Star us on GitHub</a> · 
-  <a href="https://pypi.org/project/aw-protocol-sdk/">📦 PyPI</a> · 
-  <a href="https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet">🔗 Solana Explorer</a> · 
-  <a href="https://twitter.com/Web3__Youth">🐦 Twitter</a>
+  <a href="https://github.com/YouthAIAgent/agentwallet">🌟 Star on GitHub</a> •
+  <a href="https://pypi.org/project/aw-protocol-sdk/">📦 SDK on PyPI</a> •
+  <a href="https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet">⛓️ Live on Solana</a> •
+  <a href="https://twitter.com/Web3__Youth">🐦 Follow Us</a>
 </p>
