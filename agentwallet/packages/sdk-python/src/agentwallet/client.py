@@ -19,6 +19,7 @@ from .resources.escrow import EscrowResource
 from .resources.policies import PoliciesResource
 from .resources.transactions import TransactionsResource
 from .resources.wallets import WalletsResource
+from .resources.x402 import X402Resource
 
 DEFAULT_BASE_URL = "http://localhost:8000/v1"
 
@@ -61,6 +62,7 @@ class AgentWallet:
         self.escrow = EscrowResource(self)
         self.analytics = AnalyticsResource(self)
         self.policies = PoliciesResource(self)
+        self.x402 = X402Resource(self)
 
     async def __aenter__(self):
         return self
@@ -70,6 +72,7 @@ class AgentWallet:
 
     async def close(self):
         await self._client.aclose()
+        await self.x402.close()
 
     async def _request(
         self,
