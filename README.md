@@ -87,6 +87,14 @@ AgentWallet is a **wallet-as-a-service protocol** built for autonomous AI agents
 pip install aw-protocol-sdk==0.1.0
 ```
 
+### MCP Server (AI-Native Tools)
+
+```bash
+pip install agentwallet-mcp
+```
+
+Any MCP-compatible AI (Claude, GPT, Cursor) can now create wallets, transfer SOL, manage escrow — as native tools. **27 tools** covering the full protocol. [See MCP docs →](agentwallet/packages/mcp-server/README.md)
+
 ### Deploy Your First Agent
 
 ```python
@@ -179,7 +187,7 @@ curl -X POST http://localhost:8000/v1/auth/register \
 - ✅ **Python SDK** — Published on PyPI (`pip install aw-protocol-sdk`)
 - ✅ **Devnet Deployment** — Live on Solana devnet with program ID
 - ✅ **Security Audit & Hardening** — Production-ready security model
-- 🔄 **MCP Integration** — AI agent native tool for Claude/GPT/etc
+- ✅ **MCP Integration** — 27 AI-native tools via Model Context Protocol
 - 🔄 **A2A Commerce Protocol** — Agent-to-agent marketplaces
 - 📋 **Multi-chain Support** — EVM L2s (Arbitrum, Base, Polygon)
 - 📋 **Agent Reputation System** — On-chain reputation scoring
