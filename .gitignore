@@ -35,6 +35,8 @@ Thumbs.db
 # Rust/Anchor
 packages/programs/agentwallet/target/
 packages/programs/agentwallet/.anchor/
+**/target/
+**/.anchor/
 
 # Test
 .coverage
