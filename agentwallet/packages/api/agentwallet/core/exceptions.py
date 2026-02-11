@@ -121,3 +121,13 @@ class RateLimitError(AgentWalletError):
     def __init__(self, retry_after: int = 60):
         self.retry_after = retry_after
         super().__init__(f"Rate limit exceeded. Retry after {retry_after}s")
+
+
+# -- ERC-8004 / EVM --
+
+class ERC8004Error(AgentWalletError):
+    """ERC-8004 identity/reputation operation failed."""
+
+
+class EVMTransactionError(AgentWalletError):
+    """EVM transaction failed."""

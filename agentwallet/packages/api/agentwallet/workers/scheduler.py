@@ -6,6 +6,7 @@ from ..core.config import get_settings
 from ..core.logging import get_logger, setup_logging
 from .analytics_aggregator import AnalyticsAggregatorWorker
 from .escrow_expiry import EscrowExpiryWorker
+from .reputation_sync import ReputationSyncWorker
 from .tx_processor import TxProcessorWorker
 from .usage_meter import UsageMeterWorker
 from .webhook_dispatcher import WebhookDispatcherWorker
@@ -24,6 +25,7 @@ async def run_all_workers() -> None:
         AnalyticsAggregatorWorker(),
         EscrowExpiryWorker(),
         UsageMeterWorker(),
+        ReputationSyncWorker(),
     ]
 
     logger.info("scheduler_starting", workers=[w.name for w in workers])

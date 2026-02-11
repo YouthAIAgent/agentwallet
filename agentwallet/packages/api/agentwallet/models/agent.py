@@ -3,7 +3,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import JSON, DateTime, Float, ForeignKey, String, Text, func
+from sqlalchemy import JSON, BigInteger, DateTime, Float, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -23,6 +23,13 @@ class Agent(Base):
     reputation_score: Mapped[float] = mapped_column(Float, default=0.0)
     metadata_: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
     is_public: Mapped[bool] = mapped_column(default=False)
+
+    # ERC-8004 cross-chain identity
+    erc8004_token_id: Mapped[int | None] = mapped_column(BigInteger)
+    evm_address: Mapped[str | None] = mapped_column(String(42))
+    erc8004_reputation: Mapped[float] = mapped_column(Float, default=0.0)
+    erc8004_feedback_count: Mapped[int] = mapped_column(Integer, default=0)
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

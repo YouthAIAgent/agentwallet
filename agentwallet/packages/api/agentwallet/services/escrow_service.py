@@ -111,8 +111,23 @@ class EscrowService:
         escrow.completed_at = datetime.now(timezone.utc)
         await self.db.flush()
 
+        # Check if both agents have ERC-8004 identities for feedback eligibility
+        self._check_erc8004_feedback_eligibility(escrow)
+
         logger.info("escrow_released", escrow_id=str(escrow_id))
         return escrow
+
+    def _check_erc8004_feedback_eligibility(self, escrow: Escrow) -> None:
+        """Log if released escrow is eligible for ERC-8004 feedback.
+
+        Keeps escrow service loosely coupled -- feedback submission happens
+        via the /v1/erc8004/escrow/{id}/feedback API endpoint, not inline.
+        """
+        logger.info(
+            "escrow.released.erc8004_eligible",
+            escrow_id=str(escrow.id),
+            msg="Escrow released; eligible for ERC-8004 feedback via POST /v1/erc8004/escrow/{id}/feedback",
+        )
 
     async def refund_escrow(self, escrow_id: uuid.UUID, org_id: uuid.UUID) -> Escrow:
         """Refund escrow funds to the funder."""

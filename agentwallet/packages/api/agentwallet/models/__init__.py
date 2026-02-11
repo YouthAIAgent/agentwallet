@@ -11,6 +11,7 @@ from .analytics_daily import AnalyticsDaily
 from .webhook import Webhook, WebhookDelivery
 from .approval_request import ApprovalRequest
 from .usage_meter import UsageMeter
+from .erc8004_identity import ERC8004Identity, ERC8004Feedback, EVMWallet
 
 __all__ = [
     "Organization",
@@ -27,4 +28,7 @@ __all__ = [
     "WebhookDelivery",
     "ApprovalRequest",
     "UsageMeter",
+    "ERC8004Identity",
+    "ERC8004Feedback",
+    "EVMWallet",
 ]

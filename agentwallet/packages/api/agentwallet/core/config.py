@@ -70,6 +70,13 @@ class Settings(BaseSettings):
     tier_enterprise_rate_limit: int = 6000
     tier_enterprise_analytics_days: int = 365
 
+    # EVM / ERC-8004
+    evm_rpc_url: str = "https://mainnet.base.org"
+    evm_chain_id: int = 8453
+    erc8004_identity_address: str = "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
+    erc8004_reputation_address: str = "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63"
+    evm_platform_private_key: str = ""  # Platform's EVM key for signing identity registrations
+
     # RPC timeouts
     rpc_timeout: int = 15
     rpc_confirm_max_polls: int = 20

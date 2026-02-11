@@ -13,6 +13,8 @@ from .core.exceptions import (
     AuthenticationError,
     AuthorizationError,
     ConflictError,
+    ERC8004Error,
+    EVMTransactionError,
     NotFoundError,
     RateLimitError,
     TierLimitError,
@@ -26,6 +28,7 @@ from .api.routers import (
     analytics,
     auth,
     compliance,
+    erc8004,
     escrow,
     policies,
     transactions,
@@ -72,6 +75,7 @@ app.include_router(analytics.router, prefix="/v1")
 app.include_router(compliance.router, prefix="/v1")
 app.include_router(policies.router, prefix="/v1")
 app.include_router(webhooks.router, prefix="/v1")
+app.include_router(erc8004.router, prefix="/v1")
 
 
 # Global exception handlers
@@ -112,6 +116,16 @@ async def rate_limit_handler(request: Request, exc: RateLimitError):
         content={"error": str(exc)},
         headers={"Retry-After": str(exc.retry_after)},
     )
+
+
+@app.exception_handler(ERC8004Error)
+async def erc8004_error_handler(request: Request, exc: ERC8004Error):
+    return JSONResponse(status_code=400, content={"error": str(exc)})
+
+
+@app.exception_handler(EVMTransactionError)
+async def evm_tx_error_handler(request: Request, exc: EVMTransactionError):
+    return JSONResponse(status_code=502, content={"error": str(exc)})
 
 
 @app.get("/health")
