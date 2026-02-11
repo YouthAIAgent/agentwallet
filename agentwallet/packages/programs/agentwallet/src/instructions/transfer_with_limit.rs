@@ -54,8 +54,25 @@ pub struct TransferWithLimit<'info> {
 }
 
 /// Execute a SOL transfer from the authority, subject to per-tx and daily limits.
-/// A platform fee (in bps) is deducted from the transfer amount and sent to the
-/// fee wallet; the remainder goes to the recipient.
+///
+/// # Fee Model
+///
+/// **The platform fee is deducted FROM the transfer `amount`, not charged on top.**
+/// For example, if `amount` = 1 SOL and `fee_bps` = 50 (0.5%), the recipient
+/// receives 0.995 SOL and the fee wallet receives 0.005 SOL. The authority's
+/// total debit is exactly `amount` (1 SOL).
+///
+/// This means the `amount` parameter represents the total cost to the sender,
+/// NOT the amount the recipient will receive. Clients should account for this
+/// when displaying estimated transfer amounts to users.
+///
+/// # Errors
+///
+/// - `WalletInactive` — agent wallet has been deactivated
+/// - `SpendingLimitExceeded` — `amount` exceeds per-transaction limit
+/// - `DailyLimitExceeded` — cumulative daily spend would exceed daily limit
+/// - `ArithmeticOverflow` — numeric overflow in fee or limit calculations
+/// - `InvalidFeeCalculation` — fee calculation produced an invalid result
 pub fn handler(ctx: Context<TransferWithLimit>, amount: u64) -> Result<()> {
     let wallet = &mut ctx.accounts.agent_wallet;
     let config = &ctx.accounts.platform_config;
@@ -87,7 +104,7 @@ pub fn handler(ctx: Context<TransferWithLimit>, amount: u64) -> Result<()> {
     );
     wallet.daily_spent = new_daily_spent;
 
-    // --- Fee calculation ---
+    // --- Fee calculation (fee is deducted FROM amount, not added on top) ---
     let fee = (amount as u128)
         .checked_mul(config.fee_bps as u128)
         .ok_or(AgentWalletError::ArithmeticOverflow)?

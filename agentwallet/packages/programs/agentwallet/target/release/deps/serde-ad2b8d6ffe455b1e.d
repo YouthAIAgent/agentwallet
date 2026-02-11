@@ -1,0 +1,14 @@
+/mnt/c/Users/black/Desktop/agentwallet/agentwallet/packages/programs/agentwallet/target/release/deps/libserde-ad2b8d6ffe455b1e.rmeta: /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/lib.rs /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/integer128.rs /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/mod.rs /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/de.rs /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/ser.rs /mnt/c/Users/black/Desktop/agentwallet/agentwallet/packages/programs/agentwallet/target/release/build/serde-7b503291191e9703/out/private.rs
+
+/mnt/c/Users/black/Desktop/agentwallet/agentwallet/packages/programs/agentwallet/target/release/deps/libserde-ad2b8d6ffe455b1e.rlib: /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/lib.rs /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/integer128.rs /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/mod.rs /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/de.rs /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/ser.rs /mnt/c/Users/black/Desktop/agentwallet/agentwallet/packages/programs/agentwallet/target/release/build/serde-7b503291191e9703/out/private.rs
+
+/mnt/c/Users/black/Desktop/agentwallet/agentwallet/packages/programs/agentwallet/target/release/deps/serde-ad2b8d6ffe455b1e.d: /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/lib.rs /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/integer128.rs /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/mod.rs /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/de.rs /root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/ser.rs /mnt/c/Users/black/Desktop/agentwallet/agentwallet/packages/programs/agentwallet/target/release/build/serde-7b503291191e9703/out/private.rs
+
+/root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/lib.rs:
+/root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/integer128.rs:
+/root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/mod.rs:
+/root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/de.rs:
+/root/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.228/src/private/ser.rs:
+/mnt/c/Users/black/Desktop/agentwallet/agentwallet/packages/programs/agentwallet/target/release/build/serde-7b503291191e9703/out/private.rs:
+
+# env-dep:OUT_DIR=/mnt/c/Users/black/Desktop/agentwallet/agentwallet/packages/programs/agentwallet/target/release/build/serde-7b503291191e9703/out

@@ -1,13 +1,21 @@
-"""Auth router -- register, login, API key management."""
+"""Auth router -- register, login, API key management.
+
+SECURITY NOTE: The /register and /login endpoints MUST have aggressive rate
+limiting applied to prevent credential stuffing and brute-force attacks.
+The check_rate_limit() dependency from middleware.rate_limit is applied to
+these routes below. If Redis is unavailable, rate limiting will fail-open —
+consider adding an in-process fallback for production deployments.
+"""
 
 import secrets
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.database import get_db
+from ..middleware.rate_limit import check_rate_limit
 from ...models.api_key import ApiKey
 from ...models.organization import Organization
 from ...models.user import User
@@ -32,8 +40,10 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/register", response_model=TokenResponse)
-async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
+async def register(request: Request, req: RegisterRequest, db: AsyncSession = Depends(get_db)):
     """Register a new organization and admin user."""
+    # Rate limit: stricter limit for auth endpoints to prevent abuse.
+    await check_rate_limit(request, org_id="anon:register", tier="free")
     existing = await db.scalar(select(User).where(User.email == req.email))
     if existing:
         raise HTTPException(status_code=409, detail="Email already registered")
@@ -56,8 +66,10 @@ async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
+async def login(request: Request, req: LoginRequest, db: AsyncSession = Depends(get_db)):
     """Login with email/password, receive JWT."""
+    # Rate limit: stricter limit for auth endpoints to prevent brute-force.
+    await check_rate_limit(request, org_id="anon:login", tier="free")
     user = await db.scalar(select(User).where(User.email == req.email))
     if not user or not verify_password(req.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")

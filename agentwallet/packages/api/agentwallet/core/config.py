@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -81,6 +82,17 @@ class Settings(BaseSettings):
     rpc_timeout: int = 15
     rpc_confirm_max_polls: int = 20
     rpc_confirm_poll_interval: float = 2.0
+
+    @field_validator("jwt_secret_key")
+    @classmethod
+    def jwt_secret_must_be_strong(cls, v: str) -> str:
+        if len(v) < 32:
+            raise ValueError(
+                "jwt_secret_key must be at least 32 characters long. "
+                "The default 'change-me-in-production' value is not secure. "
+                "Generate a strong secret with: python -c 'import secrets; print(secrets.token_urlsafe(48))'"
+            )
+        return v
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

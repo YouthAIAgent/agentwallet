@@ -6,6 +6,9 @@ pub mod state;
 
 use instructions::*;
 
+// ⚠️  NOTE: This is the DEVNET program ID. For mainnet deployment,
+// ⚠️  generate a new keypair and update this ID accordingly.
+// ⚠️  Run `solana-keygen pubkey <keypair.json>` to get the program ID.
 declare_id!("CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6");
 
 #[program]

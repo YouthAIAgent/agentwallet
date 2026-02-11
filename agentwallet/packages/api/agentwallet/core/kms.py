@@ -22,12 +22,12 @@ class KeyManager:
         if not self._use_kms:
             key = settings.encryption_key
             if not key:
-                logger.warning(
-                    "no_encryption_key",
-                    msg="ENCRYPTION_KEY not set; generating ephemeral key. "
-                    "Set ENCRYPTION_KEY in .env for persistent key storage.",
+                raise RuntimeError(
+                    "ENCRYPTION_KEY environment variable is not set. "
+                    "This is required for encrypting wallet private keys at rest. "
+                    "Generate a Fernet key with: python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())' "
+                    "and set it in your .env file."
                 )
-                key = Fernet.generate_key().decode()
             self._fernet = Fernet(key.encode() if isinstance(key, str) else key)
 
     def encrypt(self, plaintext: bytes) -> str:
