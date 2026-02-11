@@ -6,7 +6,7 @@ pub mod state;
 
 use instructions::*;
 
-declare_id!("AWPro1111111111111111111111111111111111111111");
+declare_id!("CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6");
 
 #[program]
 pub mod agentwallet {
