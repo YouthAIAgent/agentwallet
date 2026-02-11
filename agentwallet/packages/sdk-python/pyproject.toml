@@ -1,5 +1,5 @@
 [project]
-name = "agentwallet-sdk"
+name = "aw-protocol-sdk"
 version = "0.1.0"
 description = "Python SDK for AgentWallet Protocol - AI Agent Wallet Infrastructure on Solana"
 requires-python = ">=3.10"
@@ -7,7 +7,7 @@ dependencies = [
     "httpx>=0.27",
 ]
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 
 [project.urls]
 Homepage = "https://agentwallet.dev"
