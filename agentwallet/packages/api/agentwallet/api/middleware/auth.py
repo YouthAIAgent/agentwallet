@@ -1,6 +1,7 @@
 """Authentication middleware -- JWT + API key verification."""
 
 import hashlib
+import hmac
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -29,7 +30,18 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 
 def hash_api_key(key: str) -> str:
-    return hashlib.sha256(key.encode()).hexdigest()
+    """Hash an API key using HMAC-SHA256 with the server's JWT secret as the key.
+
+    Using HMAC instead of plain SHA-256 prevents offline brute-force attacks
+    if the database is compromised — the attacker would also need the server
+    secret to verify candidate keys.
+    """
+    settings = get_settings()
+    return hmac.new(
+        settings.jwt_secret_key.encode(),
+        key.encode(),
+        hashlib.sha256,
+    ).hexdigest()
 
 
 def create_access_token(user_id: uuid.UUID, org_id: uuid.UUID) -> str:

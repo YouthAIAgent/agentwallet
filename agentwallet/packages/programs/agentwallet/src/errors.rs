@@ -31,4 +31,7 @@ pub enum AgentWalletError {
 
     #[msg("Fee calculation resulted in an invalid amount")]
     InvalidFeeCalculation,
+
+    #[msg("Amount must be greater than zero")]
+    InvalidAmount,
 }

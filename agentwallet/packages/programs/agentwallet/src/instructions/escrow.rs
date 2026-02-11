@@ -74,6 +74,9 @@ pub fn handler_create_escrow(
     amount: u64,
     expiry_timestamp: i64,
 ) -> Result<()> {
+    // Validate that escrow amount is greater than zero.
+    require!(amount > 0, AgentWalletError::InvalidAmount);
+
     let escrow = &mut ctx.accounts.escrow_account;
 
     escrow.funder = ctx.accounts.funder.key();
@@ -142,11 +145,22 @@ pub struct ReleaseEscrow<'info> {
     )]
     pub recipient: UncheckedAccount<'info>,
 
+    /// The original funder who will receive remaining rent-exempt lamports
+    /// when the escrow PDA is closed.
+    /// CHECK: Validated against the funder stored in escrow_account.
+    #[account(
+        mut,
+        constraint = funder.key() == escrow_account.funder,
+    )]
+    pub funder: UncheckedAccount<'info>,
+
     pub system_program: Program<'info, System>,
 }
 
 /// Release the escrowed SOL to the recipient.
 /// Only the funder or the arbiter may release.
+/// After releasing the escrowed amount, the PDA is closed and any remaining
+/// rent-exempt lamports are returned to the original funder.
 pub fn handler_release_escrow(ctx: Context<ReleaseEscrow>) -> Result<()> {
     let escrow = &mut ctx.accounts.escrow_account;
     let signer_key = ctx.accounts.signer.key();
@@ -159,9 +173,7 @@ pub fn handler_release_escrow(ctx: Context<ReleaseEscrow>) -> Result<()> {
 
     let amount = escrow.amount;
 
-    // Transfer lamports out of the escrow PDA to the recipient.
-    // Because the escrow PDA is owned by this program we can directly
-    // manipulate lamports (no CPI needed for PDA-owned accounts).
+    // Transfer the escrowed amount to the recipient.
     **escrow.to_account_info().try_borrow_mut_lamports()? -= amount;
     **ctx
         .accounts
@@ -177,6 +189,20 @@ pub fn handler_release_escrow(ctx: Context<ReleaseEscrow>) -> Result<()> {
         amount,
         released_by: signer_key,
     });
+
+    // Close the escrow PDA: transfer any remaining lamports (rent) to the funder
+    // and zero out the account data so the runtime garbage-collects it.
+    let remaining = escrow.to_account_info().lamports();
+    **escrow.to_account_info().try_borrow_mut_lamports()? = 0;
+    **ctx
+        .accounts
+        .funder
+        .to_account_info()
+        .try_borrow_mut_lamports()? += remaining;
+
+    // Zero account data to mark as closed.
+    escrow.to_account_info().assign(&anchor_lang::system_program::ID);
+    escrow.to_account_info().realloc(0, false)?;
 
     Ok(())
 }
@@ -215,6 +241,8 @@ pub struct RefundEscrow<'info> {
 
 /// Refund the escrowed SOL back to the funder.
 /// The arbiter may refund at any time. Anyone may refund after expiry.
+/// After refunding the escrowed amount, the PDA is closed and any remaining
+/// rent-exempt lamports are also returned to the funder.
 pub fn handler_refund_escrow(ctx: Context<RefundEscrow>) -> Result<()> {
     let escrow = &mut ctx.accounts.escrow_account;
     let signer_key = ctx.accounts.signer.key();
@@ -229,17 +257,9 @@ pub fn handler_refund_escrow(ctx: Context<RefundEscrow>) -> Result<()> {
         AgentWalletError::UnauthorizedArbiter
     );
 
-    let amount = escrow.amount;
-
-    // Transfer lamports out of the escrow PDA back to the funder.
-    **escrow.to_account_info().try_borrow_mut_lamports()? -= amount;
-    **ctx
-        .accounts
-        .funder
-        .to_account_info()
-        .try_borrow_mut_lamports()? += amount;
-
     escrow.is_refunded = true;
+
+    let amount = escrow.amount;
 
     emit!(EscrowRefunded {
         escrow: escrow.key(),
@@ -247,6 +267,20 @@ pub fn handler_refund_escrow(ctx: Context<RefundEscrow>) -> Result<()> {
         amount,
         refunded_by: signer_key,
     });
+
+    // Close the escrow PDA: transfer ALL remaining lamports (escrowed amount + rent)
+    // back to the funder in one step, then zero the account.
+    let total_lamports = escrow.to_account_info().lamports();
+    **escrow.to_account_info().try_borrow_mut_lamports()? = 0;
+    **ctx
+        .accounts
+        .funder
+        .to_account_info()
+        .try_borrow_mut_lamports()? += total_lamports;
+
+    // Zero account data to mark as closed.
+    escrow.to_account_info().assign(&anchor_lang::system_program::ID);
+    escrow.to_account_info().realloc(0, false)?;
 
     Ok(())
 }
