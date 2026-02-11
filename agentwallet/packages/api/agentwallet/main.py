@@ -31,9 +31,11 @@ from .api.routers import (
     erc8004,
     escrow,
     policies,
+    tokens,
     transactions,
     wallets,
     webhooks,
+    x402,
 )
 
 
@@ -70,12 +72,14 @@ app.include_router(auth.router, prefix="/v1")
 app.include_router(wallets.router, prefix="/v1")
 app.include_router(agents.router, prefix="/v1")
 app.include_router(transactions.router, prefix="/v1")
+app.include_router(tokens.router, prefix="/v1")
 app.include_router(escrow.router, prefix="/v1")
 app.include_router(analytics.router, prefix="/v1")
 app.include_router(compliance.router, prefix="/v1")
 app.include_router(policies.router, prefix="/v1")
 app.include_router(webhooks.router, prefix="/v1")
 app.include_router(erc8004.router, prefix="/v1")
+app.include_router(x402.router, prefix="/v1")
 
 
 # Global exception handlers
