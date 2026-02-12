@@ -8,6 +8,13 @@ import sys
 import os
 import random
 import time
+import io
+
+# Fix Unicode output on Windows (cp1252 breaks on emojis)
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+if sys.stderr.encoding != 'utf-8':
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 SECRETS_PATH = r"C:\Users\black\.openclaw\secrets\twitter-api.json"
 

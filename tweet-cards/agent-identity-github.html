@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1200px;
+    height: 675px;
+    overflow: hidden;
+    background: #0d1117;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+    color: #e6edf3;
+  }
+  .container {
+    width: 1200px;
+    height: 675px;
+    position: relative;
+    background: #0d1117;
+    display: flex;
+    flex-direction: column;
+  }
+  /* GitHub-style header */
+  .gh-header {
+    height: 64px;
+    background: #010409;
+    border-bottom: 1px solid #21262d;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    justify-content: space-between;
+  }
+  .gh-nav {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .gh-logo {
+    font-size: 18px;
+    font-weight: 600;
+    color: #f0f6fc;
+  }
+  .gh-tabs {
+    display: flex;
+    gap: 20px;
+    margin-left: 32px;
+  }
+  .gh-tab {
+    font-size: 14px;
+    color: #7d8590;
+    padding: 8px 0;
+    border-bottom: 2px solid transparent;
+  }
+  .gh-tab.active {
+    color: #f0f6fc;
+    border-bottom-color: #fd7e14;
+  }
+  .gh-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #f0f6fc;
+  }
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #00d4ff, #9945ff);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #000;
+  }
+  
+  /* Main content area */
+  .main-content {
+    flex: 1;
+    display: flex;
+    background: #0d1117;
+  }
+  
+  /* File explorer style sidebar */
+  .sidebar {
+    width: 300px;
+    background: #161b22;
+    border-right: 1px solid #21262d;
+    padding: 20px 0;
+  }
+  .sidebar-header {
+    padding: 0 16px 16px;
+    border-bottom: 1px solid #21262d;
+  }
+  .repo-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #58a6ff;
+    margin-bottom: 8px;
+  }
+  .repo-desc {
+    font-size: 12px;
+    color: #7d8590;
+  }
+  .file-tree {
+    padding: 16px 0;
+  }
+  .file-item {
+    padding: 6px 16px;
+    font-size: 13px;
+    color: #e6edf3;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .file-item.active {
+    background: #1f6feb;
+    color: #ffffff;
+  }
+  .file-icon {
+    width: 16px;
+    font-size: 12px;
+    text-align: center;
+  }
+  
+  /* Code viewer */
+  .code-viewer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .code-header {
+    height: 48px;
+    background: #161b22;
+    border-bottom: 1px solid #21262d;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+  }
+  .file-path {
+    font-size: 14px;
+    color: #f0f6fc;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  }
+  .code-actions {
+    display: flex;
+    gap: 12px;
+  }
+  .btn {
+    padding: 4px 12px;
+    border: 1px solid #21262d;
+    border-radius: 6px;
+    font-size: 12px;
+    background: #21262d;
+    color: #f0f6fc;
+  }
+  .btn.primary {
+    background: #238636;
+    border-color: #238636;
+  }
+  
+  /* Code content */
+  .code-content {
+    flex: 1;
+    background: #0d1117;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 12px;
+    line-height: 20px;
+    overflow: hidden;
+    display: flex;
+  }
+  .line-numbers {
+    background: #161b22;
+    color: #6e7681;
+    padding: 16px 8px;
+    text-align: right;
+    width: 60px;
+    border-right: 1px solid #21262d;
+  }
+  .line-numbers div {
+    height: 20px;
+    padding-right: 8px;
+  }
+  .code-lines {
+    flex: 1;
+    padding: 16px;
+    color: #e6edf3;
+  }
+  .code-line {
+    height: 20px;
+    white-space: nowrap;
+  }
+  
+  /* Syntax highlighting */
+  .keyword { color: #ff7b72; }
+  .string { color: #a5d6ff; }
+  .comment { color: #8b949e; }
+  .function { color: #d2a8ff; }
+  .type { color: #ffa657; }
+  .constant { color: #79c0ff; }
+  
+  /* Status indicators */
+  .status-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(35, 134, 54, 0.15);
+    border: 1px solid #238636;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #3fb950;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  /* Bottom info panel */
+  .info-panel {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(13, 17, 23, 0.95);
+    border: 1px solid #21262d;
+    border-radius: 12px;
+    padding: 16px 20px;
+    width: 280px;
+    backdrop-filter: blur(8px);
+  }
+  .info-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #00d4ff;
+    margin-bottom: 12px;
+  }
+  .info-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+  .info-label {
+    color: #7d8590;
+  }
+  .info-value {
+    color: #e6edf3;
+    font-family: 'SFMono-Regular', monospace;
+  }
+  .url-footer {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    font-size: 16px;
+    color: #7d8590;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="gh-header">
+    <div class="gh-nav">
+      <div class="gh-logo">AgentWallet</div>
+      <div class="gh-tabs">
+        <div class="gh-tab active">Programs</div>
+        <div class="gh-tab">Identity</div>
+        <div class="gh-tab">Policies</div>
+        <div class="gh-tab">Actions</div>
+      </div>
+    </div>
+    <div class="gh-user">
+      <div class="user-avatar">AW</div>
+      <span>agentwallet-protocol</span>
+    </div>
+  </div>
+  
+  <div class="main-content">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="repo-name">agent-identity</div>
+        <div class="repo-desc">On-chain PDA identity system</div>
+      </div>
+      <div class="file-tree">
+        <div class="file-item">
+          <span class="file-icon">📁</span>
+          <span>programs/</span>
+        </div>
+        <div class="file-item active">
+          <span class="file-icon">🦀</span>
+          <span>identity.rs</span>
+        </div>
+        <div class="file-item">
+          <span class="file-icon">🦀</span>
+          <span>policies.rs</span>
+        </div>
+        <div class="file-item">
+          <span class="file-icon">📁</span>
+          <span>tests/</span>
+        </div>
+        <div class="file-item">
+          <span class="file-icon">⚙️</span>
+          <span>Anchor.toml</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="code-viewer">
+      <div class="code-header">
+        <div class="file-path">programs/agent-wallet/src/identity.rs</div>
+        <div class="code-actions">
+          <button class="btn">Copy</button>
+          <button class="btn primary">Deploy</button>
+        </div>
+      </div>
+      
+      <div class="code-content">
+        <div class="line-numbers">
+          <div>1</div>
+          <div>2</div>
+          <div>3</div>
+          <div>4</div>
+          <div>5</div>
+          <div>6</div>
+          <div>7</div>
+          <div>8</div>
+          <div>9</div>
+          <div>10</div>
+          <div>11</div>
+          <div>12</div>
+          <div>13</div>
+          <div>14</div>
+          <div>15</div>
+          <div>16</div>
+          <div>17</div>
+          <div>18</div>
+          <div>19</div>
+          <div>20</div>
+          <div>21</div>
+        </div>
+        <div class="code-lines">
+          <div class="code-line"><span class="keyword">use</span> <span class="type">anchor_lang</span>::<span class="constant">prelude</span>::*;</div>
+          <div class="code-line"></div>
+          <div class="code-line"><span class="comment">/// Each AI agent gets unique on-chain PDA identity</span></div>
+          <div class="code-line"><span class="comment">/// Derived from agent's public key - verifiable & non-transferable</span></div>
+          <div class="code-line">#[<span class="function">derive</span>(<span class="type">Accounts</span>)]</div>
+          <div class="code-line"><span class="keyword">pub struct</span> <span class="type">CreateAgentIdentity</span>&lt;'<span class="constant">info</span>&gt; {</div>
+          <div class="code-line">    #[<span class="function">account</span>(</div>
+          <div class="code-line">        <span class="function">init</span>,</div>
+          <div class="code-line">        <span class="function">seeds</span> = [<span class="string">b"agent"</span>, <span class="constant">agent_key</span>.<span class="function">key</span>().<span class="function">as_ref</span>()],</div>
+          <div class="code-line">        <span class="function">bump</span>,</div>
+          <div class="code-line">        <span class="function">payer</span> = <span class="constant">authority</span>,</div>
+          <div class="code-line">        <span class="function">space</span> = <span class="constant">AgentIdentity</span>::<span class="constant">LEN</span></div>
+          <div class="code-line">    )]</div>
+          <div class="code-line">    <span class="keyword">pub</span> <span class="constant">agent_identity</span>: <span class="type">Account</span>&lt;'<span class="constant">info</span>, <span class="type">AgentIdentity</span>&gt;,</div>
+          <div class="code-line">    <span class="keyword">pub</span> <span class="constant">agent_key</span>: <span class="type">Signer</span>&lt;'<span class="constant">info</span>&gt;,</div>
+          <div class="code-line">    <span class="keyword">pub</span> <span class="constant">authority</span>: <span class="type">Signer</span>&lt;'<span class="constant">info</span>&gt;,</div>
+          <div class="code-line">    <span class="keyword">pub</span> <span class="constant">system_program</span>: <span class="type">Program</span>&lt;'<span class="constant">info</span>, <span class="type">System</span>&gt;,</div>
+          <div class="code-line">}</div>
+          <div class="code-line"></div>
+          <div class="code-line"><span class="comment">// ✅ Reputation tracking, ❌ transferable, 🔐 verifiable</span></div>
+          <div class="code-line"><span class="keyword">pub fn</span> <span class="function">create_identity</span>(<span class="constant">ctx</span>: <span class="type">Context</span>&lt;<span class="type">CreateAgentIdentity</span>&gt;) {}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="status-badge">IDENTITY LIVE</div>
+  
+  <div class="info-panel">
+    <div class="info-title">Agent Identity Stats</div>
+    <div class="info-item">
+      <span class="info-label">PDA Derivation:</span>
+      <span class="info-value">seeds + bump</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Non-transferable:</span>
+      <span class="info-value">✅ Locked</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Reputation tracking:</span>
+      <span class="info-value">On-chain</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Verification:</span>
+      <span class="info-value">Cryptographic</span>
+    </div>
+  </div>
+  
+  <div class="url-footer">agentwallet.fun</div>
+</div>
+</body>
+</html>

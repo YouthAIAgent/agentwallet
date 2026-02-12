@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1200px;
+    height: 675px;
+    overflow: hidden;
+    background: #0a0a0a;
+    font-family: 'Segoe UI', -apple-system, sans-serif;
+    color: #ffffff;
+  }
+  .card {
+    width: 1200px;
+    height: 675px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0a0a0a 0%, #0d1117 50%, #0a0a0a 100%);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%);
+  }
+  .glow { position: absolute; width: 350px; height: 350px; background: radial-gradient(circle, rgba(0,212,255,0.1) 0%, transparent 70%); border-radius: 50%; }
+  .glow-tl { top: -100px; left: -100px; }
+  .glow-br { bottom: -100px; right: -100px; }
+  .content {
+    position: relative; z-index: 1;
+    padding: 52px 60px;
+    height: 675px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .eyebrow {
+    font-size: 14px;
+    font-weight: 700;
+    color: #00D4FF;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin-bottom: 20px;
+  }
+  .title {
+    font-size: 52px;
+    font-weight: 900;
+    line-height: 1.1;
+    color: #ffffff;
+    margin-bottom: 16px;
+  }
+  .title span { color: #00D4FF; }
+  .subtitle {
+    font-size: 22px;
+    color: #888;
+    line-height: 1.5;
+    margin-bottom: 40px;
+    max-width: 800px;
+  }
+  .stats {
+    display: flex;
+    gap: 48px;
+  }
+  .stat-value {
+    font-size: 42px;
+    font-weight: 900;
+    color: #00D4FF;
+  }
+  .stat-label {
+    font-size: 13px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 4px;
+  }
+  .footer-line {
+    position: absolute;
+    bottom: 40px;
+    left: 60px;
+    right: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .footer-url { font-size: 16px; color: #444; font-weight: 500; }
+  .footer-tag { font-size: 14px; color: #00D4FF; font-weight: 600; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="glow glow-tl"></div>
+  <div class="glow glow-br"></div>
+  <div class="content">
+    <div class="eyebrow">Deep Dive — Thread 🧵</div>
+    <div class="title">Why AI Agents Need<br><span>Their Own Wallets</span></div>
+    <div class="subtitle">The full story behind AgentWallet Protocol — from problem to production on Solana.</div>
+    <div class="stats">
+      <div><div class="stat-value">33</div><div class="stat-label">MCP Tools</div></div>
+      <div><div class="stat-value">7</div><div class="stat-label">Anchor Instructions</div></div>
+      <div><div class="stat-value">15K+</div><div class="stat-label">Lines of Code</div></div>
+      <div><div class="stat-value">166</div><div class="stat-label">Token Holders</div></div>
+    </div>
+  </div>
+  <div class="footer-line">
+    <div class="footer-url">agentwallet.fun</div>
+    <div class="footer-tag">@Web3__Youth</div>
+  </div>
+</div>
+</body>
+</html>

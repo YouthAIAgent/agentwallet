@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1200px;
+    height: 675px;
+    overflow: hidden;
+    background: #0C0E0F;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    color: #E4E7EB;
+  }
+
+  .terminal-container {
+    width: 1200px;
+    height: 675px;
+    background: #0C0E0F;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Terminal window chrome */
+  .terminal-header {
+    height: 36px;
+    background: linear-gradient(180deg, #1A1D21 0%, #12161A 100%);
+    border-bottom: 1px solid #2A2F36;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    justify-content: space-between;
+  }
+
+  .window-controls {
+    display: flex;
+    gap: 8px;
+  }
+
+  .control-btn {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+
+  .close { background: #FF5F56; }
+  .minimize { background: #FFBD2E; }
+  .maximize { background: #27CA3F; }
+
+  .terminal-title {
+    font-size: 12px;
+    color: #8B949E;
+    font-weight: 500;
+  }
+
+  .terminal-content {
+    height: 639px;
+    padding: 24px;
+    background: #0C0E0F;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Top status bar */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    padding: 12px 20px;
+    background: rgba(0, 212, 255, 0.05);
+    border: 1px solid rgba(0, 212, 255, 0.15);
+    border-radius: 8px;
+  }
+
+  .status-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .logo {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #00D4FF, #0088CC);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 900;
+    color: #000;
+  }
+
+  .protocol-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #00D4FF;
+    letter-spacing: 0.5px;
+  }
+
+  .chain-info {
+    color: #9945FF;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* Main command section */
+  .command-section {
+    margin-bottom: 24px;
+  }
+
+  .command-line {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .prompt {
+    color: #00D4FF;
+    margin-right: 8px;
+    font-weight: 600;
+  }
+
+  .command {
+    color: #E4E7EB;
+    font-weight: 500;
+  }
+
+  .cursor {
+    width: 2px;
+    height: 16px;
+    background: #00D4FF;
+    margin-left: 4px;
+    animation: blink 1.2s infinite;
+  }
+
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  /* Audit log output */
+  .audit-log {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #21262D;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    max-height: 340px;
+    overflow: hidden;
+  }
+
+  .log-entry {
+    display: flex;
+    margin-bottom: 12px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .log-timestamp {
+    color: #6E7681;
+    width: 120px;
+    flex-shrink: 0;
+  }
+
+  .log-agent {
+    color: #FFA657;
+    width: 140px;
+    flex-shrink: 0;
+    font-weight: 600;
+  }
+
+  .log-action {
+    color: #7EE787;
+    width: 160px;
+    flex-shrink: 0;
+  }
+
+  .log-amount {
+    color: #00D4FF;
+    width: 100px;
+    text-align: right;
+    flex-shrink: 0;
+    font-weight: 600;
+  }
+
+  .log-signature {
+    color: #8B949E;
+    font-family: inherit;
+    margin-left: 16px;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Key metrics */
+  .metrics {
+    display: flex;
+    gap: 32px;
+    margin-top: 16px;
+  }
+
+  .metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .metric-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: #00D4FF;
+    margin-bottom: 4px;
+  }
+
+  .metric-label {
+    font-size: 10px;
+    color: #6E7681;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Bottom info */
+  .footer-info {
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    right: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: rgba(153, 69, 255, 0.05);
+    border: 1px solid rgba(153, 69, 255, 0.15);
+    border-radius: 6px;
+  }
+
+  .solana-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #9945FF;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .url {
+    color: #6E7681;
+    font-size: 12px;
+  }
+
+  /* Subtle grid background */
+  .terminal-content::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(0,212,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.02) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div class="terminal-container">
+  <div class="terminal-header">
+    <div class="window-controls">
+      <div class="control-btn close"></div>
+      <div class="control-btn minimize"></div>
+      <div class="control-btn maximize"></div>
+    </div>
+    <div class="terminal-title">AgentWallet Protocol — Audit Terminal</div>
+    <div></div>
+  </div>
+
+  <div class="terminal-content">
+    <div class="status-bar">
+      <div class="status-left">
+        <div class="logo">AW</div>
+        <div class="protocol-name">AGENTWALLET PROTOCOL</div>
+        <div class="chain-info">SOLANA DEVNET</div>
+      </div>
+      <div style="font-size: 11px; color: #7EE787;">🟢 LIVE AUDIT TRAIL</div>
+    </div>
+
+    <div class="command-section">
+      <div class="command-line">
+        <span class="prompt">agent@solana:~$</span>
+        <span class="command">agentwallet audit --agent-id=trading-bot-v2 --last=24h --format=live</span>
+        <div class="cursor"></div>
+      </div>
+    </div>
+
+    <div class="audit-log">
+      <div class="log-entry">
+        <span class="log-timestamp">15:42:18</span>
+        <span class="log-agent">trading-bot-v2</span>
+        <span class="log-action">TRANSFER_SOL</span>
+        <span class="log-amount">2.4 SOL</span>
+        <span class="log-signature">sig: 5K8j9m2P...x7Q3nF → Policy: ✓ Under daily limit (8/15 SOL)</span>
+      </div>
+      <div class="log-entry">
+        <span class="log-timestamp">15:41:52</span>
+        <span class="log-agent">trading-bot-v2</span>
+        <span class="log-action">SWAP_TOKEN</span>
+        <span class="log-amount">100 USDC</span>
+        <span class="log-signature">sig: 8Nm4k1R...y9W2mP → Jupiter: USDC→SOL 0.3% slippage</span>
+      </div>
+      <div class="log-entry">
+        <span class="log-timestamp">15:40:17</span>
+        <span class="log-agent">arbitrage-scout</span>
+        <span class="log-action">CREATE_ESCROW</span>
+        <span class="log-amount">5.0 SOL</span>
+        <span class="log-signature">sig: 2Hp7v5K...m8L4nX → PDA: 7k3m9P...w2Q8nF | Expires: 24h</span>
+      </div>
+      <div class="log-entry">
+        <span class="log-timestamp">15:39:04</span>
+        <span class="log-agent">yield-farmer-ai</span>
+        <span class="log-action">POLICY_UPDATE</span>
+        <span class="log-amount">—</span>
+        <span class="log-signature">sig: 9Rx2m1N...k5P7wQ → Max TX: 1.5 SOL → 2.0 SOL</span>
+      </div>
+      <div class="log-entry">
+        <span class="log-timestamp">15:37:22</span>
+        <span class="log-agent">dca-scheduler</span>
+        <span class="log-action">MULTI_SIG_REQ</span>
+        <span class="log-amount">12.8 SOL</span>
+        <span class="log-signature">sig: 6Tm9k2R...x4N7mP → High-value: Requires 2/3 oracle sigs</span>
+      </div>
+      <div class="log-entry">
+        <span class="log-timestamp">15:35:41</span>
+        <span class="log-agent">nft-flipper</span>
+        <span class="log-action">TRANSFER_NFT</span>
+        <span class="log-amount">0.05 SOL</span>
+        <span class="log-signature">sig: 4Kp8m1Q...z9V3nF → Mint: H7k2m9...R5W8nP ✓ Verified</span>
+      </div>
+      <div class="log-entry">
+        <span class="log-timestamp">15:34:18</span>
+        <span class="log-agent">trading-bot-v2</span>
+        <span class="log-action">BALANCE_CHECK</span>
+        <span class="log-amount">—</span>
+        <span class="log-signature">Balance: 47.3 SOL | 1,240 USDC | 0.8 JUP | Gas: ✓</span>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-value">247</div>
+        <div class="metric-label">TXs TODAY</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value">12</div>
+        <div class="metric-label">ACTIVE AGENTS</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value">99.7%</div>
+        <div class="metric-label">POLICY COMPLIANCE</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value">7ms</div>
+        <div class="metric-label">AVG LATENCY</div>
+      </div>
+    </div>
+
+    <div class="footer-info">
+      <div class="solana-info">
+        <span>⚡</span>
+        <span>POWERED BY SOLANA</span>
+        <span>•</span>
+        <span>ANCHOR FRAMEWORK</span>
+        <span>•</span>
+        <span>33 MCP TOOLS</span>
+      </div>
+      <div class="url">agentwallet.fun</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

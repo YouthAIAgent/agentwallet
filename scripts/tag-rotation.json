@@ -17,6 +17,10 @@
       "context": "Solana official"
     },
     {
+      "handle": "@vibhu",
+      "context": "Solana ecosystem - DRiP founder"
+    },
+    {
       "handle": "@VitalikButerin",
       "context": "Ethereum founder"
     },
@@ -34,7 +38,7 @@
     },
     {
       "handle": "@JupiterExchange",
-      "context": "Jupiter — biggest Solana DEX"
+      "context": "Jupiter \u00e2\u20ac\u201d biggest Solana DEX"
     },
     {
       "handle": "@weremeow",
@@ -42,15 +46,15 @@
     },
     {
       "handle": "@RaydiumProtocol",
-      "context": "Raydium DEX — Solana AMM"
+      "context": "Raydium DEX \u00e2\u20ac\u201d Solana AMM"
     },
     {
       "handle": "@phantom",
-      "context": "Phantom — biggest Solana wallet"
+      "context": "Phantom \u00e2\u20ac\u201d biggest Solana wallet"
     },
     {
       "handle": "@0xMert_",
-      "context": "Helius CEO — Solana infra"
+      "context": "Helius CEO \u00e2\u20ac\u201d Solana infra"
     },
     {
       "handle": "@balajis",
@@ -65,6 +69,6 @@
       "context": "Binance exchange"
     }
   ],
-  "lastUsedIndex": 2,
-  "note": "HACKATHON MODE — big crypto founders + @Colosseum_Org for vote push. Rotate through all."
+  "lastUsedIndex": 6,
+  "note": "HACKATHON FINAL PUSH - Solana only. @vibhu added by request."
 }
