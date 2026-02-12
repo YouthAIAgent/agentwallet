@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 1200px;
+            height: 675px;
+            background: #0a0a0a;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow: hidden;
+        }
+        
+        .container {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .title {
+            font-size: 64px;
+            font-weight: bold;
+            color: #00D4FF;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 36px;
+            margin-bottom: 40px;
+            color: #ffffff;
+            font-weight: 300;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 80px;
+            margin-bottom: 40px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: #00D4FF;
+            text-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+        }
+        
+        .stat-label {
+            font-size: 20px;
+            color: #cccccc;
+            margin-top: 8px;
+        }
+        
+        .vote-call {
+            font-size: 28px;
+            color: #00D4FF;
+            font-weight: bold;
+            margin-top: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+        
+        .glow {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(0, 212, 255, 0.5); }
+            to { text-shadow: 0 0 30px rgba(0, 212, 255, 0.8); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title glow">AgentWallet</div>
+        <div class="subtitle">AI-Powered Crypto Trading Protocol</div>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number">127</div>
+                <div class="stat-label">Projects</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">$15K</div>
+                <div class="stat-label">Prize Pool</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">48H</div>
+                <div class="stat-label">Voting Left</div>
+            </div>
+        </div>
+        
+        <div class="vote-call">VOTE NOW → COLOSSEUM HACKATHON</div>
+    </div>
+</body>
+</html>

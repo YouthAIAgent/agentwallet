@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentWallet Dev Update</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 1200px;
+            height: 675px;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            font-family: 'Courier New', monospace;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .grid-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 212, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .title {
+            font-size: 48px;
+            font-weight: bold;
+            color: #00D4FF;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 24px;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        
+        .code-block {
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid #00D4FF;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+            max-width: 900px;
+            position: relative;
+        }
+        
+        .code-header {
+            color: #00D4FF;
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .code-line {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #e0e0e0;
+            margin: 5px 0;
+        }
+        
+        .highlight {
+            color: #00D4FF;
+            font-weight: bold;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: 30px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            color: #00D4FF;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        .url {
+            position: absolute;
+            bottom: 30px;
+            right: 40px;
+            font-size: 18px;
+            color: #00D4FF;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    
+    <div class="header">
+        <div class="title">AgentWallet Protocol</div>
+        <div class="subtitle">🛠️ Dev Update — Escrow Architecture</div>
+    </div>
+    
+    <div class="code-block">
+        <div class="code-header">// Multi-signature PDA Escrow System</div>
+        <div class="code-line">pub struct <span class="highlight">EscrowAccount</span> {</div>
+        <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;pub agent_pubkey: <span class="highlight">Pubkey</span>,</div>
+        <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;pub authority_seeds: <span class="highlight">Vec&lt;Vec&lt;u8&gt;&gt;</span>,</div>
+        <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;pub policy_hash: <span class="highlight">[u8; 32]</span>,</div>
+        <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;pub threshold: <span class="highlight">u8</span>,</div>
+        <div class="code-line">}</div>
+    </div>
+    
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-number">47</div>
+            <div class="stat-label">Commits Today</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number">3</div>
+            <div class="stat-label">New MCP Tools</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number">100%</div>
+            <div class="stat-label">Open Source</div>
+        </div>
+    </div>
+    
+    <div class="url">agentwallet.fun</div>
+</body>
+</html>

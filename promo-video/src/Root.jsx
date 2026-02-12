@@ -6,6 +6,7 @@ import { TwitterCard } from './compositions/TwitterCard';
 import { StatsNumbers } from './compositions/StatsNumbers';
 import { FullExplainer } from './compositions/FullExplainer';
 import { ProductDemo } from './compositions/ProductDemo';
+import { HackathonDemo } from './compositions/HackathonDemo';
 
 // Keep the original composition for backwards compat
 import { AgentWalletPromo } from './AgentWalletPromo';
@@ -15,6 +16,18 @@ const FPS = 60;
 export const RemotionRoot = () => {
   return (
     <>
+      {/* ═══════════════════════════════════════════════════
+          HACKATHON DEMO (60s, 1920x1080, 30fps)
+         ═══════════════════════════════════════════════════ */}
+      <Composition
+        id="HackathonDemo"
+        component={HackathonDemo}
+        durationInFrames={1800}
+        fps={30}
+        width={1920}
+        height={1080}
+      />
+
       {/* ═══════════════════════════════════════════════════
           PRODUCT DEMO (60s, 1920x1080, 30fps)
          ═══════════════════════════════════════════════════ */}

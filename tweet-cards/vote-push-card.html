@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 1200px;
+            height: 630px;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .badge {
+            background: linear-gradient(90deg, #00D4FF, #0099CC);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 16px;
+            width: fit-content;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+        }
+        
+        .title {
+            font-size: 48px;
+            font-weight: 900;
+            color: white;
+            line-height: 1.1;
+            margin-bottom: 25px;
+        }
+        
+        .subtitle {
+            font-size: 24px;
+            color: #00D4FF;
+            margin-bottom: 35px;
+            font-weight: 600;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+        
+        .stat {
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: 900;
+            color: #00D4FF;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #ccc;
+            margin-top: 5px;
+        }
+        
+        .vote-cta {
+            background: linear-gradient(90deg, #FF4444, #CC0000);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 30px;
+            font-size: 20px;
+            font-weight: 900;
+            text-align: center;
+            margin-top: 20px;
+            box-shadow: 0 6px 25px rgba(255, 68, 68, 0.4);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .side-panel {
+            width: 400px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 3px solid #00D4FF;
+        }
+        
+        .architecture {
+            color: #ccc;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .architecture h3 {
+            color: #00D4FF;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .architecture ul {
+            list-style: none;
+            margin: 15px 0;
+        }
+        
+        .architecture li {
+            margin: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .architecture li:before {
+            content: "▸";
+            color: #00D4FF;
+            position: absolute;
+            left: 0;
+        }
+        
+        .bg-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 68, 68, 0.1) 0%, transparent 50%);
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="main-content">
+        <div class="badge">🏆 COLOSSEUM HACKATHON</div>
+        <div class="title">AgentWallet Protocol</div>
+        <div class="subtitle">AI Agent-to-Agent Payments on Solana</div>
+        
+        <div class="stats-grid">
+            <div class="stat">
+                <span class="stat-number">33</span>
+                <div class="stat-label">MCP Tools</div>
+            </div>
+            <div class="stat">
+                <span class="stat-number">675</span>
+                <div class="stat-label">Projects Competing</div>
+            </div>
+            <div class="stat">
+                <span class="stat-number">7</span>
+                <div class="stat-label">Anchor Instructions</div>
+            </div>
+            <div class="stat">
+                <span class="stat-number">$100K</span>
+                <div class="stat-label">Prize Pool</div>
+            </div>
+        </div>
+        
+        <div class="vote-cta">
+            🚀 VOTE NOW — 24 HOURS LEFT!
+        </div>
+    </div>
+    
+    <div class="side-panel">
+        <div class="architecture">
+            <h3>🛠️ What We Built</h3>
+            <ul>
+                <li>Solana PDA wallets for AI agents</li>
+                <li>x402 HTTP-native payments</li>
+                <li>Agent-to-agent escrow system</li>
+                <li>Python SDK on PyPI</li>
+                <li>React dashboard interface</li>
+                <li>Policy-enforced, self-custodial</li>
+                <li>100% open source on GitHub</li>
+            </ul>
+            
+            <h3 style="margin-top: 30px;">🎯 Live Demo</h3>
+            <ul>
+                <li>agentwallet.fun</li>
+                <li>github.com/YouthAIAgent</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

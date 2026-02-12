@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html><head>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1200px;height:675px;overflow:hidden;font-family:'Inter',sans-serif;background:#08080f;color:white;position:relative}
+
+/* Background layers */
+.bg-grid{position:absolute;inset:0;background-image:
+  linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);
+  background-size:40px 40px}
+.bg-orb1{position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,0.12) 0%,transparent 70%);top:-200px;right:-150px}
+.bg-orb2{position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(20,241,149,0.08) 0%,transparent 70%);bottom:-150px;left:-100px}
+.bg-line{position:absolute;top:0;left:80px;width:1px;height:100%;background:linear-gradient(180deg,transparent,rgba(0,212,255,0.15),transparent)}
+.bg-line2{position:absolute;top:0;left:1120px;width:1px;height:100%;background:linear-gradient(180deg,transparent,rgba(0,212,255,0.1),transparent)}
+
+.content{position:relative;z-index:1;padding:50px 80px;height:100%;display:flex;flex-direction:column}
+
+/* Top bar */
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:40px}
+.username{font-size:16px;font-weight:700;color:#00D4FF;display:flex;align-items:center;gap:8px}
+.username::before{content:'';width:8px;height:8px;border-radius:50%;background:#00D4FF;box-shadow:0 0 12px #00D4FF}
+.proto-badge{font-family:'JetBrains Mono',monospace;font-size:11px;color:#64748b;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.15);padding:5px 14px;border-radius:4px;letter-spacing:1px}
+
+/* Main hero */
+.hero{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:24px}
+
+.hero-title{font-size:42px;font-weight:900;line-height:1.15;color:#f1f5f9;max-width:900px}
+.hero-title span{color:#00D4FF}
+
+.hero-sub{font-size:18px;color:#94a3b8;max-width:700px;line-height:1.5}
+
+/* PDA visual */
+.pda-flow{display:flex;align-items:center;justify-content:center;gap:0;margin:20px 0}
+
+.pda-box{background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.25);border-radius:10px;padding:16px 22px;text-align:center}
+.pda-box.green{border-color:rgba(20,241,149,0.3);background:rgba(20,241,149,0.05)}
+.pda-box.purple{border-color:rgba(153,69,255,0.3);background:rgba(153,69,255,0.05)}
+.pda-label{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:#00D4FF;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.pda-box.green .pda-label{color:#14F195}
+.pda-box.purple .pda-label{color:#9945FF}
+.pda-val{font-size:16px;font-weight:700;color:#e2e8f0}
+.pda-desc{font-size:11px;color:#64748b;margin-top:4px}
+
+.arrow-conn{display:flex;align-items:center;padding:0 6px}
+.arrow-conn .line{width:32px;height:1px;background:linear-gradient(90deg,rgba(0,212,255,0.4),rgba(0,212,255,0.15))}
+.arrow-conn .head{width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:6px solid rgba(0,212,255,0.4)}
+
+/* Code snippet */
+.code-line{font-family:'JetBrains Mono',monospace;font-size:13px;color:#64748b;background:rgba(0,212,255,0.04);border:1px solid rgba(0,212,255,0.08);padding:8px 20px;border-radius:6px;margin-top:8px}
+.code-line span{color:#00D4FF}
+
+/* Bottom section */
+.bottom{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end}
+.tech-tags{display:flex;gap:8px}
+.tech-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:#64748b;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);padding:4px 12px;border-radius:4px}
+.tech-tag.active{color:#00D4FF;border-color:rgba(0,212,255,0.2);background:rgba(0,212,255,0.05)}
+.brand{text-align:right}
+.brand-name{font-size:14px;font-weight:700;color:#94a3b8}
+.brand-sub{font-size:11px;color:#475569;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-orb1"></div>
+<div class="bg-orb2"></div>
+<div class="bg-line"></div>
+<div class="bg-line2"></div>
+
+<div class="content">
+  <div class="topbar">
+    <div class="username">@Web3__Youth</div>
+    <div class="proto-badge">PDA WALLET ARCHITECTURE</div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-title">No Private Keys.<br><span>Deterministic Agent Vaults.</span></div>
+    <div class="hero-sub">Program Derived Addresses give AI agents their own wallets — without seed phrases, without custody risk.</div>
+    
+    <div class="pda-flow">
+      <div class="pda-box">
+        <div class="pda-label">Agent</div>
+        <div class="pda-val">AI Runtime</div>
+        <div class="pda-desc">Claude · GPT · Any LLM</div>
+      </div>
+      <div class="arrow-conn"><div class="line"></div><div class="head"></div></div>
+      <div class="pda-box purple">
+        <div class="pda-label">Derive</div>
+        <div class="pda-val">PDA Vault</div>
+        <div class="pda-desc">Deterministic · Keyless</div>
+      </div>
+      <div class="arrow-conn"><div class="line"></div><div class="head"></div></div>
+      <div class="pda-box green">
+        <div class="pda-label">Enforce</div>
+        <div class="pda-val">Policy Layer</div>
+        <div class="pda-desc">Spend limits · Allowlists</div>
+      </div>
+      <div class="arrow-conn"><div class="line"></div><div class="head"></div></div>
+      <div class="pda-box">
+        <div class="pda-label">Settle</div>
+        <div class="pda-val">Solana</div>
+        <div class="pda-desc">SOL · USDC · SPL</div>
+      </div>
+    </div>
+
+    <div class="code-line">$ <span>pip install agentwallet-mcp</span>  // 27 tools. open source.</div>
+  </div>
+
+  <div class="bottom">
+    <div class="tech-tags">
+      <div class="tech-tag active">PDA</div>
+      <div class="tech-tag">Solana</div>
+      <div class="tech-tag">MCP</div>
+      <div class="tech-tag">Keyless</div>
+      <div class="tech-tag">x402</div>
+    </div>
+    <div class="brand">
+      <div class="brand-name">AgentWallet Protocol</div>
+      <div class="brand-sub">agentwallet.fun</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
