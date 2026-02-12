@@ -45,3 +45,16 @@ htmlcov/
 
 # Logs
 *.log
+
+# Binary/media assets
+*.mp3
+*.mp4
+*.wav
+*.avi
+*.mov
+nul
+
+# Build artifacts
+promo-video/out/
+promo-video/temp/
+promo-video/node_modules/
