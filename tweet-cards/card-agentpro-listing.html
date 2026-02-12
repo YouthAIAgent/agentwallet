@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>$AGENTPRO DEX Listing</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1200px;
+    height: 675px;
+    overflow: hidden;
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0a0a0f;
+    color: #e0e0e0;
+  }
+
+  .card {
+    width: 1200px;
+    height: 675px;
+    position: relative;
+    background:
+      linear-gradient(rgba(153, 69, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(153, 69, 255, 0.03) 1px, transparent 1px),
+      radial-gradient(ellipse at 20% 50%, rgba(153, 69, 255, 0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 50%, rgba(20, 241, 149, 0.06) 0%, transparent 60%),
+      linear-gradient(135deg, #0a0a0f 0%, #0d0d18 50%, #0a0a0f 100%);
+    background-size: 40px 40px, 40px 40px, 100% 100%, 100% 100%, 100% 100%;
+    padding: 28px 36px 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Top bar */
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .brand-handle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: #9945FF;
+    letter-spacing: 0.5px;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #14F195;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    background: #14F195;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #14F195;
+  }
+
+  /* Title section */
+  .title-section {
+    text-align: center;
+    margin-bottom: 18px;
+  }
+
+  .title-main {
+    font-size: 52px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, #9945FF 0%, #c77dff 40%, #14F195 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    line-height: 1.1;
+    position: relative;
+  }
+
+  .title-main::after {
+    content: '$AGENTPRO';
+    position: absolute;
+    left: 3px;
+    top: 2px;
+    background: linear-gradient(135deg, rgba(153, 69, 255, 0.3), rgba(20, 241, 149, 0.2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    z-index: -1;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(153, 69, 255, 0.85);
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .tagline {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 2px;
+    margin-top: 6px;
+    text-transform: uppercase;
+  }
+
+  /* Main content row */
+  .content-row {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+    margin-bottom: 14px;
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(153, 69, 255, 0.15);
+    border-radius: 14px;
+    padding: 18px 20px;
+    backdrop-filter: blur(12px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(153, 69, 255, 0.4), rgba(20, 241, 149, 0.3), transparent);
+  }
+
+  .col-left { flex: 1.15; }
+  .col-right { flex: 0.85; }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #14F195;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    margin-bottom: 12px;
+  }
+
+  .feature-list {
+    list-style: none;
+  }
+
+  .feature-list li {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.78);
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.4;
+  }
+
+  .feature-list li::before {
+    content: '▸';
+    color: #9945FF;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  .token-list li {
+    font-size: 12.5px;
+    padding: 4.5px 0;
+  }
+
+  .token-list .label {
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 500;
+  }
+
+  .token-list .value {
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .token-list .highlight {
+    color: #14F195;
+    font-weight: 700;
+  }
+
+  /* CA Section */
+  .ca-section {
+    background: linear-gradient(135deg, rgba(153, 69, 255, 0.1), rgba(20, 241, 149, 0.08));
+    border: 1px solid rgba(20, 241, 149, 0.25);
+    border-radius: 10px;
+    padding: 12px 20px;
+    text-align: center;
+    margin-bottom: 12px;
+    position: relative;
+  }
+
+  .ca-section::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 11px;
+    padding: 1px;
+    background: linear-gradient(135deg, #9945FF, #14F195);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.4;
+  }
+
+  .ca-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(20, 241, 149, 0.8);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+
+  .ca-address {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.8px;
+    word-break: break-all;
+    text-shadow: 0 0 20px rgba(20, 241, 149, 0.3);
+  }
+
+  /* Links row */
+  .links-row {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .link-item {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.3px;
+  }
+
+  .link-item span {
+    margin-right: 4px;
+  }
+
+  /* Buy row */
+  .buy-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .buy-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(153, 69, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-right: 6px;
+  }
+
+  .buy-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(153, 69, 255, 0.15);
+    border: 1px solid rgba(153, 69, 255, 0.3);
+    border-radius: 6px;
+    padding: 4px 14px;
+    letter-spacing: 0.5px;
+  }
+
+  .buy-sep {
+    color: rgba(255,255,255,0.15);
+    font-size: 14px;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-size: 9.5px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.2);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    padding-top: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div class="brand-handle">@Web3__Youth</div>
+    <div class="live-badge"><span class="live-dot"></span> NOW LIVE ON SOLANA</div>
+  </div>
+
+  <!-- Title -->
+  <div class="title-section">
+    <div class="title-main">$AGENTPRO</div>
+    <div class="subtitle">AgentWallet Protocol</div>
+    <div class="tagline">Community Token &nbsp;|&nbsp; Open Source &nbsp;|&nbsp; Built in Public</div>
+  </div>
+
+  <!-- Content columns -->
+  <div class="content-row">
+    <div class="glass-card col-left">
+      <div class="card-title">What AgentWallet Ships</div>
+      <ul class="feature-list">
+        <li>27 MCP tools (Claude, GPT, Gemini)</li>
+        <li>Solana PDA vaults — deterministic</li>
+        <li>Agent-to-agent escrow (A2A Pay)</li>
+        <li>x402 HTTP micropayments</li>
+        <li>Multi-chain: Solana + Base + EVM</li>
+        <li>On-chain spend policies</li>
+      </ul>
+    </div>
+    <div class="glass-card col-right">
+      <div class="card-title">Token Info</div>
+      <ul class="feature-list token-list">
+        <li><span class="label">Ticker:</span>&nbsp;<span class="highlight">$AGENTPRO</span></li>
+        <li><span class="label">Chain:</span>&nbsp;<span class="value">Solana</span></li>
+        <li><span class="label">Royalties:</span>&nbsp;<span class="value">100% → open-source dev</span></li>
+        <li><span class="label">Governance:</span>&nbsp;<span class="value">Community</span></li>
+        <li><span class="label">Incentives:</span>&nbsp;<span class="value">Builder rewards</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CA -->
+  <div class="ca-section">
+    <div class="ca-label">Contract Address</div>
+    <div class="ca-address">B8r3Yp5C2Kx5fAyCLVMoVaGoiQkAaqzLsh69adDGBAGS</div>
+  </div>
+
+  <!-- Links -->
+  <div class="links-row">
+    <div class="link-item"><span>🌐</span> agentwallet.fun</div>
+    <div class="link-item"><span>💻</span> github.com/YouthAIAgent/agentwallet</div>
+    <div class="link-item"><span>📦</span> pip install agentwallet-mcp</div>
+  </div>
+
+  <!-- Buy -->
+  <div class="buy-row">
+    <span class="buy-label">Buy on</span>
+    <span class="buy-badge">Bags.fm</span>
+    <span class="buy-sep">·</span>
+    <span class="buy-badge">Axiom</span>
+    <span class="buy-sep">·</span>
+    <span class="buy-badge">Jupiter</span>
+    <span class="buy-sep">·</span>
+    <span class="buy-badge">Photon</span>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">Built in Public &nbsp;•&nbsp; Open Source &nbsp;•&nbsp; Community-Driven</div>
+</div>
+</body>
+</html>

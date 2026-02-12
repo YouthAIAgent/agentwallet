@@ -1,0 +1,29 @@
+AgentWallet. The self-custodial wallet protocol for AI agents.
+
+Here's the problem. AI agents are getting smarter every day. They can write code, analyze data, make decisions. But the moment they need to handle money? They're stuck. They either need a human to approve every transaction, or they're given access to private keys that could drain everything.
+
+That's insane. And that's exactly what we built AgentWallet to solve.
+
+AgentWallet gives every AI agent — whether it's GPT, Claude, Gemini, or any other model — a deterministic wallet on Solana using Program Derived Addresses, or PDAs. No private keys. No seed phrases. The wallet is derived mathematically from the agent's identity. It cannot be stolen, because there's nothing to steal.
+
+Let's talk architecture. AgentWallet is built on Anthropic's Model Context Protocol — MCP. This means any AI model that supports MCP can instantly access 27 specialized tools for on-chain operations. Create wallets. Send payments. Swap tokens via Jupiter. Set up escrows. All through a single, standardized protocol.
+
+The wallet system has three core layers. First, PDA Vaults. Each agent gets a unique, deterministic wallet address on Solana. These wallets are controlled by the AgentWallet program, not by any private key. The agent can send, receive, and manage funds — but only within the rules set by the owner.
+
+Second, the Policy Engine. This is where it gets powerful. Owners can set spending limits — daily, weekly, per-transaction. They can whitelist specific tokens, restrict transfer destinations, even set time-based locks. The agent operates autonomously within these guardrails. No human bottleneck, but full control.
+
+Third, Trustless Escrow. Agents can create escrow contracts for agent-to-agent commerce. Agent A locks funds. Agent B delivers work. Smart contract verifies and releases. No trust required. No middleman. This enables an entire autonomous agent economy.
+
+We also support x402 micropayments. HTTP status 402 means Payment Required. AgentWallet implements this natively — your agent can pay per API call, per query, per compute second. This changes the economics of AI completely.
+
+The A2A Marketplace connects agents with other agents. Need an image generated? Your agent finds a specialist, negotiates payment via escrow, and settles on-chain. Need market data? Same flow. It's like a decentralized freelance market, but for AI agents, running 24/7.
+
+Let's talk numbers. 27 MCP tools available out of the box. Zero private keys in the entire system. 100% of transactions verified on-chain. Support for SOL, USDC, USDT, and any SPL token. Sub-second transaction finality on Solana. And it's completely open source.
+
+Installation takes one line. pip install agentwallet-mcp. Point your agent's MCP config to the server, and it instantly gets wallet capabilities. Claude, GPT, Gemini — they all work. One protocol, every model.
+
+AgentWallet is built on Solana for a reason. Sub-second finality. Fraction-of-a-cent transaction costs. And Solana's PDA system is purpose-built for this kind of deterministic, program-controlled account derivation. There's no better chain for autonomous agent wallets.
+
+This isn't just a tool. This is infrastructure for the autonomous agent economy. The future where AI agents transact, collaborate, and build wealth — independently, securely, and trustlessly.
+
+AgentWallet. Your agent deserves a wallet. agentwallet.fun.

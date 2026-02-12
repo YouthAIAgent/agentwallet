@@ -1,0 +1,66 @@
+{
+  "tags": [
+    {
+      "handle": "@toly",
+      "context": "Solana co-founder & CEO"
+    },
+    {
+      "handle": "@rajgokal",
+      "context": "Solana co-founder"
+    },
+    {
+      "handle": "@solana",
+      "context": "Solana official"
+    },
+    {
+      "handle": "@VitalikButerin",
+      "context": "Ethereum founder"
+    },
+    {
+      "handle": "@brian_armstrong",
+      "context": "Coinbase CEO"
+    },
+    {
+      "handle": "@jessepollak",
+      "context": "Base chain lead, Coinbase"
+    },
+    {
+      "handle": "@cz_binance",
+      "context": "Binance founder"
+    },
+    {
+      "handle": "@JupiterExchange",
+      "context": "Jupiter — biggest Solana DEX"
+    },
+    {
+      "handle": "@weremeow",
+      "context": "Jupiter founder"
+    },
+    {
+      "handle": "@RaydiumProtocol",
+      "context": "Raydium DEX — Solana AMM"
+    },
+    {
+      "handle": "@phantom",
+      "context": "Phantom — biggest Solana wallet"
+    },
+    {
+      "handle": "@0xMert_",
+      "context": "Helius CEO — Solana infra"
+    },
+    {
+      "handle": "@balajis",
+      "context": "Ex-Coinbase CTO, visionary"
+    },
+    {
+      "handle": "@base",
+      "context": "Base L2 by Coinbase"
+    },
+    {
+      "handle": "@binance",
+      "context": "Binance exchange"
+    }
+  ],
+  "lastUsedIndex": 0,
+  "note": "ONLY big crypto founders, CEOs, exchanges, DEXes. No random/small accounts."
+}

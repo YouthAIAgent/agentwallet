@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html><head>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1200px;height:675px;overflow:hidden;font-family:'Inter',sans-serif;background:#08080f;color:white;position:relative}
+
+/* Background layers */
+.bg-grid{position:absolute;inset:0;background-image:
+  linear-gradient(rgba(255,107,53,0.03) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,107,53,0.03) 1px,transparent 1px);
+  background-size:40px 40px}
+.bg-orb1{position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(255,107,53,0.12) 0%,transparent 70%);top:-200px;right:-150px}
+.bg-orb2{position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(20,241,149,0.08) 0%,transparent 70%);bottom:-150px;left:-100px}
+.bg-line{position:absolute;top:0;left:80px;width:1px;height:100%;background:linear-gradient(180deg,transparent,rgba(255,107,53,0.15),transparent)}
+.bg-line2{position:absolute;top:0;left:1120px;width:1px;height:100%;background:linear-gradient(180deg,transparent,rgba(255,107,53,0.1),transparent)}
+
+.content{position:relative;z-index:1;padding:50px 80px;height:100%;display:flex;flex-direction:column}
+
+/* Top bar */
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
+.username{font-size:16px;font-weight:700;color:#FF6B35;display:flex;align-items:center;gap:8px}
+.username::before{content:'';width:8px;height:8px;border-radius:50%;background:#FF6B35;box-shadow:0 0 12px #FF6B35}
+.proto-badge{font-family:'JetBrains Mono',monospace;font-size:11px;color:#64748b;background:rgba(255,107,53,0.08);border:1px solid rgba(255,107,53,0.15);padding:5px 14px;border-radius:4px;letter-spacing:1px}
+
+/* Comparison layout */
+.comparison{flex:1;display:flex;align-items:center;justify-content:center;gap:48px;position:relative}
+
+.vs-divider{display:flex;flex-direction:column;align-items:center;gap:8px}
+.vs-line{width:1px;height:80px;background:linear-gradient(180deg,transparent,rgba(255,107,53,0.3),transparent)}
+.vs-badge{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:800;color:#FF6B35;background:rgba(255,107,53,0.12);border:1px solid rgba(255,107,53,0.3);padding:8px 16px;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center}
+
+.side{flex:1;max-width:420px}
+.side-header{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px;font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:10px}
+.side-header .dot{width:10px;height:10px;border-radius:50%}
+
+.side-left .side-header{color:#64748b}
+.side-left .dot{background:#64748b;box-shadow:0 0 8px rgba(100,116,139,0.4)}
+.side-right .side-header{color:#14F195}
+.side-right .dot{background:#14F195;box-shadow:0 0 8px rgba(20,241,149,0.4)}
+
+.side-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:24px}
+.side-right .side-card{background:rgba(20,241,149,0.04);border-color:rgba(20,241,149,0.15);box-shadow:0 0 30px rgba(20,241,149,0.04)}
+.side-left .side-card{background:rgba(255,255,255,0.02);border-color:rgba(255,255,255,0.08)}
+
+.item{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
+.item:last-child{margin-bottom:0}
+.item-icon{font-size:16px;line-height:1.4;flex-shrink:0;width:20px;text-align:center}
+.item-text{font-size:14px;color:#94a3b8;line-height:1.5}
+.item-text strong{color:#e2e8f0;font-weight:600}
+
+.side-right .item-text{color:#a7c4b8}
+.side-right .item-text strong{color:#14F195}
+
+/* Flow arrows below comparison */
+.flow-row{display:flex;align-items:center;justify-content:center;gap:0;margin-top:20px}
+.flow-step{display:flex;align-items:center;gap:10px}
+.flow-num{width:26px;height:26px;border-radius:50%;background:rgba(255,107,53,0.15);border:1px solid rgba(255,107,53,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#FF6B35;font-family:'JetBrains Mono',monospace}
+.flow-text{font-size:12px;color:#94a3b8}
+.flow-divider{width:30px;height:1px;background:rgba(255,107,53,0.2);margin:0 12px}
+
+/* Bottom section */
+.bottom{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end}
+.tech-tags{display:flex;gap:8px}
+.tech-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:#64748b;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);padding:4px 12px;border-radius:4px}
+.brand{text-align:right}
+.brand-name{font-size:14px;font-weight:700;color:#94a3b8}
+.brand-sub{font-size:11px;color:#475569;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-orb1"></div>
+<div class="bg-orb2"></div>
+<div class="bg-line"></div>
+<div class="bg-line2"></div>
+
+<div class="content">
+  <div class="topbar">
+    <div class="username">@Web3__Youth</div>
+    <div class="proto-badge">CUSTODY vs SOVEREIGNTY</div>
+  </div>
+
+  <!-- Comparison -->
+  <div class="comparison">
+    <div class="side side-left">
+      <div class="side-header"><span class="dot"></span>TRADITIONAL CUSTODY</div>
+      <div class="side-card">
+        <div class="item">
+          <div class="item-icon">🔐</div>
+          <div class="item-text"><strong>Human co-sign</strong> required for every tx</div>
+        </div>
+        <div class="item">
+          <div class="item-icon">⏳</div>
+          <div class="item-text"><strong>Latency</strong> — wait for approval queue</div>
+        </div>
+        <div class="item">
+          <div class="item-icon">🏛️</div>
+          <div class="item-text"><strong>Centralized</strong> key management</div>
+        </div>
+        <div class="item">
+          <div class="item-icon">🚫</div>
+          <div class="item-text"><strong>No agent autonomy</strong> — always supervised</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="vs-divider">
+      <div class="vs-line"></div>
+      <div class="vs-badge">VS</div>
+      <div class="vs-line"></div>
+    </div>
+
+    <div class="side side-right">
+      <div class="side-header"><span class="dot"></span>AGENTWALLET PDA</div>
+      <div class="side-card">
+        <div class="item">
+          <div class="item-icon">⚡</div>
+          <div class="item-text"><strong>Autonomous</strong> — agents sign their own txs</div>
+        </div>
+        <div class="item">
+          <div class="item-icon">🛡️</div>
+          <div class="item-text"><strong>Policy-enforced</strong> spend limits on-chain</div>
+        </div>
+        <div class="item">
+          <div class="item-icon">🔑</div>
+          <div class="item-text"><strong>Self-custodial</strong> PDA vaults per agent</div>
+        </div>
+        <div class="item">
+          <div class="item-icon">🤖</div>
+          <div class="item-text"><strong>27 MCP tools</strong> — full financial stack</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flow -->
+  <div class="flow-row">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div class="flow-text">Agent spawns wallet</div>
+    </div>
+    <div class="flow-divider"></div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div class="flow-text">PDA vault created</div>
+    </div>
+    <div class="flow-divider"></div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div class="flow-text">Policy bounds set</div>
+    </div>
+    <div class="flow-divider"></div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div class="flow-text">Autonomous ops</div>
+    </div>
+  </div>
+
+  <!-- Bottom -->
+  <div class="bottom">
+    <div class="tech-tags">
+      <div class="tech-tag">Solana PDA</div>
+      <div class="tech-tag">MCP</div>
+      <div class="tech-tag">Self-Custody</div>
+      <div class="tech-tag">Policy Engine</div>
+    </div>
+    <div class="brand">
+      <div class="brand-name">AgentWallet Protocol</div>
+      <div class="brand-sub">agentwallet.fun</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

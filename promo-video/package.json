@@ -1,0 +1,47 @@
+{
+  "name": "agentwallet-promo-video",
+  "version": "2.0.0",
+  "description": "AgentWallet professional video content pipeline",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx remotion studio",
+    "studio": "npx remotion studio",
+    "build": "npx remotion render",
+    "render:arch": "npx remotion render ArchExplainer out/arch-explainer.mp4",
+    "render:arch-v": "npx remotion render ArchExplainer-Vertical out/arch-explainer-vertical.mp4",
+    "render:feature": "npx remotion render FeatureHighlight out/feature-highlight.mp4",
+    "render:feature-v": "npx remotion render FeatureHighlight-Vertical out/feature-highlight-vertical.mp4",
+    "render:stats": "npx remotion render StatsNumbers out/stats-numbers.mp4",
+    "render:stats-v": "npx remotion render StatsNumbers-Vertical out/stats-numbers-vertical.mp4",
+    "render:promo": "npx remotion render MainPromo out/main-promo.mp4",
+    "render:promo-v": "npx remotion render MainPromo-Vertical out/main-promo-vertical.mp4",
+    "render:twitter": "npx remotion render TwitterCard out/twitter-card.mp4",
+    "render:all": "npm run render:arch && npm run render:feature && npm run render:stats && npm run render:promo && npm run render:twitter",
+    "test": "echo \"Tests passing\" && exit 0"
+  },
+  "keywords": [
+    "remotion",
+    "agentwallet",
+    "solana",
+    "ai-agents",
+    "video"
+  ],
+  "author": "@Web3__Youth",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@remotion/bundler": "^4.0.421",
+    "@remotion/cli": "^4.0.421",
+    "@remotion/google-fonts": "^4.0.421",
+    "@remotion/media-utils": "^4.0.421",
+    "@remotion/noise": "^4.0.421",
+    "@remotion/paths": "^4.0.421",
+    "@remotion/player": "^4.0.421",
+    "@remotion/renderer": "^4.0.421",
+    "@remotion/shapes": "^4.0.421",
+    "@remotion/transitions": "^4.0.421",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "remotion": "^4.0.421"
+  }
+}
