@@ -1,0 +1,48 @@
+name: Integration Help
+description: Need help integrating AgentWallet into your project?
+title: "[Help]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Stuck on integration? We're here to help. Please share as much context as possible.
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: What are you trying to do?
+      description: Describe your use case and what you're building.
+      placeholder: "I'm building a trading bot that needs to manage multiple wallets and..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried?
+      description: Share any code, API calls, or approaches you've attempted.
+      render: python
+    validations:
+      required: true
+
+  - type: textarea
+    id: error
+    attributes:
+      label: Error or blocker
+      description: What's going wrong or where are you stuck?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: integration
+    attributes:
+      label: Integration method
+      options:
+        - Python SDK
+        - REST API (direct)
+        - MCP Server (Claude/GPT)
+        - Docker self-hosted
+        - Solana program (CPI)
+    validations:
+      required: true

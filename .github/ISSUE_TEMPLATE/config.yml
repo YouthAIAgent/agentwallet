@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Twitter / X
+    url: https://twitter.com/Web3__Youth
+    about: Follow us and DM for quick questions
+  - name: PyPI SDK
+    url: https://pypi.org/project/aw-protocol-sdk/
+    about: SDK installation and version info
+  - name: Solana Explorer
+    url: https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet
+    about: View the on-chain program on Solana devnet
