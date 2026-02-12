@@ -5,6 +5,10 @@
       "context": "Solana co-founder & CEO"
     },
     {
+      "handle": "@colosseum",
+      "context": "Colosseum hackathon organizer"
+    },
+    {
       "handle": "@rajgokal",
       "context": "Solana co-founder"
     },
@@ -61,6 +65,6 @@
       "context": "Binance exchange"
     }
   ],
-  "lastUsedIndex": 0,
-  "note": "ONLY big crypto founders, CEOs, exchanges, DEXes. No random/small accounts."
+  "lastUsedIndex": 2,
+  "note": "HACKATHON MODE — big crypto founders + @Colosseum_Org for vote push. Rotate through all."
 }
