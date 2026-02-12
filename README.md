@@ -16,7 +16,7 @@
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![Rust Anchor](https://img.shields.io/badge/Rust-Anchor%200.30-000000?style=for-the-badge&logo=rust)](https://anchor-lang.com)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
-[![License](https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge)](https://github.com/YouthAIAgent/agentwallet)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
 > _"Your agents don't need permission. They need a wallet."_
 
@@ -737,6 +737,12 @@ uvicorn agentwallet.main:app --reload
 - TypeScript: `eslint` + `prettier` for frontend
 - Rust: `rustfmt` for Solana programs
 - Commit messages: [Conventional Commits](https://conventionalcommits.org/)
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
