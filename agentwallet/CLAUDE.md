@@ -9,7 +9,7 @@ AI agent wallet infrastructure SaaS on Solana. Wallet-as-a-service for autonomou
 - **Railway Service**: trustworthy-celebration
 - **Railway Account**: YouthAIAgent (web3youth@gmail.com)
 - **GitHub**: https://github.com/YouthAIAgent/agentwallet
-- **Health**: `GET /health` returns `{"status":"ok","version":"0.1.0"}`
+- **Health**: `GET /health` returns `{"status":"ok","version":"0.2.0"}`
 - **Swagger Docs**: `GET /docs`
 
 ## Tech Stack
@@ -33,7 +33,7 @@ agentwallet/
 ├── docker-compose.yml, Dockerfile, Dockerfile.worker
 ├── alembic.ini, pyproject.toml, railway.json
 ├── packages/
-│   ├── api/          # FastAPI backend (14 endpoints under /v1)
+│   ├── api/          # FastAPI backend (53 endpoints under /v1)
 │   │   └── agentwallet/ (main, api/routers, core, models, services, workers, migrations)
 │   ├── sdk-python/   # pip install agentwallet-sdk
 │   ├── dashboard/    # React + Vite
@@ -42,13 +42,13 @@ agentwallet/
 │   └── landing/      # Static landing page
 ```
 
-## API Routes (all under /v1)
-auth, wallets, agents, transactions, escrow, analytics, compliance, policies, webhooks
+## API Routes (all under /v1, 13 router groups)
+auth, wallets, agents, transactions, escrow, analytics, compliance, policies, webhooks, tokens, erc8004, x402, marketplace
 
 ## Critical Architecture Decisions (DO NOT REVERT)
 1. **JSONB -> JSON**: All 9 ORM model files use `JSON` not `JSONB` (SQLite test compat)
 2. **bcrypt direct**: `import bcrypt` not `passlib` (passlib crashes on Python 3.14)
-3. **lazy="noload"**: Organization, Agent, Webhook relationships (selectin causes MissingGreenlet)
+3. **lazy="noload"**: ALL relationships — Organization, Agent, Webhook, Marketplace models (selectin causes MissingGreenlet)
 4. **StaticPool**: SQLite test engine uses `StaticPool` + `check_same_thread=False`
 5. **Redis fail-open**: Rate limiter caches Redis availability, skips if unavailable
 6. **db.refresh()**: `await db.refresh(obj)` after flush in agents/policies routers and agent_registry service
@@ -67,9 +67,10 @@ ENVIRONMENT=production
 ```
 
 ## Tests
-- 6/6 passing with `pytest` (SQLite + aiosqlite backend)
+- **53/53 passing** with `pytest` (SQLite + aiosqlite backend)
+- 8 test files: test_agents, test_auth, test_escrow, test_marketplace, test_policies, test_transactions, test_wallets + conftest
 - Config: `asyncio_mode = "auto"`, testpaths = `packages/api/tests`
-- conftest.py creates/drops tables per session
+- conftest.py creates/drops tables per session, mocks Redis + Solana RPC
 
 ## Remaining Manual Steps
 1. **PyPI publish**: `python -m twine upload packages/sdk-python/dist/* --username __token__ --password pypi-TOKEN`

@@ -28,7 +28,7 @@
 
 - **Solana Explorer:** [View on Devnet](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet)
 - **Backend API:** `https://trustworthy-celebration-production-6a3e.up.railway.app`
-- **SDK on PyPI:** `pip install aw-protocol-sdk==0.1.0`
+- **SDK on PyPI:** `pip install aw-protocol-sdk==0.2.0`
 
 **Production-ready on Solana devnet.** Mainnet deployment scheduled for Q2 2026.
 
@@ -84,7 +84,7 @@ AgentWallet is a **wallet-as-a-service protocol** built for autonomous AI agents
 ### Install SDK
 
 ```bash
-pip install aw-protocol-sdk==0.1.0
+pip install aw-protocol-sdk==0.2.0
 ```
 
 ### MCP Server (AI-Native Tools)
@@ -188,9 +188,11 @@ curl -X POST http://localhost:8000/v1/auth/register \
 - ✅ **Devnet Deployment** — Live on Solana devnet with program ID
 - ✅ **Security Audit & Hardening** — Production-ready security model
 - ✅ **MCP Integration** — 27 AI-native tools via Model Context Protocol
-- 🔄 **A2A Commerce Protocol** — Agent-to-agent marketplaces
+- ✅ **A2A Commerce Protocol** — Agent-to-agent marketplace (v0.2.0)
+- ✅ **x402 Payments** — HTTP-native auto-pay middleware (v0.2.0)
+- ✅ **ERC-8004 Identity** — On-chain agent identity system (v0.2.0)
+- ✅ **Agent Reputation System** — On-chain reputation scoring (v0.2.0)
 - 📋 **Multi-chain Support** — EVM L2s (Arbitrum, Base, Polygon)
-- 📋 **Agent Reputation System** — On-chain reputation scoring
 - 📋 **Mainnet Launch** — Production deployment (Q2 2026)
 
 ---
@@ -210,7 +212,7 @@ curl -X POST http://localhost:8000/v1/auth/register \
                     └──────┬───────┘
                            │
                     ┌──────▼───────┐
-                    │   FastAPI    │  ← 9 routers, 3 middleware layers
+                    │   FastAPI    │  ← 13 routers, 3 middleware layers
                     │   /v1/*      │  ← JWT + API Key dual auth
                     └──┬───────┬───┘
                        │       │
@@ -259,11 +261,11 @@ agentwallet/
     │   └── agentwallet/
     │       ├── main.py         # FastAPI entrypoint
     │       ├── core/           # Config, DB, Redis, Solana, KMS, Retry
-    │       ├── models/         # 13 SQLAlchemy ORM models
-    │       ├── services/       # 9 business logic services
+    │       ├── models/         # 15+ SQLAlchemy ORM models
+    │       ├── services/       # 13+ business logic services
     │       ├── api/
-    │       │   ├── routers/    # 9 route modules
-    │       │   ├── schemas/    # 9 Pydantic schema modules
+    │       │   ├── routers/    # 13 route modules
+    │       │   ├── schemas/    # 13+ Pydantic schema modules
     │       │   └── middleware/ # Auth, Rate Limit, Audit
     │       ├── workers/        # 5 background workers + scheduler
     │       └── migrations/     # Alembic (001_initial = 14 tables)
@@ -474,12 +476,39 @@ Base URL: `http://localhost:8000/v1`
 | `PATCH` | `/webhooks/{id}` | Update webhook |
 | `DELETE` | `/webhooks/{id}` | Delete webhook |
 
+### Tokens
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/tokens/balances/{wallet_id}` | Get token balances |
+| `POST` | `/tokens/transfer` | Transfer SPL tokens |
+| `GET` | `/tokens/metadata/{mint}` | Get token metadata |
+
+### Marketplace
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/marketplace/services` | Register agent service |
+| `GET` | `/marketplace/services` | Discover services |
+| `POST` | `/marketplace/hire` | Hire an agent |
+| `GET` | `/marketplace/stats` | Marketplace statistics |
+
+### ERC-8004
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/erc8004/identity` | Register agent identity |
+| `GET` | `/erc8004/identity/{agent_id}` | Get agent identity |
+
+### x402
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/x402/pay` | Process x402 payment |
+| `GET` | `/x402/verify/{payment_id}` | Verify payment status |
+
 ---
 
 ## SDK Usage
 
 ```bash
-pip install aw-protocol-sdk==0.1.0
+pip install aw-protocol-sdk==0.2.0
 ```
 
 ```python
@@ -607,7 +636,7 @@ CACHE/QUEUE     Redis 7 · arq
 DATABASE        PostgreSQL 16
 BLOCKCHAIN      Solana · solders 0.27 · Anchor 0.30 (Rust)
 FRONTEND        React 18 · TypeScript 5.6 · Vite 6 · Tailwind 3.4 · Recharts
-AUTH            JWT (python-jose) · bcrypt (passlib) · API Keys
+AUTH            JWT (python-jose) · bcrypt (direct) · API Keys
 ENCRYPTION      Fernet (dev) · AWS KMS (prod)
 BILLING         Stripe
 LOGGING         structlog (JSON)

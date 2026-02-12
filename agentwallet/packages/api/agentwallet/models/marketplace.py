@@ -40,8 +40,8 @@ class Service(Base):
     )
 
     # Relationships
-    agent = relationship("Agent", backref="services")
-    jobs = relationship("Job", back_populates="service")
+    agent = relationship("Agent", backref="services", lazy="noload")
+    jobs = relationship("Job", back_populates="service", lazy="noload")
 
 
 class Job(Base):
@@ -76,10 +76,10 @@ class Job(Base):
     deadline: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     
     # Relationships
-    service = relationship("Service", back_populates="jobs")
-    buyer_agent = relationship("Agent", foreign_keys=[buyer_agent_id], backref="bought_jobs")
-    seller_agent = relationship("Agent", foreign_keys=[seller_agent_id], backref="sold_jobs")
-    escrow = relationship("Escrow", backref="marketplace_jobs")
+    service = relationship("Service", back_populates="jobs", lazy="noload")
+    buyer_agent = relationship("Agent", foreign_keys=[buyer_agent_id], backref="bought_jobs", lazy="noload")
+    seller_agent = relationship("Agent", foreign_keys=[seller_agent_id], backref="sold_jobs", lazy="noload")
+    escrow = relationship("Escrow", backref="marketplace_jobs", lazy="noload")
 
 
 class AgentReputation(Base):
@@ -127,7 +127,7 @@ class AgentReputation(Base):
     )
     
     # Relationships
-    agent = relationship("Agent", backref="reputation")
+    agent = relationship("Agent", backref="reputation", lazy="noload")
 
 
 class ServiceCategory(Base):
@@ -143,7 +143,7 @@ class ServiceCategory(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     
     # Self-referential relationship for subcategories
-    parent = relationship("ServiceCategory", remote_side=[id], backref="subcategories")
+    parent = relationship("ServiceCategory", remote_side=[id], backref="subcategories", lazy="noload")
 
 
 class JobMessage(Base):
@@ -163,5 +163,5 @@ class JobMessage(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
-    job = relationship("Job", backref="messages")
-    sender = relationship("Agent", backref="sent_job_messages")
+    job = relationship("Job", backref="messages", lazy="noload")
+    sender = relationship("Agent", backref="sent_job_messages", lazy="noload")

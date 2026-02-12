@@ -54,7 +54,13 @@ htmlcov/
 *.mov
 nul
 
-# Build artifacts
-promo-video/out/
-promo-video/temp/
-promo-video/node_modules/
+# Non-code / content / marketing (DO NOT push to GitHub)
+landing-page/
+narration/
+promo-video/
+scripts/
+tweet-card.html
+tweet-cards/
+test_x402.py
+test-voice.mp3
+test-edge-voice.mp3

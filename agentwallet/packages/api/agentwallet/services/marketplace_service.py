@@ -137,23 +137,22 @@ class MarketplaceService:
         
         # Verify service exists and is active
         service_result = await self.session.execute(
-            select(Service).options(joinedload(Service.agent))
-            .where(and_(Service.id == service_id, Service.is_active == True))
+            select(Service).where(and_(Service.id == service_id, Service.is_active == True))
         )
         service = service_result.scalar_one_or_none()
         if not service:
             raise NotFoundError("Service", str(service_id))
-        
+
         # Verify seller agent matches service
         if service.agent_id != seller_agent_id:
             raise ValidationError(f"Service does not belong to seller agent {seller_agent_id}")
-        
+
         # Verify buyer agent exists
         buyer_result = await self.session.execute(select(Agent).where(Agent.id == buyer_agent_id))
         buyer_agent = buyer_result.scalar_one_or_none()
         if not buyer_agent:
             raise NotFoundError("Agent", str(buyer_agent_id))
-        
+
         # Check seller's concurrent job limit
         active_jobs_result = await self.session.execute(
             select(func.count(Job.id)).where(
@@ -161,17 +160,26 @@ class MarketplaceService:
             )
         )
         active_jobs_count = active_jobs_result.scalar_one()
-        
+
         if active_jobs_count >= service.max_concurrent_jobs:
             raise ConflictError(f"Seller agent has reached maximum concurrent jobs ({service.max_concurrent_jobs})")
-        
+
         # Calculate deadline
         deadline = None
         if deadline_hours:
             deadline = datetime.utcnow() + timedelta(hours=deadline_hours)
         elif service.estimated_duration_hours:
             deadline = datetime.utcnow() + timedelta(hours=service.estimated_duration_hours)
-        
+
+        # Look up seller agent's default wallet address separately (avoid lazy-loading)
+        from ..models.wallet import Wallet
+        seller_wallet_result = await self.session.execute(
+            select(Wallet.address).where(
+                and_(Wallet.agent_id == seller_agent_id, Wallet.is_active == True)
+            ).limit(1)
+        )
+        seller_wallet_address = seller_wallet_result.scalar_one_or_none() or ""
+
         # Create escrow for payment
         escrow_conditions = {
             "job_type": "marketplace_service",
@@ -181,15 +189,15 @@ class MarketplaceService:
             "seller_agent_id": str(seller_agent_id),
             "completion_criteria": "Seller must deliver agreed-upon results and buyer must confirm receipt"
         }
-        
+
         escrow = await self.escrow_service.create_escrow(
             org_id=buyer_agent.org_id,
             funder_wallet_id=wallet_id,
-            recipient_address=service.agent.default_wallet.address if service.agent.default_wallet else "",
+            recipient_address=seller_wallet_address,
             amount_lamports=service.price_lamports,
             token_mint=None,  # USDC mint will be set by escrow service
             conditions=escrow_conditions,
-            expires_hours=72  # Default 3 days to complete
+            expires_in_hours=72  # Default 3 days to complete
         )
         
         # Create the job
@@ -216,22 +224,20 @@ class MarketplaceService:
         )
         
         self.session.add(system_message)
-        
+
+        # Update service metrics (increment before commit to avoid expired state)
+        service.total_jobs += 1
+
         await self.session.commit()
         await self.session.refresh(job)
-        
-        # Update service metrics
-        service.total_jobs += 1
-        await self.session.commit()
-        
+
         return job
 
     async def accept_job(self, job_id: uuid.UUID, seller_agent_id: uuid.UUID, seller_notes: Optional[str] = None) -> Job:
         """Seller accepts a pending job."""
         
         job_result = await self.session.execute(
-            select(Job).options(joinedload(Job.service))
-            .where(and_(Job.id == job_id, Job.seller_agent_id == seller_agent_id))
+            select(Job).where(and_(Job.id == job_id, Job.seller_agent_id == seller_agent_id))
         )
         job = job_result.scalar_one_or_none()
         if not job:
@@ -265,10 +271,9 @@ class MarketplaceService:
         completion_notes: Optional[str] = None
     ) -> Job:
         """Seller marks job complete — triggers escrow release."""
-        
+
         job_result = await self.session.execute(
-            select(Job).options(joinedload(Job.escrow), joinedload(Job.service))
-            .where(and_(Job.id == job_id, Job.seller_agent_id == seller_agent_id))
+            select(Job).where(and_(Job.id == job_id, Job.seller_agent_id == seller_agent_id))
         )
         job = job_result.scalar_one_or_none()
         if not job:
@@ -276,21 +281,25 @@ class MarketplaceService:
 
         if job.status != "active":
             raise ValidationError(f"Job is not active, current status: {job.status}")
-        
+
         # Update job
         job.status = "completed"
         job.completed_at = datetime.utcnow()
         job.result_data = result_data or {}
         job.seller_notes = completion_notes
-        
+
         # Release escrow payment
         if job.escrow_id:
             await self.escrow_service.release_escrow(job.escrow_id, seller_agent_id)
-        
-        # Update service metrics
-        job.service.completed_jobs += 1
-        job.service.success_rate = job.service.completed_jobs / job.service.total_jobs
-        
+
+        # Update service metrics (query separately to avoid lazy-loading job.service)
+        service_result = await self.session.execute(
+            select(Service).where(Service.id == job.service_id)
+        )
+        service = service_result.scalar_one()
+        service.completed_jobs += 1
+        service.success_rate = service.completed_jobs / service.total_jobs if service.total_jobs else 0.0
+
         # Create completion message
         message = JobMessage(
             job_id=job_id,
@@ -300,12 +309,12 @@ class MarketplaceService:
             attachments={"result_data": result_data} if result_data else {}
         )
         self.session.add(message)
-        
+
         await self.session.commit()
-        
+
         # Update reputation asynchronously
         await self.reputation_service.update_agent_reputation(seller_agent_id)
-        
+
         return job
 
     async def cancel_job(
@@ -317,8 +326,7 @@ class MarketplaceService:
         """Cancel a job (buyer or seller can cancel with different implications)."""
         
         job_result = await self.session.execute(
-            select(Job).options(joinedload(Job.escrow))
-            .where(
+            select(Job).where(
                 and_(
                     Job.id == job_id,
                     or_(Job.buyer_agent_id == requester_agent_id, Job.seller_agent_id == requester_agent_id)
@@ -370,38 +378,41 @@ class MarketplaceService:
             raise ValidationError("Rating must be between 1 and 5")
         
         job_result = await self.session.execute(
-            select(Job).options(joinedload(Job.service))
-            .where(and_(Job.id == job_id, Job.buyer_agent_id == buyer_agent_id))
+            select(Job).where(and_(Job.id == job_id, Job.buyer_agent_id == buyer_agent_id))
         )
         job = job_result.scalar_one_or_none()
         if not job:
             raise NotFoundError("Job", str(job_id))
-        
+
         if job.status != "completed":
             raise ValidationError("Can only rate completed jobs")
-        
+
         if job.rating is not None:
             raise ConflictError("Job has already been rated")
-        
+
         # Update job with rating and review
         job.rating = rating
         job.review = review
-        
-        # Update service average rating
+
+        # Update service average rating (query separately to avoid lazy-loading job.service)
         service_ratings_result = await self.session.execute(
             select(func.avg(Job.rating), func.count(Job.rating))
             .where(and_(Job.service_id == job.service_id, Job.rating.isnot(None)))
         )
         avg_rating, rating_count = service_ratings_result.first()
-        
+
         if rating_count > 0:
-            job.service.avg_rating = float(avg_rating)
-        
+            service_result = await self.session.execute(
+                select(Service).where(Service.id == job.service_id)
+            )
+            service = service_result.scalar_one()
+            service.avg_rating = float(avg_rating)
+
         await self.session.commit()
-        
+
         # Update seller's reputation
         await self.reputation_service.update_agent_reputation(job.seller_agent_id)
-        
+
         return job
 
     async def get_job_messages(
