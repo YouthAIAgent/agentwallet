@@ -6,9 +6,6 @@ Mirrors core/solana.py pattern: uses httpx for JSON-RPC, web3 for ABI encoding o
 import asyncio
 
 import httpx
-from eth_account import Account
-from eth_account.signers.local import LocalAccount
-from web3 import Web3
 
 from .config import get_settings
 from .exceptions import EVMTransactionError, RetryableError
@@ -16,6 +13,18 @@ from .logging import get_logger
 from .retry import retry
 
 logger = get_logger(__name__)
+
+try:
+    from eth_account import Account
+    from eth_account.signers.local import LocalAccount
+    from web3 import Web3
+    _HAS_WEB3 = True
+except ImportError:
+    _HAS_WEB3 = False
+    Web3 = None  # type: ignore
+    Account = None  # type: ignore
+    LocalAccount = None  # type: ignore
+    logger.warning("web3/eth-account not installed — EVM features disabled")
 
 # ---------------------------------------------------------------------------
 # ERC-8004 ABI fragments (only the functions we call)
@@ -80,7 +89,7 @@ REPUTATION_ABI = [
 ]
 
 # Shared web3 instance (used for ABI encoding only, no provider needed)
-_w3 = Web3()
+_w3 = Web3() if _HAS_WEB3 else None
 
 # ---------------------------------------------------------------------------
 # Helpers

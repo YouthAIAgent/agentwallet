@@ -6,8 +6,12 @@ Bridges Solana agent wallets with Ethereum ERC-8004 identity on Base L2.
 import uuid
 
 import httpx
-from eth_account import Account
 from sqlalchemy import func, select
+
+try:
+    from eth_account import Account
+except ImportError:
+    Account = None  # type: ignore
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.config import get_settings

@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.orm import joinedload
 
-from ..core.database import AsyncSession, get_session
+from sqlalchemy.ext.asyncio import AsyncSession
 from ..core.exceptions import NotFoundError, ValidationError, ConflictError
 from ..models.marketplace import Service, Job, AgentReputation, ServiceCategory, JobMessage
 from ..models.agent import Agent
@@ -41,7 +41,7 @@ class MarketplaceService:
         agent_result = await self.session.execute(select(Agent).where(Agent.id == agent_id))
         agent = agent_result.scalar_one_or_none()
         if not agent:
-            raise NotFoundError(f"Agent {agent_id} not found")
+            raise NotFoundError("Agent", str(agent_id))
         
         # Check for duplicate service names for this agent
         existing_result = await self.session.execute(
@@ -142,7 +142,7 @@ class MarketplaceService:
         )
         service = service_result.scalar_one_or_none()
         if not service:
-            raise NotFoundError(f"Service {service_id} not found or inactive")
+            raise NotFoundError("Service", str(service_id))
         
         # Verify seller agent matches service
         if service.agent_id != seller_agent_id:
@@ -152,7 +152,7 @@ class MarketplaceService:
         buyer_result = await self.session.execute(select(Agent).where(Agent.id == buyer_agent_id))
         buyer_agent = buyer_result.scalar_one_or_none()
         if not buyer_agent:
-            raise NotFoundError(f"Buyer agent {buyer_agent_id} not found")
+            raise NotFoundError("Agent", str(buyer_agent_id))
         
         # Check seller's concurrent job limit
         active_jobs_result = await self.session.execute(
@@ -235,8 +235,8 @@ class MarketplaceService:
         )
         job = job_result.scalar_one_or_none()
         if not job:
-            raise NotFoundError(f"Job {job_id} not found for seller agent {seller_agent_id}")
-        
+            raise NotFoundError("Job", str(job_id))
+
         if job.status != "pending":
             raise ValidationError(f"Job is not in pending status, current status: {job.status}")
         
@@ -272,8 +272,8 @@ class MarketplaceService:
         )
         job = job_result.scalar_one_or_none()
         if not job:
-            raise NotFoundError(f"Job {job_id} not found for seller agent {seller_agent_id}")
-        
+            raise NotFoundError("Job", str(job_id))
+
         if job.status != "active":
             raise ValidationError(f"Job is not active, current status: {job.status}")
         
@@ -327,7 +327,7 @@ class MarketplaceService:
         )
         job = job_result.scalar_one_or_none()
         if not job:
-            raise NotFoundError(f"Job {job_id} not found for agent {requester_agent_id}")
+            raise NotFoundError("Job", str(job_id))
         
         if job.status in ["completed", "cancelled"]:
             raise ValidationError(f"Cannot cancel job with status: {job.status}")
@@ -375,7 +375,7 @@ class MarketplaceService:
         )
         job = job_result.scalar_one_or_none()
         if not job:
-            raise NotFoundError(f"Job {job_id} not found for buyer agent {buyer_agent_id}")
+            raise NotFoundError("Job", str(job_id))
         
         if job.status != "completed":
             raise ValidationError("Can only rate completed jobs")
@@ -423,7 +423,7 @@ class MarketplaceService:
             )
         )
         if not job_result.scalar_one_or_none():
-            raise NotFoundError(f"Job {job_id} not found for agent {agent_id}")
+            raise NotFoundError("Job", str(job_id))
         
         stmt = (
             select(JobMessage)
@@ -457,7 +457,7 @@ class MarketplaceService:
             )
         )
         if not job_result.scalar_one_or_none():
-            raise NotFoundError(f"Job {job_id} not found for agent {sender_agent_id}")
+            raise NotFoundError("Job", str(job_id))
         
         message = JobMessage(
             job_id=job_id,
@@ -513,7 +513,7 @@ class MarketplaceService:
         service_result = await self.session.execute(select(Service).where(Service.id == service_id))
         service = service_result.scalar_one_or_none()
         if not service:
-            raise NotFoundError(f"Service {service_id} not found")
+            raise NotFoundError("Service", str(service_id))
         
         # Job statistics
         jobs_result = await self.session.execute(

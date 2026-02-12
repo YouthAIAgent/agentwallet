@@ -23,8 +23,6 @@ dependencies = [
     "stripe>=8.0",
     "python-multipart>=0.0.9",
     "email-validator>=2.0",
-    "web3>=7.0",
-    "eth-account>=0.13",
 ]
 
 [project.optional-dependencies]
