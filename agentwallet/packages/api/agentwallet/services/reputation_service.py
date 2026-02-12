@@ -53,7 +53,7 @@ class ReputationService:
             # Verify agent exists
             agent_result = await self.session.execute(select(Agent).where(Agent.id == agent_id))
             if not agent_result.scalar_one_or_none():
-                raise NotFoundError(f"Agent {agent_id} not found")
+                raise NotFoundError("Agent", str(agent_id))
             
             reputation = AgentReputation(agent_id=agent_id)
             self.session.add(reputation)
