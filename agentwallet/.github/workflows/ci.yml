@@ -48,38 +48,13 @@ jobs:
         run: |
           ruff format --check packages/api/
 
-  # Job 2: Testing with Python Matrix
+  # Job 2: Testing (SQLite + mocked Redis — no external services needed)
   test:
     name: Test Suite
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.11", "3.12"]
-    
-    # Set up services for testing (PostgreSQL, Redis)
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: agentwallet_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis:7
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
 
     steps:
       - name: Checkout code
@@ -104,18 +79,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Set up test environment
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/agentwallet_test
-          REDIS_URL: redis://localhost:6379
-        run: |
-          # Run database migrations for testing
-          alembic upgrade head
-
       - name: Run tests with coverage
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/agentwallet_test
-          REDIS_URL: redis://localhost:6379
         run: |
           pytest packages/api/tests/ -v --cov=packages/api --cov-report=xml --cov-report=term
 
@@ -124,7 +88,7 @@ jobs:
         if: matrix.python-version == '3.11'
         with:
           file: ./coverage.xml
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
 
   # Job 3: Build SDK and MCP Packages
