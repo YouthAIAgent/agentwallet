@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  /* CRITICAL: Exact 1200x675 with NO scrollbars */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1200px;
+    height: 675px;
+    overflow: hidden;
+    background: #0d1117;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', 'SF Mono', monospace;
+    color: #c9d1d9;
+  }
+
+  .card {
+    width: 1200px;
+    height: 675px;
+    position: relative;
+    background: #0d1117;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* GitHub-style header */
+  .github-header {
+    background: #21262d;
+    border-bottom: 1px solid #30363d;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    justify-content: space-between;
+  }
+
+  .repo-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .repo-name {
+    color: #58a6ff;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .commit-info {
+    color: #8b949e;
+    font-size: 14px;
+  }
+
+  .status-badges {
+    display: flex;
+    gap: 8px;
+  }
+
+  .badge {
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-success { background: #238636; color: #fff; }
+  .badge-info { background: #1f6feb; color: #fff; }
+
+  /* File tabs */
+  .file-tabs {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+  }
+
+  .tab {
+    padding: 8px 16px;
+    background: #21262d;
+    border: 1px solid #30363d;
+    border-bottom: none;
+    font-size: 14px;
+    color: #c9d1d9;
+    margin-right: 4px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+  }
+
+  .tab.active {
+    background: #0d1117;
+    color: #f0f6fc;
+  }
+
+  /* Main content area */
+  .content {
+    flex: 1;
+    display: flex;
+    background: #0d1117;
+  }
+
+  /* Left side - file tree */
+  .file-tree {
+    width: 280px;
+    background: #161b22;
+    border-right: 1px solid #30363d;
+    padding: 20px;
+  }
+
+  .tree-header {
+    color: #f0f6fc;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tree-item {
+    font-size: 13px;
+    color: #8b949e;
+    margin: 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tree-item.modified { color: #f85149; }
+  .tree-item.added { color: #238636; }
+
+  .file-icon {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+  }
+
+  /* Right side - code diff */
+  .code-view {
+    flex: 1;
+    padding: 24px;
+    overflow: hidden;
+  }
+
+  .diff-header {
+    background: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 6px 6px 0 0;
+    padding: 12px 20px;
+    font-size: 14px;
+    color: #c9d1d9;
+    margin-bottom: 0;
+  }
+
+  .diff-content {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    padding: 20px;
+    font-size: 13px;
+    line-height: 1.45;
+    max-height: 360px;
+    overflow: hidden;
+  }
+
+  .line {
+    display: flex;
+    align-items: center;
+  }
+
+  .line-number {
+    width: 40px;
+    color: #656d76;
+    text-align: right;
+    margin-right: 16px;
+    user-select: none;
+  }
+
+  .line-added {
+    background: #0d4a1f;
+    color: #aff5b4;
+    border-left: 3px solid #238636;
+    padding-left: 12px;
+  }
+
+  .line-removed {
+    background: #67060c;
+    color: #ffdcd7;
+    border-left: 3px solid #f85149;
+    padding-left: 12px;
+  }
+
+  .line-context {
+    color: #c9d1d9;
+    padding-left: 16px;
+  }
+
+  /* Bottom info bar */
+  .info-bar {
+    height: 60px;
+    background: #21262d;
+    border-top: 1px solid #30363d;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+  }
+
+  .commit-msg {
+    color: #f0f6fc;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .stats {
+    display: flex;
+    gap: 20px;
+    font-size: 13px;
+    color: #8b949e;
+  }
+
+  .stat-added { color: #238636; }
+  .stat-removed { color: #f85149; }
+
+  /* Glow effect */
+  .glow {
+    position: absolute;
+    top: 120px;
+    right: 80px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(153,69,255,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="glow"></div>
+
+  <!-- GitHub-style header -->
+  <div class="github-header">
+    <div class="repo-info">
+      <div class="repo-name">AgentWallet / solana-multisig-oracle</div>
+      <div class="commit-info">feat: multi-sig oracle for high-value transactions · 2 minutes ago</div>
+    </div>
+    <div class="status-badges">
+      <div class="badge badge-success">✓ Tests Pass</div>
+      <div class="badge badge-info">Anchor v0.30</div>
+    </div>
+  </div>
+
+  <!-- File tabs -->
+  <div class="file-tabs">
+    <div class="tab active">programs/oracle.rs</div>
+    <div class="tab">tests/multisig.rs</div>
+    <div class="tab">lib/policy_engine.rs</div>
+  </div>
+
+  <!-- Main content -->
+  <div class="content">
+    <!-- File tree -->
+    <div class="file-tree">
+      <div class="tree-header">
+        <span>📁</span> Modified Files
+      </div>
+      <div class="tree-item added">
+        <div class="file-icon">+</div>
+        programs/oracle.rs
+      </div>
+      <div class="tree-item modified">
+        <div class="file-icon">M</div>
+        lib/policy_engine.rs
+      </div>
+      <div class="tree-item added">
+        <div class="file-icon">+</div>
+        tests/multisig_integration.rs
+      </div>
+      <div class="tree-item modified">
+        <div class="file-icon">M</div>
+        programs/agent_wallet.rs
+      </div>
+      
+      <div class="tree-header" style="margin-top: 24px;">
+        <span>⚡</span> Key Features
+      </div>
+      <div class="tree-item">2/3 signature threshold</div>
+      <div class="tree-item">Configurable SOL limits</div>
+      <div class="tree-item">Emergency halt system</div>
+      <div class="tree-item">On-chain audit trail</div>
+    </div>
+
+    <!-- Code diff -->
+    <div class="code-view">
+      <div class="diff-header">
+        programs/oracle.rs · +47 -0 lines
+      </div>
+      <div class="diff-content">
+        <div class="line">
+          <span class="line-number">1</span>
+          <span class="line-context">use anchor_lang::prelude::*;</span>
+        </div>
+        <div class="line">
+          <span class="line-number">2</span>
+          <span class="line-context">use crate::state::AgentWallet;</span>
+        </div>
+        <div class="line">
+          <span class="line-number"></span>
+          <span class="line-added">+</span>
+        </div>
+        <div class="line">
+          <span class="line-number">3</span>
+          <span class="line-added">+#[account]</span>
+        </div>
+        <div class="line">
+          <span class="line-number">4</span>
+          <span class="line-added">+pub struct MultisigOracle {</span>
+        </div>
+        <div class="line">
+          <span class="line-number">5</span>
+          <span class="line-added">+    pub threshold: u8,        // 2/3 signers required</span>
+        </div>
+        <div class="line">
+          <span class="line-number">6</span>
+          <span class="line-added">+    pub signers: Vec&lt;Pubkey&gt;, // Oracle pubkeys</span>
+        </div>
+        <div class="line">
+          <span class="line-number">7</span>
+          <span class="line-added">+    pub min_amount: u64,     // 100 SOL = oracle trigger</span>
+        </div>
+        <div class="line">
+          <span class="line-number">8</span>
+          <span class="line-added">+    pub emergency_halt: bool, // Global freeze switch</span>
+        </div>
+        <div class="line">
+          <span class="line-number">9</span>
+          <span class="line-added">+}</span>
+        </div>
+        <div class="line">
+          <span class="line-number"></span>
+          <span class="line-added">+</span>
+        </div>
+        <div class="line">
+          <span class="line-number">10</span>
+          <span class="line-added">+pub fn verify_high_value_tx(</span>
+        </div>
+        <div class="line">
+          <span class="line-number">11</span>
+          <span class="line-added">+    ctx: Context&lt;VerifyTransaction&gt;,</span>
+        </div>
+        <div class="line">
+          <span class="line-number">12</span>
+          <span class="line-added">+    amount: u64,</span>
+        </div>
+        <div class="line">
+          <span class="line-number">13</span>
+          <span class="line-added">+    signatures: Vec&lt;[u8; 64]&gt;,</span>
+        </div>
+        <div class="line">
+          <span class="line-number">14</span>
+          <span class="line-added">+) -&gt; Result&lt;()&gt; {</span>
+        </div>
+        <div class="line">
+          <span class="line-number">15</span>
+          <span class="line-added">+    require!(amount &gt;= oracle.min_amount, ErrorCode::BelowThreshold);</span>
+        </div>
+        <div class="line">
+          <span class="line-number">16</span>
+          <span class="line-added">+    require!(!oracle.emergency_halt, ErrorCode::SystemHalted);</span>
+        </div>
+        <div class="line">
+          <span class="line-number">17</span>
+          <span class="line-added">+    require!(signatures.len() &gt;= oracle.threshold, ErrorCode::InsufficientSigs);</span>
+        </div>
+        <div class="line">
+          <span class="line-number">18</span>
+          <span class="line-added">+    Ok(())</span>
+        </div>
+        <div class="line">
+          <span class="line-number">19</span>
+          <span class="line-added">+}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom info -->
+  <div class="info-bar">
+    <div class="commit-msg">🛡️ Multi-sig oracle prevents AI agent rogue transactions >100 SOL</div>
+    <div class="stats">
+      <span class="stat-added">+47 additions</span>
+      <span class="stat-removed">-0 deletions</span>
+      <span>agentwallet.fun</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

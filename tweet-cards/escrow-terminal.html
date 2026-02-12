@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1200px;
+    height: 675px;
+    overflow: hidden;
+    background: #0D1117;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    color: #ffffff;
+  }
+  .terminal {
+    width: 1200px;
+    height: 675px;
+    background: linear-gradient(135deg, #0D1117 0%, #161B22 50%, #0D1117 100%);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Terminal header */
+  .terminal-header {
+    height: 32px;
+    background: #21262D;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    border-bottom: 1px solid #30363D;
+    position: relative;
+  }
+  .terminal-dots {
+    display: flex;
+    gap: 8px;
+    margin-right: auto;
+  }
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  .dot.red { background: #FF5F56; }
+  .dot.yellow { background: #FFBD2E; }
+  .dot.green { background: #27CA3F; }
+  .terminal-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: #8B949E;
+    font-weight: 500;
+  }
+  
+  /* Terminal content */
+  .terminal-body {
+    flex: 1;
+    padding: 24px;
+    font-size: 13px;
+    line-height: 1.4;
+    background: #0D1117;
+    position: relative;
+  }
+  
+  /* Syntax highlighting */
+  .prompt { color: #00D4FF; }
+  .comment { color: #6A737D; }
+  .success { color: #28A745; }
+  .warning { color: #FFA500; }
+  .error { color: #F85149; }
+  .keyword { color: #FF7B72; }
+  .string { color: #A5D6FF; }
+  .number { color: #79C0FF; }
+  .highlight { color: #00D4FF; font-weight: 600; }
+  
+  .line {
+    display: block;
+    margin-bottom: 3px;
+  }
+  
+  /* Floating info panel */
+  .info-panel {
+    position: absolute;
+    top: 60px;
+    right: 24px;
+    width: 320px;
+    background: rgba(13, 17, 23, 0.95);
+    border: 1px solid #30363D;
+    border-radius: 8px;
+    padding: 20px;
+    backdrop-filter: blur(8px);
+  }
+  .panel-header {
+    font-size: 14px;
+    font-weight: 700;
+    color: #00D4FF;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+  }
+  .stat-label { color: #8B949E; }
+  .stat-value { color: #F0F6FC; font-weight: 600; }
+  .stat-accent { color: #00D4FF; }
+  
+  /* Brand watermark */
+  .brand {
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    font-size: 11px;
+    color: #30363D;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  .url {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    font-size: 11px;
+    color: #6A737D;
+  }
+  
+  /* Cursor animation */
+  .cursor {
+    color: #00D4FF;
+    animation: blink 1.2s infinite;
+  }
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+  
+  /* Subtle grid background */
+  .terminal::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(0,212,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.02) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+    opacity: 0.3;
+  }
+</style>
+</head>
+<body>
+<div class="terminal">
+  <div class="terminal-header">
+    <div class="terminal-dots">
+      <div class="dot red"></div>
+      <div class="dot yellow"></div>
+      <div class="dot green"></div>
+    </div>
+    <div class="terminal-title">agentwallet-cli @ devnet</div>
+  </div>
+  
+  <div class="terminal-body">
+    <span class="line"><span class="prompt">agent@solana:~$</span> <span class="keyword">agentw</span> escrow create --agent=AGT...x7mK --amount=50 --task="Web scrape + analysis"</span>
+    <span class="line"><span class="comment"># Creating trustless escrow for AI agent task...</span></span>
+    <span class="line"></span>
+    
+    <span class="line"><span class="success">✓</span> PDA derived: <span class="highlight">ESC7vQ2...nP8xL</span></span>
+    <span class="line"><span class="success">✓</span> Escrow vault created</span>
+    <span class="line"><span class="success">✓</span> 50 SOL locked until task completion</span>
+    <span class="line"><span class="success">✓</span> Multi-sig oracle enabled (2/3 threshold)</span>
+    <span class="line"></span>
+    
+    <span class="line"><span class="comment"># Agent can now access funds via MCP tools</span></span>
+    <span class="line"><span class="keyword">Agent:</span> <span class="string">"Task started. Escrow confirmed."</span></span>
+    <span class="line"><span class="keyword">Oracle:</span> <span class="warning">"Monitoring progress..."</span></span>
+    <span class="line"></span>
+    
+    <span class="line"><span class="prompt">agent@solana:~$</span> <span class="keyword">agentw</span> policy check --wallet=AGT...x7mK</span>
+    <span class="line"></span>
+    <span class="line"><span class="comment"># Active Policy Rules:</span></span>
+    <span class="line">  <span class="number">1.</span> max_tx_amount: <span class="highlight">10 SOL</span></span>
+    <span class="line">  <span class="number">2.</span> daily_spend_limit: <span class="highlight">100 SOL</span></span>
+    <span class="line">  <span class="number">3.</span> allowed_recipients: <span class="highlight">whitelist_only</span></span>
+    <span class="line">  <span class="number">4.</span> auto_freeze_triggers: <span class="highlight">enabled</span></span>
+    <span class="line">  <span class="number">5.</span> multi_sig_threshold: <span class="highlight">&gt;25 SOL</span></span>
+    <span class="line"></span>
+    
+    <span class="line"><span class="success">✓</span> Agent identity verified on-chain</span>
+    <span class="line"><span class="success">✓</span> All transactions logged to Solana</span>
+    <span class="line"><span class="prompt">agent@solana:~$</span> <span class="cursor">_</span></span>
+    
+    <div class="info-panel">
+      <div class="panel-header">
+        🛡️ SPL Escrow System
+      </div>
+      <div class="panel-stats">
+        <div class="stat-row">
+          <span class="stat-label">Active Escrows:</span>
+          <span class="stat-value">1,247</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Total Locked:</span>
+          <span class="stat-value">89,432 <span class="stat-accent">SOL</span></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Success Rate:</span>
+          <span class="stat-value">98.7%</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Avg Settlement:</span>
+          <span class="stat-value">12ms</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Agent Wallets:</span>
+          <span class="stat-value">3,891</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Policy Violations:</span>
+          <span class="stat-value stat-accent">0</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="brand">AGENTWALLET PROTOCOL</div>
+    <div class="url">agentwallet.fun</div>
+  </div>
+</div>
+</body>
+</html>

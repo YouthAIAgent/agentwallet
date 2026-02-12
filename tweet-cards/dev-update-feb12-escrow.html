@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  /* CRITICAL: Exact 1200x675 with NO scrollbars */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1200px;
+    height: 675px;
+    overflow: hidden; /* NEVER show scrollbars */
+    background: #0a0a0a;
+    font-family: 'Segoe UI', 'Inter', -apple-system, sans-serif;
+    color: #ffffff;
+  }
+  .card {
+    width: 1200px;
+    height: 675px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0a0a0a 0%, #111111 50%, #0d1117 100%);
+  }
+  /* Grid background */
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+  /* Vignette */
+  .card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%);
+    pointer-events: none;
+  }
+  .content {
+    position: relative;
+    z-index: 1;
+    padding: 48px 56px;
+    height: 675px;
+    display: flex;
+    flex-direction: column;
+  }
+  /* HEADER */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .logo-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #00D4FF, #0088cc);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 20px;
+    color: #000;
+  }
+  .logo-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 1px;
+  }
+  .badge {
+    padding: 8px 20px;
+    border: 1px solid #00D4FF;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #00D4FF;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  /* TITLE */
+  .title {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.15;
+    color: #00D4FF;
+    margin-bottom: 20px;
+    max-height: 100px;
+    overflow: hidden;
+  }
+  .subtitle {
+    font-size: 20px;
+    color: #888;
+    margin-bottom: 28px;
+    line-height: 1.4;
+    max-height: 56px;
+    overflow: hidden;
+  }
+  /* MIDDLE SECTION — flexible */
+  .middle {
+    flex: 1;
+    display: flex;
+    gap: 24px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  /* Stats row */
+  .stats-row {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 24px;
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 36px;
+    font-weight: 800;
+    color: #00D4FF;
+  }
+  .stat-label {
+    font-size: 13px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+  /* Code block */
+  .code-block {
+    background: rgba(0,212,255,0.05);
+    border: 1px solid rgba(0,212,255,0.15);
+    border-radius: 12px;
+    padding: 20px 24px;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #00D4FF;
+    overflow: hidden;
+    flex: 1;
+  }
+  .code-comment { color: #555; }
+  .code-keyword { color: #c678dd; }
+  .code-string { color: #98c379; }
+  .code-fn { color: #e5c07b; }
+  /* Feature list */
+  .features {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+  .feature {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 16px;
+    color: #ccc;
+  }
+  .feature-icon {
+    width: 28px;
+    height: 28px;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.3);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  /* CTA / Footer */
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .cta-button {
+    padding: 14px 36px;
+    background: linear-gradient(135deg, #00D4FF, #0088cc);
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #000;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .url {
+    font-size: 16px;
+    color: #555;
+    font-weight: 500;
+  }
+  /* URGENCY (for hackathon) */
+  .urgency-bar {
+    padding: 12px 28px;
+    background: linear-gradient(90deg, #ff4444, #ff6b35);
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+  }
+  /* Glow accent */
+  .glow {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(0,212,255,0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .glow-tl { top: -80px; left: -80px; }
+  .glow-br { bottom: -80px; right: -80px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="glow glow-tl"></div>
+  <div class="glow glow-br"></div>
+  <div class="content">
+
+    <div class="header">
+      <div class="logo-area">
+        <div class="logo-icon">AW</div>
+        <div class="logo-text">AGENTWALLET PROTOCOL</div>
+      </div>
+      <div class="badge">DEV UPDATE</div>
+    </div>
+
+    <div class="title">Cross-Chain PDA Architecture</div>
+    <div class="subtitle">AI agents now transact across Solana, Ethereum, Base — one unified system</div>
+
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-value">47</div>
+        <div class="stat-label">MCP Tools</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">3</div>
+        <div class="stat-label">Chains</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">12ms</div>
+        <div class="stat-label">Avg Exec</div>
+      </div>
+    </div>
+
+    <div class="middle">
+      <div class="code-block">
+        <span class="code-comment">// Cross-chain agent state sync</span><br>
+        <span class="code-keyword">impl</span> CrossChainAgent {<br>
+        &nbsp;&nbsp;<span class="code-keyword">pub fn</span> <span class="code-fn">sync_state</span>(<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;solana_pda: &amp;Pubkey,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;eth_address: &amp;str,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;policy: PolicyConfig<br>
+        &nbsp;&nbsp;) -&gt; CrossChainResult {<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">// Deterministic derivation</span><br>
+        &nbsp;&nbsp;}<br>
+        }
+      </div>
+      <div class="features">
+        <div class="feature"><div class="feature-icon">🔗</div> Unified agent identity across chains</div>
+        <div class="feature"><div class="feature-icon">⚡</div> Same PDA seed → consistent addresses</div>
+        <div class="feature"><div class="feature-icon">🛡️</div> Policy engine enforces all chains</div>
+        <div class="feature"><div class="feature-icon">🎯</div> Claude Code + OpenCode MCP ready</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="cta-button">Check GitHub →</div>
+      <div class="url">agentwallet.fun</div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

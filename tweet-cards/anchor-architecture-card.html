@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1200px;
+    height: 675px;
+    overflow: hidden;
+    background: #0d1117;
+    font-family: 'Cascadia Code', 'Fira Code', 'SF Mono', 'Consolas', monospace;
+    color: #c9d1d9;
+  }
+
+  .terminal {
+    width: 1200px;
+    height: 675px;
+    position: relative;
+    background: #0d1117;
+    border: 2px solid #21262d;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  }
+
+  .terminal-header {
+    height: 44px;
+    background: #161b22;
+    border-bottom: 1px solid #21262d;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    position: relative;
+  }
+
+  .terminal-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .terminal-button {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  .terminal-button.close { background: #ff5f56; }
+  .terminal-button.minimize { background: #ffbd2e; }
+  .terminal-button.maximize { background: #27ca3f; }
+
+  .terminal-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    font-weight: 500;
+    color: #8b949e;
+  }
+
+  .terminal-content {
+    padding: 20px;
+    height: calc(675px - 44px);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .terminal-line {
+    margin-bottom: 8px;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .prompt {
+    color: #58a6ff;
+    font-weight: 600;
+  }
+
+  .command {
+    color: #7dd3fc;
+  }
+
+  .output {
+    color: #c9d1d9;
+    margin-left: 4px;
+  }
+
+  .output.success {
+    color: #3fb950;
+  }
+
+  .output.info {
+    color: #58a6ff;
+  }
+
+  .output.warning {
+    color: #d29922;
+  }
+
+  .keyword {
+    color: #ff7b72;
+    font-weight: 600;
+  }
+
+  .string {
+    color: #a5d6ff;
+  }
+
+  .comment {
+    color: #8b949e;
+    font-style: italic;
+  }
+
+  .number {
+    color: #79c0ff;
+  }
+
+  .header-block {
+    background: rgba(88, 166, 255, 0.1);
+    border-left: 3px solid #58a6ff;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .header-title {
+    font-size: 18px;
+    color: #58a6ff;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .header-subtitle {
+    font-size: 13px;
+    color: #8b949e;
+  }
+
+  .cursor {
+    color: #58a6ff;
+    animation: blink 1s infinite;
+  }
+
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  .file-tree {
+    margin: 12px 0;
+    font-size: 13px;
+  }
+
+  .file-tree-line {
+    margin: 2px 0;
+    color: #8b949e;
+  }
+
+  .file-tree-dir {
+    color: #58a6ff;
+  }
+
+  .file-tree-file {
+    color: #a5d6ff;
+  }
+
+  .instruction-count {
+    background: rgba(255, 123, 114, 0.15);
+    color: #ff7b72;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .badge-line {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background: linear-gradient(135deg, #00d4ff, #0088cc);
+    color: #000;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .footer-line {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    color: #6e7681;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="terminal">
+  <div class="terminal-header">
+    <div class="terminal-buttons">
+      <div class="terminal-button close"></div>
+      <div class="terminal-button minimize"></div>
+      <div class="terminal-button maximize"></div>
+    </div>
+    <div class="terminal-title">agentwallet-protocol — anchor build</div>
+  </div>
+  
+  <div class="terminal-content">
+    <div class="badge-line">ANCHOR FRAMEWORK</div>
+    
+    <div class="terminal-line">
+      <span class="prompt">agentwallet@solana:</span><span class="command">~$ anchor build</span>
+    </div>
+    
+    <div class="terminal-line">
+      <span class="output success">✓ Building Anchor program...</span>
+    </div>
+
+    <div class="header-block">
+      <div class="header-title">AgentWallet Protocol — Anchor IDL Architecture</div>
+      <div class="header-subtitle">Type-safe Solana program interactions for AI agents</div>
+    </div>
+
+    <div class="terminal-line">
+      <span class="output info">📋 Anchor Instructions: </span><span class="instruction-count">6 core</span>
+    </div>
+
+    <div class="file-tree">
+      <div class="file-tree-line">├── <span class="keyword">init_wallet</span><span class="comment">     # Create agent PDA wallet</span></div>
+      <div class="file-tree-line">├── <span class="keyword">set_policy</span><span class="comment">      # Configure spend rules</span></div>
+      <div class="file-tree-line">├── <span class="keyword">transfer</span><span class="comment">        # Execute SOL/SPL transfers</span></div>
+      <div class="file-tree-line">├── <span class="keyword">create_escrow</span><span class="comment">   # Lock funds for agent tasks</span></div>
+      <div class="file-tree-line">├── <span class="keyword">resolve_escrow</span><span class="comment">  # Release or refund</span></div>
+      <div class="file-tree-line">└── <span class="keyword">emergency_freeze</span><span class="comment"> # Owner panic button</span></div>
+    </div>
+
+    <div class="terminal-line">
+      <span class="output">Account Types:</span>
+    </div>
+    
+    <div class="terminal-line">
+      <span class="output">• <span class="string">AgentWallet</span> → PDA derived from agent pubkey</span>
+    </div>
+    <div class="terminal-line">
+      <span class="output">• <span class="string">PolicyConfig</span> → Spend limits + rules engine</span>
+    </div>
+    <div class="terminal-line">
+      <span class="output">• <span class="string">EscrowAccount</span> → Task-locked funds</span>
+    </div>
+
+    <div class="terminal-line" style="margin-top: 16px;">
+      <span class="output success">✓ IDL generated: </span><span class="number">target/idl/agentwallet.json</span>
+    </div>
+    <div class="terminal-line">
+      <span class="output success">✓ Type definitions: </span><span class="number">33 MCP tools</span> <span class="comment">ready</span>
+    </div>
+    <div class="terminal-line">
+      <span class="output warning">⚡ Deploy target: </span><span class="string">devnet</span> <span class="comment">→ mainnet soon</span>
+    </div>
+
+    <div class="terminal-line" style="margin-top: 20px;">
+      <span class="prompt">agentwallet@solana:</span><span class="command">~$ anchor deploy</span><span class="cursor">█</span>
+    </div>
+
+    <div class="footer-line">agentwallet.fun • Open Source • Built on Solana</div>
+  </div>
+</div>
+</body>
+</html>

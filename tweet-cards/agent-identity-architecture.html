@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1200px;
+    height: 675px;
+    overflow: hidden;
+    background: #0a0a0a;
+    font-family: 'Segoe UI', -apple-system, sans-serif;
+    color: #ffffff;
+  }
+
+  .card {
+    width: 1200px;
+    height: 675px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a0b2e 50%, #16213e 100%);
+  }
+
+  /* Circuit pattern background */
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      repeating-linear-gradient(
+        0deg,
+        rgba(0,212,255,0.02) 0px,
+        transparent 1px,
+        transparent 20px,
+        rgba(0,212,255,0.02) 21px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        rgba(153,69,255,0.02) 0px,
+        transparent 1px,
+        transparent 30px,
+        rgba(153,69,255,0.02) 31px
+      );
+  }
+
+  .header {
+    position: absolute;
+    top: 40px;
+    left: 50px;
+    right: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-mark {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(45deg, #00D4FF, #9945FF);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 16px;
+    color: #000;
+  }
+
+  .brand-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #00D4FF;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: #00D4FF;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Main content area - architecture diagram style */
+  .content {
+    position: absolute;
+    top: 120px;
+    left: 50px;
+    right: 50px;
+    bottom: 80px;
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    gap: 40px;
+    align-items: center;
+  }
+
+  .left-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .title {
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #00D4FF 0%, #9945FF 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .description {
+    font-size: 18px;
+    color: #aaa;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  .tech-specs {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .spec-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border-left: 3px solid #00D4FF;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .spec-icon {
+    width: 24px;
+    height: 24px;
+    background: rgba(0, 212, 255, 0.15);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #00D4FF;
+  }
+
+  .spec-text {
+    font-size: 14px;
+    color: #ccc;
+    font-weight: 500;
+  }
+
+  /* Divider */
+  .divider {
+    width: 1px;
+    background: linear-gradient(to bottom, transparent 0%, rgba(0, 212, 255, 0.3) 20%, rgba(153, 69, 255, 0.3) 80%, transparent 100%);
+    height: 100%;
+  }
+
+  /* Right panel - code/architecture */
+  .right-panel {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 24px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(10px);
+  }
+
+  .code-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .file-tabs {
+    display: flex;
+    gap: 8px;
+  }
+
+  .tab {
+    padding: 6px 12px;
+    background: rgba(153, 69, 255, 0.1);
+    border: 1px solid rgba(153, 69, 255, 0.2);
+    border-radius: 6px 6px 0 0;
+    font-size: 11px;
+    color: #9945FF;
+    font-weight: 600;
+  }
+
+  .tab.active {
+    background: rgba(153, 69, 255, 0.2);
+    border-color: #9945FF;
+  }
+
+  .code-block {
+    font-family: 'Consolas', 'Cascadia Code', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #e6e6e6;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .code-line {
+    margin-bottom: 4px;
+  }
+
+  .line-number {
+    color: #555;
+    margin-right: 16px;
+    width: 20px;
+    display: inline-block;
+    text-align: right;
+  }
+
+  .keyword { color: #c678dd; }
+  .type { color: #e5c07b; }
+  .string { color: #98c379; }
+  .comment { color: #5c6370; }
+  .function { color: #61afef; }
+  .struct { color: #e06c75; }
+
+  /* Footer */
+  .footer {
+    position: absolute;
+    bottom: 30px;
+    left: 50px;
+    right: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .hashtags {
+    display: flex;
+    gap: 16px;
+    font-size: 14px;
+    color: #666;
+    font-weight: 600;
+  }
+
+  .hashtag {
+    color: #00D4FF;
+  }
+
+  .website {
+    font-size: 16px;
+    color: #888;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <div class="logo">
+      <div class="logo-mark">AW</div>
+      <div class="brand-text">AgentWallet Protocol</div>
+    </div>
+    <div class="status-indicator">
+      <div class="pulse-dot"></div>
+      Live on Solana
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="left-panel">
+      <div class="title">On-Chain Agent Identity</div>
+      <div class="description">
+        Each AI agent gets a unique, verifiable PDA-derived identity on Solana. 
+        Non-transferable. Reputation-building. Permanent.
+      </div>
+      
+      <div class="tech-specs">
+        <div class="spec-item">
+          <div class="spec-icon">🔑</div>
+          <div class="spec-text">PDA derived from agent's public key</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-icon">🛡️</div>
+          <div class="spec-text">Verifiable on-chain without private keys</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-icon">📊</div>
+          <div class="spec-text">Reputation scores tracked permanently</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-icon">🔒</div>
+          <div class="spec-text">Non-transferable identity ownership</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-icon">⚡</div>
+          <div class="spec-text">Zero gas for identity verification</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="right-panel">
+      <div class="code-header">
+        <div class="file-tabs">
+          <div class="tab active">agent_identity.rs</div>
+          <div class="tab">lib.rs</div>
+        </div>
+      </div>
+      
+      <div class="code-block">
+        <div class="code-line">
+          <span class="line-number">1</span><span class="comment">/// Agent Identity PDA Structure</span>
+        </div>
+        <div class="code-line">
+          <span class="line-number">2</span><span class="keyword">#[derive</span>(<span class="struct">Account</span>)]
+        </div>
+        <div class="code-line">
+          <span class="line-number">3</span><span class="keyword">pub struct</span> <span class="struct">AgentIdentity</span> {
+        </div>
+        <div class="code-line">
+          <span class="line-number">4</span>&nbsp;&nbsp;<span class="keyword">pub</span> agent_key: <span class="type">Pubkey</span>,
+        </div>
+        <div class="code-line">
+          <span class="line-number">5</span>&nbsp;&nbsp;<span class="keyword">pub</span> reputation_score: <span class="type">u64</span>,
+        </div>
+        <div class="code-line">
+          <span class="line-number">6</span>&nbsp;&nbsp;<span class="keyword">pub</span> total_transactions: <span class="type">u64</span>,
+        </div>
+        <div class="code-line">
+          <span class="line-number">7</span>&nbsp;&nbsp;<span class="keyword">pub</span> created_at: <span class="type">i64</span>,
+        </div>
+        <div class="code-line">
+          <span class="line-number">8</span>&nbsp;&nbsp;<span class="keyword">pub</span> is_verified: <span class="type">bool</span>,
+        </div>
+        <div class="code-line">
+          <span class="line-number">9</span>}
+        </div>
+        <div class="code-line">
+          <span class="line-number">10</span>
+        </div>
+        <div class="code-line">
+          <span class="line-number">11</span><span class="comment">/// Derive agent identity PDA</span>
+        </div>
+        <div class="code-line">
+          <span class="line-number">12</span><span class="keyword">pub fn</span> <span class="function">get_agent_identity_pda</span>(
+        </div>
+        <div class="code-line">
+          <span class="line-number">13</span>&nbsp;&nbsp;agent_key: &<span class="type">Pubkey</span>
+        </div>
+        <div class="code-line">
+          <span class="line-number">14</span>) -> (<span class="type">Pubkey</span>, <span class="type">u8</span>) {
+        </div>
+        <div class="code-line">
+          <span class="line-number">15</span>&nbsp;&nbsp;<span class="struct">Pubkey</span>::<span class="function">find_program_address</span>(
+        </div>
+        <div class="code-line">
+          <span class="line-number">16</span>&nbsp;&nbsp;&nbsp;&nbsp;&[<span class="string">b"agent_identity"</span>, agent_key.<span class="function">as_ref</span>()],
+        </div>
+        <div class="code-line">
+          <span class="line-number">17</span>&nbsp;&nbsp;&nbsp;&nbsp;&<span class="struct">crate::ID</span>
+        </div>
+        <div class="code-line">
+          <span class="line-number">18</span>&nbsp;&nbsp;)
+        </div>
+        <div class="code-line">
+          <span class="line-number">19</span>}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="hashtags">
+      <span class="hashtag">#Solana</span>
+      <span class="hashtag">#AI</span>
+      <span class="hashtag">#BuildInPublic</span>
+    </div>
+    <div class="website">agentwallet.fun</div>
+  </div>
+</div>
+</body>
+</html>

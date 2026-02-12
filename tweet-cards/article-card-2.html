@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1200px; height: 675px; overflow: hidden;
+    background: #0a0a0a;
+    font-family: 'Segoe UI', -apple-system, sans-serif;
+    color: #ffffff;
+  }
+  .card {
+    width: 1200px; height: 675px; position: relative; overflow: hidden;
+    background: linear-gradient(160deg, #0a0a0a 0%, #0d1117 100%);
+  }
+  .card::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .card::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.5) 100%);
+  }
+  .content {
+    position: relative; z-index: 1;
+    padding: 48px 56px;
+    height: 675px;
+    display: flex; flex-direction: column;
+  }
+  .header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 32px;
+  }
+  .section-label {
+    font-size: 13px; font-weight: 700; color: #00D4FF;
+    text-transform: uppercase; letter-spacing: 3px;
+  }
+  .step { font-size: 13px; color: #444; font-weight: 600; letter-spacing: 1px; }
+  .title {
+    font-size: 38px; font-weight: 800; color: #fff;
+    margin-bottom: 28px; line-height: 1.15;
+  }
+  .title span { color: #ff4444; }
+  .problems {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px 32px;
+    flex: 1;
+  }
+  .problem {
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .problem-icon {
+    width: 36px; height: 36px; flex-shrink: 0;
+    background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.25);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .problem-text {
+    font-size: 15px; color: #bbb; line-height: 1.5;
+  }
+  .problem-text strong { color: #ff6b6b; font-weight: 700; }
+  .footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.06);
+    margin-top: auto;
+  }
+  .footer-url { font-size: 15px; color: #444; }
+  .footer-tag { font-size: 13px; color: #00D4FF; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="content">
+    <div class="header">
+      <div class="section-label">The Problem</div>
+      <div class="step">1 / 5</div>
+    </div>
+    <div class="title">AI agents are managing <span>billions</span><br>with <span>zero financial infrastructure</span></div>
+    <div class="problems">
+      <div class="problem">
+        <div class="problem-icon">🔓</div>
+        <div class="problem-text"><strong>No spending limits.</strong> A compromised agent can drain your entire wallet in one transaction.</div>
+      </div>
+      <div class="problem">
+        <div class="problem-icon">🔑</div>
+        <div class="problem-text"><strong>Private keys in .env files.</strong> One leak and everything is gone. No recovery.</div>
+      </div>
+      <div class="problem">
+        <div class="problem-icon">🤝</div>
+        <div class="problem-text"><strong>No agent-to-agent escrow.</strong> Agents can't pay each other trustlessly for tasks.</div>
+      </div>
+      <div class="problem">
+        <div class="problem-icon">📊</div>
+        <div class="problem-text"><strong>Zero audit trail.</strong> No visibility into what agents spent, when, or why.</div>
+      </div>
+      <div class="problem">
+        <div class="problem-icon">⚖️</div>
+        <div class="problem-text"><strong>No compliance.</strong> EU AI Act? SOX? Zero framework for agent financial reporting.</div>
+      </div>
+      <div class="problem">
+        <div class="problem-icon">👤</div>
+        <div class="problem-text"><strong>Human wallets for AI.</strong> Built for humans clicking buttons, not agents executing autonomously.</div>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="footer-url">agentwallet.fun</div>
+      <div class="footer-tag">@Web3__Youth</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
