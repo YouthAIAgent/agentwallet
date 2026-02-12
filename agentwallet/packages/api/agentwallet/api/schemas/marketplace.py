@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, validator
 
 
 class ServiceCreate(BaseModel):
+    agent_id: uuid.UUID = Field(..., description="Agent offering the service")
     name: str = Field(..., min_length=1, max_length=255, description="Service name")
     description: str = Field(..., min_length=1, description="Service description")
     price_usdc: float = Field(..., gt=0, description="Price in USDC")
@@ -73,6 +74,7 @@ class ServiceSearchRequest(BaseModel):
 
 
 class JobCreate(BaseModel):
+    buyer_agent_id: uuid.UUID
     service_id: uuid.UUID
     seller_agent_id: uuid.UUID
     wallet_id: uuid.UUID
@@ -108,6 +110,7 @@ class JobResponse(BaseModel):
 
 
 class JobAccept(BaseModel):
+    seller_agent_id: uuid.UUID = Field(..., description="Seller agent accepting the job")
     seller_notes: Optional[str] = Field(None, max_length=1000, description="Acceptance message")
 
 

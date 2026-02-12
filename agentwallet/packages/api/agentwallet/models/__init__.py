@@ -12,6 +12,7 @@ from .webhook import Webhook, WebhookDelivery
 from .approval_request import ApprovalRequest
 from .usage_meter import UsageMeter
 from .erc8004_identity import ERC8004Identity, ERC8004Feedback, EVMWallet
+from .marketplace import Service, Job, AgentReputation, ServiceCategory, JobMessage
 
 __all__ = [
     "Organization",
@@ -31,4 +32,9 @@ __all__ = [
     "ERC8004Identity",
     "ERC8004Feedback",
     "EVMWallet",
+    "Service",
+    "Job",
+    "AgentReputation",
+    "ServiceCategory",
+    "JobMessage",
 ]
