@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { width: 500px; height: 500px; background: #0a0a1a; display: flex; align-items: center; justify-content: center; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+.container {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle at 50% 50%, #1a1a3a, #0a0a1a);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  position: relative;
+}
+
+.grid {
+  position: absolute; inset: 0;
+  background-image: 
+    linear-gradient(rgba(153,69,255,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(153,69,255,0.06) 1px, transparent 1px);
+  background-size: 25px 25px;
+}
+
+.orb1 {
+  position: absolute; width: 250px; height: 250px;
+  background: radial-gradient(circle, rgba(153,69,255,0.3), transparent 70%);
+  top: -50px; right: -50px; border-radius: 50%;
+}
+
+.orb2 {
+  position: absolute; width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(20,241,149,0.25), transparent 70%);
+  bottom: -30px; left: -30px; border-radius: 50%;
+}
+
+.shield {
+  width: 140px; height: 160px;
+  position: relative; z-index: 2;
+  margin-bottom: 20px;
+}
+
+.shield-shape {
+  width: 140px; height: 160px;
+  background: linear-gradient(135deg, #9945FF, #14F195);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+
+.shield-inner {
+  width: 120px; height: 138px;
+  background: #0a0a1a;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex; align-items: center; justify-content: center;
+}
+
+.shield-icon {
+  font-size: 52px; font-weight: 900;
+  background: linear-gradient(135deg, #9945FF, #14F195);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: -2px;
+}
+
+.title {
+  font-size: 42px; font-weight: 900; letter-spacing: 3px;
+  background: linear-gradient(90deg, #9945FF, #14F195);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  position: relative; z-index: 2;
+  text-shadow: 0 0 40px rgba(153,69,255,0.3);
+}
+
+.subtitle {
+  font-size: 14px; color: rgba(255,255,255,0.5);
+  letter-spacing: 5px; margin-top: 8px;
+  position: relative; z-index: 2;
+  text-transform: uppercase;
+}
+
+.badge {
+  margin-top: 15px;
+  padding: 4px 16px;
+  background: rgba(153,69,255,0.15);
+  border: 1px solid rgba(153,69,255,0.3);
+  border-radius: 20px;
+  color: #14F195;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  position: relative; z-index: 2;
+}
+</style></head>
+<body>
+<div class="container">
+  <div class="grid"></div>
+  <div class="orb1"></div>
+  <div class="orb2"></div>
+  <div class="shield">
+    <div class="shield-shape">
+      <div class="shield-inner">
+        <div class="shield-icon">AW</div>
+      </div>
+    </div>
+  </div>
+  <div class="title">$AGENTPRO</div>
+  <div class="subtitle">AgentWallet Protocol</div>
+  <div class="badge">Solana • Open Source</div>
+</div>
+</body></html>

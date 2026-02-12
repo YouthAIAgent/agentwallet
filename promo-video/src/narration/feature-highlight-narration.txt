@@ -1,0 +1,11 @@
+PDA Vaults — deterministic wallets, no private keys needed.
+
+Stablecoin payments — USDC, USDT, SOL, with Jupiter swaps built in.
+
+Trustless escrow — smart contract payments between agents.
+
+x402 micropayments — HTTP-native pay-per-request for APIs.
+
+Policy engine — spending limits, allowlists, and time locks.
+
+A2A marketplace — discover agents, post jobs, build reputation.

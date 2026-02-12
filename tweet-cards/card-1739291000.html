@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1200px;
+  height: 675px;
+  overflow: hidden;
+  font-family: 'JetBrains Mono', monospace;
+  background: linear-gradient(135deg, #0D1117 0%, #161B22 50%, #0D1117 100%);
+  color: #e6edf3;
+  position: relative;
+}
+
+/* Subtle grid background */
+.grid-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: 
+    linear-gradient(rgba(0,255,65,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,65,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  z-index: 0;
+}
+
+/* Glow orbs */
+.glow-1 {
+  position: absolute;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(153,69,255,0.15) 0%, transparent 70%);
+  top: -100px; right: -50px;
+  z-index: 0;
+}
+.glow-2 {
+  position: absolute;
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, rgba(0,255,65,0.1) 0%, transparent 70%);
+  bottom: -80px; left: 100px;
+  z-index: 0;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  padding: 50px 60px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.brand {
+  font-size: 14px;
+  font-weight: 600;
+  color: #00ff41;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+.solana-badge {
+  background: rgba(153,69,255,0.15);
+  border: 1px solid rgba(153,69,255,0.4);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #9945FF;
+  font-weight: 600;
+}
+
+/* Title */
+.title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-top: 25px;
+  line-height: 1.3;
+}
+.title span {
+  color: #00ff41;
+}
+
+/* Architecture flow */
+.flow-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin: 20px 0;
+}
+
+.flow-box {
+  background: rgba(0,255,65,0.05);
+  border: 1px solid rgba(0,255,65,0.25);
+  border-radius: 10px;
+  padding: 14px 18px;
+  text-align: center;
+  min-width: 140px;
+  position: relative;
+}
+.flow-box .label {
+  font-size: 11px;
+  color: #7d8590;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+}
+.flow-box .value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #00ff41;
+}
+.flow-box.purple {
+  background: rgba(153,69,255,0.08);
+  border-color: rgba(153,69,255,0.3);
+}
+.flow-box.purple .value {
+  color: #9945FF;
+}
+
+.arrow {
+  font-size: 22px;
+  color: rgba(0,255,65,0.5);
+  margin: 0 8px;
+  font-weight: 300;
+}
+
+/* Bottom row */
+.bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.install-cmd {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(0,255,65,0.2);
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  color: #00ff41;
+}
+.install-cmd span {
+  color: #7d8590;
+}
+.handle {
+  font-size: 14px;
+  color: #7d8590;
+  font-weight: 500;
+}
+
+/* Decorative line */
+.line-accent {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00ff41, #9945FF, #00ff41);
+  z-index: 2;
+}
+</style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="glow-1"></div>
+  <div class="glow-2"></div>
+  
+  <div class="container">
+    <div>
+      <div class="header">
+        <div class="brand">⬡ AgentWallet Protocol</div>
+        <div class="solana-badge">◎ Solana</div>
+      </div>
+      
+      <div class="title">Under The Hood: <span>Transaction Flow</span></div>
+    </div>
+    
+    <div class="flow-container">
+      <div class="flow-box">
+        <div class="label">Step 1</div>
+        <div class="value">🤖 AI Agent</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="flow-box">
+        <div class="label">Step 2</div>
+        <div class="value">SDK Call</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="flow-box purple">
+        <div class="label">Step 3</div>
+        <div class="value">Solana Program</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="flow-box purple">
+        <div class="label">Step 4</div>
+        <div class="value">Escrow + Policy</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="flow-box">
+        <div class="label">Step 5</div>
+        <div class="value">✅ Settlement</div>
+      </div>
+    </div>
+    
+    <div class="bottom">
+      <div class="install-cmd"><span>$</span> pip install aw-protocol-sdk</div>
+      <div class="handle">@Web3__Youth</div>
+    </div>
+  </div>
+  
+  <div class="line-accent"></div>
+</body>
+</html>

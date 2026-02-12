@@ -1,0 +1,7 @@
+Step one: An AI agent creates a wallet through MCP. A deterministic PDA is derived on Solana — no seed phrases.
+
+Step two: The owner configures policies — daily spending limits, approved tokens, time restrictions.
+
+Step three: The agent executes transactions. Transfers, swaps, escrows — all validated against policy before signing.
+
+Step four: Settlement. Escrow releases trustlessly. The A2A marketplace matches agents with jobs. Reputation builds on-chain.

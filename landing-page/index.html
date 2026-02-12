@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentWallet Protocol | Join the Mainnet Beta</title>
+<meta name="description" content="Autonomous wallet infrastructure for AI agents on Solana. 27 MCP tools. Trustless escrow. Join the beta — earn rewards on mainnet.">
+<meta property="og:title" content="AgentWallet Protocol | Join the Mainnet Beta">
+<meta property="og:description" content="Autonomous wallet infrastructure for AI agents on Solana. 27 MCP tools. Trustless escrow. Join the beta — earn rewards on mainnet.">
+<meta property="og:image" content="https://agentwallet.io/og-image.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AgentWallet Protocol | Join the Mainnet Beta">
+<meta name="twitter:description" content="Autonomous wallet infrastructure for AI agents on Solana. 27 MCP tools. Trustless escrow. Join the beta — earn rewards on mainnet.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--g:#00ff41;--gd:#00cc33;--gk:#003b00;--c:#00d4ff;--cd:#0099bb;--r:#ff0040;--y:#ffcc00;--o:#ff6600;--bg:#0a0a0a;--dim:#00aa2a;--bdr:#00ff4133;--glow:0 0 10px #00ff4155,0 0 20px #00ff4122;--glowS:0 0 10px #00ff4188,0 0 30px #00ff4144,0 0 60px #00ff4122;--cGlow:0 0 10px #00d4ff55,0 0 20px #00d4ff22}
+html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--gk) var(--bg)}
+body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--g);overflow-x:hidden;min-height:100vh;font-size:14px;line-height:1.6}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--gk);border-radius:3px}
+
+/* ── CRT + SCANLINES ── */
+#crt{position:fixed;inset:0;pointer-events:none;z-index:9999}
+#crt::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px);animation:sl .1s linear infinite}
+#crt::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,.45) 100%)}
+@keyframes sl{0%{transform:translateY(0)}100%{transform:translateY(4px)}}
+body{animation:flk 8s infinite}
+@keyframes flk{0%,100%{opacity:1}92%{opacity:1}93%{opacity:.8}94%{opacity:1}96%{opacity:.9}97%{opacity:1}}
+
+/* ── MATRIX RAIN ── */
+#matrix{position:fixed;inset:0;z-index:0;opacity:.06;pointer-events:none}
+#grid{position:fixed;inset:0;z-index:1;pointer-events:none;background-image:linear-gradient(rgba(0,255,65,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,65,.03) 1px,transparent 1px);background-size:50px 50px}
+#particles{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.35}
+
+/* ── BOOT SCREEN ── */
+#boot{position:fixed;inset:0;z-index:10000;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .8s,visibility .8s}
+#boot.hidden{opacity:0;visibility:hidden;pointer-events:none}
+#boot-inner{max-width:700px;width:90%;padding:40px}
+.bl{opacity:0;margin-bottom:4px;font-size:13px;white-space:pre}
+.bl.v{opacity:1}
+.t-boot{color:var(--c)}.t-init{color:var(--y)}.t-ok{color:var(--g)}.t-warn{color:var(--o);font-weight:700}.t-sys{color:var(--r);font-weight:700}
+
+/* ── MAIN ── */
+#main{position:relative;z-index:2;opacity:0;transition:opacity 1s;max-width:960px;margin:0 auto;padding:40px 20px 60px}
+#main.v{opacity:1}
+
+/* ── GLITCH ── */
+.glitch{position:relative;font-size:clamp(28px,6vw,56px);font-weight:800;text-transform:uppercase;color:var(--g);letter-spacing:4px;text-shadow:var(--glowS);animation:gsk 4s infinite linear alternate-reverse;cursor:default}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden}
+.glitch::before{color:var(--c);z-index:-1;animation:g1 3s infinite linear alternate-reverse;clip-path:inset(0 0 60% 0)}
+.glitch::after{color:var(--r);z-index:-2;animation:g2 2.5s infinite linear alternate-reverse;clip-path:inset(40% 0 0 0)}
+@keyframes g1{0%,100%{transform:translate(0)}20%{transform:translate(-3px,2px)}40%{transform:translate(3px,-1px)}60%{transform:translate(-2px,1px)}80%{transform:translate(2px,-2px)}}
+@keyframes g2{0%,100%{transform:translate(0)}20%{transform:translate(2px,-2px)}40%{transform:translate(-3px,1px)}60%{transform:translate(3px,2px)}80%{transform:translate(-1px,-1px)}}
+@keyframes gsk{0%,100%{transform:skew(0)}31%{transform:skew(.5deg)}32%{transform:skew(0)}69%{transform:skew(-.3deg)}70%{transform:skew(0)}}
+.glitch:hover::before{animation:gi1 .3s infinite linear}
+.glitch:hover::after{animation:gi2 .3s infinite linear}
+@keyframes gi1{0%{transform:translate(0);clip-path:inset(20% 0 60% 0)}25%{transform:translate(-5px,3px);clip-path:inset(10% 0 50% 0)}50%{transform:translate(5px,-2px);clip-path:inset(40% 0 20% 0)}75%{transform:translate(-3px,1px);clip-path:inset(5% 0 70% 0)}100%{transform:translate(0);clip-path:inset(30% 0 40% 0)}}
+@keyframes gi2{0%{transform:translate(0);clip-path:inset(60% 0 10% 0)}25%{transform:translate(4px,-2px);clip-path:inset(50% 0 20% 0)}50%{transform:translate(-4px,3px);clip-path:inset(30% 0 40% 0)}75%{transform:translate(2px,-1px);clip-path:inset(70% 0 5% 0)}100%{transform:translate(0);clip-path:inset(40% 0 30% 0)}}
+
+/* ── CURSOR ── */
+.cur{display:inline-block;width:10px;height:1.1em;background:var(--g);margin-left:2px;animation:bk 1s step-end infinite;vertical-align:text-bottom}
+@keyframes bk{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── HERO ── */
+.hero{text-align:center;padding:80px 0 60px}
+.hero-sub{font-size:clamp(13px,2vw,16px);color:var(--c);margin-top:20px;min-height:1.6em;text-shadow:var(--cGlow)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-top:50px}
+.stat{border:1px solid var(--bdr);background:rgba(0,255,65,.02);padding:24px 16px;text-align:center;position:relative;overflow:hidden;transition:all .3s}
+.stat::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--g),transparent);animation:scanl 3s linear infinite}
+@keyframes scanl{0%{left:-100%}100%{left:100%}}
+.stat:hover{border-color:var(--g);background:rgba(0,255,65,.05);box-shadow:var(--glow);transform:translateY(-2px)}
+.stat-n{font-size:28px;font-weight:800;color:var(--g);text-shadow:var(--glow)}
+.stat-l{font-size:11px;color:var(--dim);margin-top:8px;letter-spacing:2px;text-transform:uppercase}
+
+/* ── SECTIONS ── */
+.sec{margin-top:80px;opacity:0;transform:translateY(30px);transition:opacity .8s,transform .8s}
+.sec.v{opacity:1;transform:translateY(0)}
+.tb{background:rgba(0,0,0,.6);border:1px solid var(--bdr);border-radius:4px;padding:30px;position:relative;overflow:hidden}
+.tb::before{content:'● ● ●';position:absolute;top:0;left:0;width:100%;padding:6px 12px;font-size:8px;letter-spacing:4px;color:var(--dim);background:rgba(0,255,65,.03);border-bottom:1px solid var(--bdr)}
+.tb-in{margin-top:20px}
+.cmd{color:var(--c);font-weight:700;margin-bottom:16px;font-size:15px;text-shadow:var(--cGlow)}
+.cmd .d{color:var(--g);margin-right:8px}
+
+/* ── FEATURES ── */
+.fl{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid rgba(0,255,65,.05);transition:all .2s}
+.fl:last-child{border-bottom:none}
+.fl:hover{background:rgba(0,255,65,.03);padding-left:8px}
+.fl .ar{color:var(--c);flex-shrink:0}
+.fl .nm{color:var(--y);min-width:130px;flex-shrink:0;font-weight:500}
+.fl .sp{color:var(--dim);flex-shrink:0}
+.fl .ds{color:var(--g);opacity:.85}
+
+/* ── WHITELIST ── */
+.wl-box{border:2px solid var(--g);background:rgba(0,255,65,.02);position:relative;overflow:hidden;box-shadow:var(--glow)}
+.wl-box::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,255,65,.03) 0%,transparent 100%);pointer-events:none}
+.wl-hd{background:rgba(0,255,65,.08);padding:24px 30px;border-bottom:1px solid var(--bdr);text-align:center;position:relative}
+.wl-hd h2{font-size:clamp(18px,3vw,24px);color:var(--g);text-shadow:var(--glowS);letter-spacing:3px}
+.wl-hd p{color:var(--c);font-size:13px;margin-top:6px;opacity:.8}
+.wl-bd{padding:30px;position:relative}
+.wl-ctr{text-align:center;margin-bottom:28px;font-size:13px}
+.wl-ctr .cn{color:var(--c);font-size:22px;font-weight:800;text-shadow:var(--cGlow)}
+.wl-ctr .cm{color:var(--dim)}
+.wl-ctr .cl{color:var(--dim);display:block;margin-top:4px;font-size:11px;letter-spacing:2px;text-transform:uppercase}
+.pb{width:100%;height:4px;background:var(--gk);border-radius:2px;margin-top:10px;overflow:hidden}
+.pf{height:100%;background:linear-gradient(90deg,var(--g),var(--c));border-radius:2px;transition:width 1.5s;box-shadow:0 0 10px var(--g)}
+.fg{margin-bottom:20px}
+.fg label{display:block;color:var(--c);font-size:12px;margin-bottom:6px;letter-spacing:1px}
+.fg .req{color:var(--r)}
+.fi{width:100%;background:rgba(0,0,0,.5);border:1px solid var(--bdr);color:var(--g);font-family:'JetBrains Mono',monospace;font-size:14px;padding:12px 16px;outline:none;transition:all .3s;border-radius:2px}
+.fi::placeholder{color:rgba(0,255,65,.25)}
+.fi:focus{border-color:var(--g);box-shadow:var(--glow);background:rgba(0,255,65,.03)}
+.sbtn{width:100%;background:rgba(0,255,65,.1);border:2px solid var(--g);color:var(--g);font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;padding:16px;cursor:pointer;letter-spacing:3px;text-transform:uppercase;transition:all .3s;position:relative;overflow:hidden;margin-top:10px}
+.sbtn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,255,65,.2),transparent);transition:left .5s}
+.sbtn:hover::before{left:100%}
+.sbtn:hover{background:rgba(0,255,65,.2);box-shadow:var(--glowS);transform:translateY(-1px)}
+.sbtn:active{transform:translateY(0)}
+.sbtn:disabled{opacity:.5;cursor:not-allowed}
+.wl-pk{display:flex;justify-content:center;gap:30px;margin-top:24px;font-size:12px;flex-wrap:wrap}
+.wl-pk span{color:var(--dim)}
+.wl-ok{display:none;padding:20px 0}
+.wl-ok.v{display:block}
+.okl{margin-bottom:6px;opacity:0;transition:opacity .3s}
+.okl.v{opacity:1}
+.okl .ok{color:var(--g);font-weight:700}
+.okl .sys{color:var(--r);font-weight:700}
+
+/* ── REWARDS ── */
+.rl{padding:10px 0;font-size:14px;display:flex;align-items:center;gap:8px;border-left:2px solid transparent;padding-left:12px;transition:all .2s}
+.rl:hover{border-left-color:var(--g);background:rgba(0,255,65,.03)}
+.rl .tr{color:var(--dim);flex-shrink:0;width:24px}
+.rl .ti{color:var(--c);min-width:160px;flex-shrink:0}
+.rl .aw{color:var(--dim);flex-shrink:0}
+.rl .vl{color:var(--y);font-weight:500}
+.rtit{color:var(--g);font-weight:700;font-size:15px;margin-bottom:16px;text-shadow:var(--glow);letter-spacing:1px}
+
+/* ── FOOTER ── */
+.footer{margin-top:100px;padding:40px 0;border-top:1px solid var(--bdr);text-align:center}
+.f-links{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:24px}
+.f-link{color:var(--g);text-decoration:none;font-size:13px;padding:6px 14px;border:1px solid var(--bdr);transition:all .3s;letter-spacing:1px}
+.f-link:hover{border-color:var(--g);box-shadow:var(--glow);background:rgba(0,255,65,.05);color:#fff}
+.f-addr{font-size:11px;color:var(--dim);margin-bottom:12px;word-break:break-all}
+.f-addr .la{color:var(--c)}
+.f-addr .ad{color:var(--g);cursor:pointer;transition:color .2s}
+.f-addr .ad:hover{color:#fff;text-shadow:var(--glow)}
+.f-copy{font-size:11px;color:rgba(0,255,65,.3);margin-top:16px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+body{font-size:13px}.hero{padding:50px 0 40px}.glitch{letter-spacing:2px}
+.stats{grid-template-columns:repeat(2,1fr);gap:10px}.stat{padding:18px 12px}.stat-n{font-size:22px}
+.tb{padding:24px 16px}
+.fl{flex-wrap:wrap;gap:4px}.fl .nm{min-width:auto}.fl .sp{display:none}.fl .ds{width:100%;padding-left:20px;font-size:12px}
+.wl-bd{padding:20px 16px}.wl-pk{flex-direction:column;align-items:center;gap:10px}
+.rl{flex-wrap:wrap;font-size:12px;gap:4px}.rl .ti{min-width:auto}
+.sec{margin-top:50px}.footer{margin-top:60px}
+}
+@media(max-width:480px){.stats{grid-template-columns:1fr}.glitch{letter-spacing:1px}#boot-inner{padding:20px}.bl{font-size:11px}}
+
+@keyframes pulse-g{0%,100%{box-shadow:0 0 5px var(--g)}50%{box-shadow:var(--glowS)}}
+.pulse{animation:pulse-g 2s infinite}
+</style>
+</head>
+
+<body>
+
+<!-- CRT Overlay -->
+<div id="crt"></div>
+
+<!-- Matrix Rain -->
+<canvas id="matrix"></canvas>
+
+<!-- Grid -->
+<div id="grid"></div>
+
+<!-- Particles -->
+<canvas id="particles"></canvas>
+
+<!-- ════════════════════════════════════════════════════════════
+     BOOT SCREEN
+     ════════════════════════════════════════════════════════════ -->
+<div id="boot">
+  <div id="boot-inner">
+    <div class="bl" data-tag="t-boot" data-text="[BOOT] AgentWallet Protocol v2.0.0"></div>
+    <div class="bl" data-tag="t-init" data-text="[INIT] Connecting to Solana mainnet..."></div>
+    <div class="bl" data-tag="t-ok" data-text="[OK] Node synced. Block height: 298,441,203"></div>
+    <div class="bl" data-tag="t-ok" data-text="[OK] MCP Server online. 27 tools loaded."></div>
+    <div class="bl" data-tag="t-ok" data-text="[OK] Escrow engine armed."></div>
+    <div class="bl" data-tag="t-warn" data-text="[WARN] Mainnet launch: IMMINENT"></div>
+    <div class="bl" data-tag="t-sys" data-text="[SYS] Welcome, Agent."></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     MAIN CONTENT
+     ════════════════════════════════════════════════════════════ -->
+<div id="main">
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1 class="glitch" data-text="AGENTWALLET PROTOCOL">AGENTWALLET PROTOCOL</h1>
+    <p class="hero-sub" id="hero-sub"></p>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-n" data-count="27">0</div>
+        <div class="stat-l">MCP Tools</div>
+      </div>
+      <div class="stat">
+        <div class="stat-n" data-count="3">0</div>
+        <div class="stat-l">Chains Supported</div>
+      </div>
+      <div class="stat">
+        <div class="stat-n" data-count="100" data-suffix="%">0%</div>
+        <div class="stat-l">Trustless Escrow</div>
+      </div>
+      <div class="stat">
+        <div class="stat-n" data-count="24" data-suffix="/7">0/7</div>
+        <div class="stat-l">A2A Commerce</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="sec" id="sec-features">
+    <div class="tb">
+      <div class="tb-in">
+        <div class="cmd"><span class="d">$</span> agentwallet --capabilities</div>
+        <div class="fl"><span class="ar">&gt;</span><span class="nm">wallet_ops</span><span class="sp">:</span><span class="ds">Create, fund, transfer — zero human intervention</span></div>
+        <div class="fl"><span class="ar">&gt;</span><span class="nm">escrow</span><span class="sp">:</span><span class="ds">Trustless agent-to-agent payments</span></div>
+        <div class="fl"><span class="ar">&gt;</span><span class="nm">x402</span><span class="sp">:</span><span class="ds">HTTP-native micropayments (pay-per-API)</span></div>
+        <div class="fl"><span class="ar">&gt;</span><span class="nm">stablecoins</span><span class="sp">:</span><span class="ds">USDC/USDT native transfers</span></div>
+        <div class="fl"><span class="ar">&gt;</span><span class="nm">policies</span><span class="sp">:</span><span class="ds">Spending limits, allowlists, time locks</span></div>
+        <div class="fl"><span class="ar">&gt;</span><span class="nm">analytics</span><span class="sp">:</span><span class="ds">Real-time portfolio + transaction intelligence</span></div>
+        <div class="fl"><span class="ar">&gt;</span><span class="nm">reputation</span><span class="sp">:</span><span class="ds">On-chain trust scoring + leaderboard</span></div>
+        <div class="fl"><span class="ar">&gt;</span><span class="nm">marketplace</span><span class="sp">:</span><span class="ds">Agent discovery + job matching</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHITELIST CTA -->
+  <section class="sec" id="sec-whitelist">
+    <div class="wl-box">
+      <div class="wl-hd">
+        <h2>⟨ JOIN THE MAINNET BETA ⟩</h2>
+        <p>Early access. Exclusive rewards. Limited to 500 agents.</p>
+      </div>
+      <div class="wl-bd">
+        <div class="wl-ctr">
+          <span class="cn" id="agent-count">0</span>
+          <span class="cm"> / 500</span>
+          <span class="cl">agents registered</span>
+          <div class="pb"><div class="pf" id="progress-fill" style="width:0%"></div></div>
+        </div>
+
+        <form id="wl-form" autocomplete="off">
+          <div class="fg">
+            <label>&gt; Enter wallet address <span class="req">*</span></label>
+            <input class="fi" type="text" id="f-wallet" placeholder="e.g. CEQLGCWk..." required>
+          </div>
+          <div class="fg">
+            <label>&gt; Enter email (optional)</label>
+            <input class="fi" type="email" id="f-email" placeholder="agent@example.com">
+          </div>
+          <div class="fg">
+            <label>&gt; Enter Twitter handle</label>
+            <input class="fi" type="text" id="f-twitter" placeholder="@your_handle">
+          </div>
+          <button class="sbtn" type="submit" id="submit-btn">[SUBMIT_ACCESS_REQUEST]</button>
+        </form>
+
+        <div class="wl-pk">
+          <span>⚡ First 500 agents get airdrop rewards</span>
+          <span>🏆 Top contributors → mainnet allocation</span>
+        </div>
+
+        <!-- Success message -->
+        <div class="wl-ok" id="wl-success">
+          <div class="okl" data-d="0"><span class="ok">[OK]</span> Access request received.</div>
+          <div class="okl" data-d="400"><span class="ok">[OK]</span> Agent ID: <span id="agent-id">#00000</span></div>
+          <div class="okl" data-d="800"><span class="ok">[OK]</span> Status: QUEUED FOR MAINNET</div>
+          <div class="okl" data-d="1200"><span class="sys">[SYS]</span> You will be notified. Stay sharp.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT / PROJECT DETAILS -->
+  <section class="sec" id="sec-about">
+    <div class="tb">
+      <div class="tb-in">
+        <div class="cmd"><span class="d">$</span> agentwallet --about</div>
+        <div class="rtit">WHAT IS AGENTWALLET?</div>
+        <p style="color:var(--g);opacity:.85;margin-bottom:20px;line-height:1.8">
+          AgentWallet is the <span style="color:var(--c);font-weight:700">autonomous financial infrastructure</span> for the agentic economy. 
+          We give AI agents their own Solana wallets — with programmatic custody, trustless escrow, 
+          and an MCP server that any AI (Claude, GPT, Gemini, Cursor) can plug into instantly.
+        </p>
+        <p style="color:var(--dim);margin-bottom:20px;line-height:1.8">
+          No more human-in-the-loop for every transaction. Agents create wallets, transfer funds, 
+          pay for APIs via x402, hire other agents through our marketplace, and manage spending policies — 
+          all autonomously. One <span style="color:var(--y)">pip install</span>. Zero friction.
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:24px">
+          <div style="border:1px solid var(--bdr);padding:16px;background:rgba(0,255,65,.02)">
+            <div style="color:var(--c);font-weight:700;margin-bottom:6px">◎ Network</div>
+            <div style="color:var(--g);font-size:13px">Solana (Devnet → Mainnet)</div>
+          </div>
+          <div style="border:1px solid var(--bdr);padding:16px;background:rgba(0,255,65,.02)">
+            <div style="color:var(--c);font-weight:700;margin-bottom:6px">🔧 SDK</div>
+            <div style="color:var(--g);font-size:13px">pip install agentwallet-mcp</div>
+          </div>
+          <div style="border:1px solid var(--bdr);padding:16px;background:rgba(0,255,65,.02)">
+            <div style="color:var(--c);font-weight:700;margin-bottom:6px">🧬 Protocol</div>
+            <div style="color:var(--g);font-size:13px">MCP + x402 + A2A</div>
+          </div>
+          <div style="border:1px solid var(--bdr);padding:16px;background:rgba(0,255,65,.02)">
+            <div style="color:var(--c);font-weight:700;margin-bottom:6px">🔐 Security</div>
+            <div style="color:var(--g);font-size:13px">PDA-derived vaults, no key exposure</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TECH STACK -->
+  <section class="sec" id="sec-tech">
+    <div class="tb">
+      <div class="tb-in">
+        <div class="cmd"><span class="d">$</span> agentwallet --tech-stack</div>
+        <div class="rtit">ARCHITECTURE:</div>
+        <div class="fl"><span class="ar">&gt;</span><span class="nm" style="color:var(--c)">Blockchain</span><span class="sp">:</span><span class="ds">Solana (sub-ms finality, &lt;$0.001 per tx)</span></div>
+        <div class="fl"><span class="ar">&gt;</span><span class="nm" style="color:var(--c)">Smart Contract</span><span class="sp">:</span><span class="ds">Anchor framework, PDA-derived agent vaults</span></div>
+        <div class="fl"><span class="ar">&gt;</span><span class="nm" style="color:var(--c)">API Layer</span><span class="sp">:</span><span class="ds">FastAPI + Python SDK + REST endpoints</span></div>
+        <div class="fl"><span class="ar">&gt;</span><span class="nm" style="color:var(--c)">AI Interface</span><span class="sp">:</span><span class="ds">MCP Server (27 tools, any AI agent compatible)</span></div>
+        <div class="fl"><span class="ar">&gt;</span><span class="nm" style="color:var(--c)">Payments</span><span class="sp">:</span><span class="ds">x402 HTTP-native micropayments + USDC/USDT</span></div>
+        <div class="fl"><span class="ar">&gt;</span><span class="nm" style="color:var(--c)">Commerce</span><span class="sp">:</span><span class="ds">A2A Marketplace — agent discovery, jobs, escrow</span></div>
+        <div class="fl"><span class="ar">&gt;</span><span class="nm" style="color:var(--c)">Trust Layer</span><span class="sp">:</span><span class="ds">On-chain reputation scoring + leaderboard</span></div>
+        <div class="fl"><span class="ar">&gt;</span><span class="nm" style="color:var(--c)">Policies</span><span class="sp">:</span><span class="ds">Spending limits, allowlists, time locks, rate caps</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- USE CASES -->
+  <section class="sec" id="sec-usecases">
+    <div class="tb">
+      <div class="tb-in">
+        <div class="cmd"><span class="d">$</span> agentwallet --use-cases</div>
+        <div class="rtit">WHO IS THIS FOR?</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:12px">
+          <div style="border-left:2px solid var(--c);padding:12px 16px;background:rgba(0,212,255,.02)">
+            <div style="color:var(--c);font-weight:700;margin-bottom:6px">🤖 AI Agent Developers</div>
+            <div style="color:var(--dim);font-size:13px">Give your agents financial autonomy. Create wallets, fund them, set spending policies — all via MCP tools.</div>
+          </div>
+          <div style="border-left:2px solid var(--y);padding:12px 16px;background:rgba(255,204,0,.02)">
+            <div style="color:var(--y);font-weight:700;margin-bottom:6px">💰 DeFi Protocols</div>
+            <div style="color:var(--dim);font-size:13px">Plug autonomous agents into your protocol. Let them trade, provide liquidity, and manage positions.</div>
+          </div>
+          <div style="border-left:2px solid var(--g);padding:12px 16px;background:rgba(0,255,65,.02)">
+            <div style="color:var(--g);font-weight:700;margin-bottom:6px">🏢 Enterprise AI</div>
+            <div style="color:var(--dim);font-size:13px">Deploy fleets of agents with controlled budgets. Policy engine ensures spending stays within bounds.</div>
+          </div>
+          <div style="border-left:2px solid var(--o);padding:12px 16px;background:rgba(255,102,0,.02)">
+            <div style="color:var(--o);font-weight:700;margin-bottom:6px">🔌 API Providers</div>
+            <div style="color:var(--dim);font-size:13px">Monetize your APIs with x402 — agents auto-pay per request. Zero integration overhead.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section class="sec" id="sec-roadmap">
+    <div class="tb">
+      <div class="tb-in">
+        <div class="cmd"><span class="d">$</span> agentwallet --roadmap</div>
+        <div class="rtit">ROADMAP TO MAINNET:</div>
+        <div class="rl"><span class="tr">├──</span><span style="color:var(--g)">✅</span><span class="ti" style="color:var(--g)">Phase 1: Core</span><span class="aw">→</span><span class="vl">Wallet creation, transfers, escrow, policies, MCP server</span></div>
+        <div class="rl"><span class="tr">├──</span><span style="color:var(--g)">✅</span><span class="ti" style="color:var(--g)">Phase 2: Commerce</span><span class="aw">→</span><span class="vl">x402 payments, USDC/USDT, A2A marketplace, reputation</span></div>
+        <div class="rl"><span class="tr">├──</span><span style="color:var(--y)">🔄</span><span class="ti" style="color:var(--y)">Phase 3: Scale</span><span class="aw">→</span><span class="vl">Multi-chain (EVM), advanced analytics, agent DAOs</span></div>
+        <div class="rl"><span class="tr">├──</span><span style="color:var(--c)">🔮</span><span class="ti" style="color:var(--c)">Phase 4: Intelligence</span><span class="aw">→</span><span class="vl">ML threat detection, auto-rebalancing, predictive policies</span></div>
+        <div class="rl"><span class="tr">└──</span><span style="color:var(--r)">🚀</span><span class="ti" style="color:var(--r)">Mainnet Launch</span><span class="aw">→</span><span class="vl">Full production deployment + $AW token launch</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REWARDS (ENHANCED) -->
+  <section class="sec" id="sec-rewards">
+    <div class="tb">
+      <div class="tb-in">
+        <div class="cmd"><span class="d">$</span> agentwallet --rewards</div>
+        <div class="rtit">🏆 MAINNET BETA REWARDS:</div>
+        <div class="rl"><span class="tr">├──</span><span>🥇</span><span class="ti">First 100 agents</span><span class="aw">→</span><span class="vl">500 $AW tokens + Exclusive Genesis NFT</span></div>
+        <div class="rl"><span class="tr">├──</span><span>🥈</span><span class="ti">First 250 agents</span><span class="aw">→</span><span class="vl">250 $AW tokens + Beta Tester NFT</span></div>
+        <div class="rl"><span class="tr">├──</span><span>🥉</span><span class="ti">First 500 agents</span><span class="aw">→</span><span class="vl">100 $AW tokens</span></div>
+        <div class="rl"><span class="tr">├──</span><span>🐛</span><span class="ti">Bug hunters</span><span class="aw">→</span><span class="vl">Up to 5,000 $AW per critical bug</span></div>
+        <div class="rl"><span class="tr">├──</span><span>🤝</span><span class="ti">Referral bonus</span><span class="aw">→</span><span class="vl">50 $AW per referred agent</span></div>
+        <div class="rl"><span class="tr">├──</span><span>📝</span><span class="ti">Content creators</span><span class="aw">→</span><span class="vl">200 $AW for tutorials / threads about AgentWallet</span></div>
+        <div class="rl"><span class="tr">├──</span><span>⚙️</span><span class="ti">Integration builders</span><span class="aw">→</span><span class="vl">1,000 $AW for shipping an app using AgentWallet</span></div>
+        <div class="rl"><span class="tr">└──</span><span>💎</span><span class="ti">Diamond hands</span><span class="aw">→</span><span class="vl">2x multiplier for agents active through full beta</span></div>
+
+        <div style="margin-top:30px;border:1px solid var(--c);padding:20px;background:rgba(0,212,255,.03)">
+          <div style="color:var(--c);font-weight:700;font-size:15px;margin-bottom:12px;text-shadow:var(--cGlow)">⚡ IRONMAN BONUS (Limited Time)</div>
+          <div class="rl"><span class="tr">├──</span><span>🔴</span><span class="ti" style="color:var(--r)">First 24 hours</span><span class="aw">→</span><span class="vl" style="color:var(--r)">3x reward multiplier on ALL tiers</span></div>
+          <div class="rl"><span class="tr">├──</span><span>🎯</span><span class="ti" style="color:var(--r)">Tweet about us</span><span class="aw">→</span><span class="vl" style="color:var(--r)">+100 bonus $AW (screenshot to verify)</span></div>
+          <div class="rl"><span class="tr">├──</span><span>🧵</span><span class="ti" style="color:var(--r)">Write a thread</span><span class="aw">→</span><span class="vl" style="color:var(--r)">+500 bonus $AW + featured on our page</span></div>
+          <div class="rl"><span class="tr">└──</span><span>🏅</span><span class="ti" style="color:var(--r)">Top 10 leaderboard</span><span class="aw">→</span><span class="vl" style="color:var(--r)">Private Discord + early mainnet access + OG role</span></div>
+        </div>
+
+        <div style="margin-top:20px;color:var(--dim);font-size:12px;text-align:center">
+          Total Airdrop Pool: <span style="color:var(--y);font-weight:700">1,000,000 $AW</span> · 
+          Token Launch: <span style="color:var(--c)">Mainnet Day 1</span> · 
+          Vesting: <span style="color:var(--g)">None — instant claim</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="f-links">
+      <a href="https://github.com/YouthAIAgent/agentwallet" class="f-link" target="_blank">[GitHub]</a>
+      <a href="https://twitter.com/Web3__Youth" class="f-link" target="_blank">[Twitter]</a>
+      <a href="#sec-features" class="f-link">[Docs]</a>
+      <a href="#sec-whitelist" class="f-link">[Join Beta]</a>
+    </div>
+    <div class="f-addr">
+      <span class="la">Solana Devnet: </span>
+      <span class="ad" id="sol-addr" title="Click to copy">CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6</span>
+    </div>
+    <div class="f-copy">© 2026 AgentWallet Protocol. All agents autonomous.</div>
+  </footer>
+
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     JAVASCRIPT
+     ════════════════════════════════════════════════════════════ -->
+<script>
+(function(){
+'use strict';
+
+/* ── MATRIX RAIN ── */
+const mc = document.getElementById('matrix');
+const mx = mc.getContext('2d');
+function resizeMatrix(){mc.width=window.innerWidth;mc.height=window.innerHeight}
+resizeMatrix();
+window.addEventListener('resize',resizeMatrix);
+
+const chars='アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF$@#&';
+const fontSize=14;
+let columns=Math.floor(mc.width/fontSize);
+let drops=Array(columns).fill(1);
+
+function drawMatrix(){
+  mx.fillStyle='rgba(10,10,10,0.05)';
+  mx.fillRect(0,0,mc.width,mc.height);
+  mx.fillStyle='#00ff41';
+  mx.font=fontSize+'px monospace';
+  for(let i=0;i<drops.length;i++){
+    const t=chars[Math.floor(Math.random()*chars.length)];
+    mx.fillText(t,i*fontSize,drops[i]*fontSize);
+    if(drops[i]*fontSize>mc.height&&Math.random()>.975) drops[i]=0;
+    drops[i]++;
+  }
+}
+setInterval(drawMatrix,45);
+
+/* ── PARTICLES ── */
+const pc=document.getElementById('particles');
+const px=pc.getContext('2d');
+function resizeP(){pc.width=window.innerWidth;pc.height=window.innerHeight}
+resizeP();
+window.addEventListener('resize',resizeP);
+
+const pts=[];
+const ptCount=60;
+for(let i=0;i<ptCount;i++){
+  pts.push({x:Math.random()*pc.width,y:Math.random()*pc.height,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:Math.random()*1.5+.5});
+}
+
+function drawParticles(){
+  px.clearRect(0,0,pc.width,pc.height);
+  for(let i=0;i<pts.length;i++){
+    const p=pts[i];
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0)p.x=pc.width;if(p.x>pc.width)p.x=0;
+    if(p.y<0)p.y=pc.height;if(p.y>pc.height)p.y=0;
+    px.beginPath();
+    px.arc(p.x,p.y,p.r,0,Math.PI*2);
+    px.fillStyle='rgba(0,255,65,0.5)';
+    px.fill();
+    // draw lines between close particles
+    for(let j=i+1;j<pts.length;j++){
+      const q=pts[j];
+      const dx=p.x-q.x,dy=p.y-q.y;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<120){
+        px.beginPath();
+        px.moveTo(p.x,p.y);
+        px.lineTo(q.x,q.y);
+        px.strokeStyle='rgba(0,255,65,'+(1-dist/120)*0.15+')';
+        px.lineWidth=.5;
+        px.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+/* ── BOOT SEQUENCE ── */
+const bootLines=document.querySelectorAll('.bl');
+const bootScreen=document.getElementById('boot');
+const mainContent=document.getElementById('main');
+let bootDone=false;
+
+async function typeBootLine(el){
+  const text=el.dataset.text;
+  const tagClass=el.dataset.tag;
+  el.classList.add('v');
+  el.innerHTML='';
+  // Find the tag part [XXX]
+  const match=text.match(/^(\[[A-Z]+\])(.*)/);
+  if(match){
+    const tag=document.createElement('span');
+    tag.className=tagClass;
+    el.appendChild(tag);
+    const rest=document.createElement('span');
+    el.appendChild(rest);
+    // Type tag quickly
+    for(let i=0;i<match[1].length;i++){
+      tag.textContent+=match[1][i];
+      await sleep(20);
+    }
+    // Type rest of line
+    const restText=match[2];
+    for(let i=0;i<restText.length;i++){
+      rest.textContent+=restText[i];
+      await sleep(15);
+    }
+  }
+}
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+
+async function runBoot(){
+  await sleep(400);
+  for(let i=0;i<bootLines.length;i++){
+    await typeBootLine(bootLines[i]);
+    await sleep(200+Math.random()*300);
+  }
+  await sleep(800);
+  bootScreen.classList.add('hidden');
+  await sleep(600);
+  mainContent.classList.add('v');
+  bootDone=true;
+  startHeroTyping();
+  animateCounters();
+  initScrollObserver();
+  initAgentCount();
+}
+
+/* ── HERO TYPING ── */
+const heroSubText="Autonomous wallet infrastructure for the agentic economy";
+const heroSub=document.getElementById('hero-sub');
+
+async function startHeroTyping(){
+  heroSub.innerHTML='';
+  for(let i=0;i<heroSubText.length;i++){
+    heroSub.textContent+=heroSubText[i];
+    await sleep(35);
+  }
+  const cur=document.createElement('span');
+  cur.className='cur';
+  heroSub.appendChild(cur);
+}
+
+/* ── NUMBER COUNTER ANIMATION ── */
+function animateCounters(){
+  document.querySelectorAll('.stat-n[data-count]').forEach(el=>{
+    const target=parseInt(el.dataset.count);
+    const suffix=el.dataset.suffix||'';
+    let current=0;
+    const dur=1500;
+    const start=performance.now();
+    function tick(now){
+      const p=Math.min((now-start)/dur,1);
+      const eased=1-Math.pow(1-p,3);
+      current=Math.round(eased*target);
+      el.textContent=current+suffix;
+      if(p<1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+}
+
+/* ── SCROLL OBSERVER ── */
+function initScrollObserver(){
+  const obs=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('v');
+        obs.unobserve(e.target);
+      }
+    });
+  },{threshold:0.15});
+  document.querySelectorAll('.sec').forEach(s=>obs.observe(s));
+}
+
+/* ── AGENT COUNT ── */
+function initAgentCount(){
+  let stored=localStorage.getItem('aw_agentCount');
+  if(!stored){
+    stored=Math.floor(Math.random()*200)+200; // 200-400
+    localStorage.setItem('aw_agentCount',stored);
+  }
+  const count=parseInt(stored);
+  const el=document.getElementById('agent-count');
+  const fill=document.getElementById('progress-fill');
+  // Animate count
+  let cur=0;
+  const dur=2000;
+  const start=performance.now();
+  function tick(now){
+    const p=Math.min((now-start)/dur,1);
+    const eased=1-Math.pow(1-p,3);
+    cur=Math.round(eased*count);
+    el.textContent=cur;
+    fill.style.width=(cur/500*100)+'%';
+    if(p<1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ── FORM SUBMISSION ── */
+const form=document.getElementById('wl-form');
+const successDiv=document.getElementById('wl-success');
+
+form.addEventListener('submit',async function(e){
+  e.preventDefault();
+  const wallet=document.getElementById('f-wallet').value.trim();
+  const email=document.getElementById('f-email').value.trim();
+  const twitter=document.getElementById('f-twitter').value.trim();
+  if(!wallet)return;
+
+  // Save to localStorage
+  let agents=JSON.parse(localStorage.getItem('aw_agents')||'[]');
+  const agentNum=parseInt(localStorage.getItem('aw_agentCount')||'300');
+  const newNum=agentNum+1;
+  localStorage.setItem('aw_agentCount',newNum);
+
+  agents.push({wallet,email,twitter,id:newNum,ts:Date.now()});
+  localStorage.setItem('aw_agents',JSON.stringify(agents));
+
+  // Update counter
+  document.getElementById('agent-count').textContent=newNum;
+  document.getElementById('progress-fill').style.width=(newNum/500*100)+'%';
+
+  // Hide form, show success
+  form.style.display='none';
+  document.getElementById('agent-id').textContent='#'+String(newNum).padStart(5,'0');
+  successDiv.classList.add('v');
+
+  // Animate success lines
+  successDiv.querySelectorAll('.okl').forEach(line=>{
+    const d=parseInt(line.dataset.d)||0;
+    setTimeout(()=>line.classList.add('v'),d);
+  });
+});
+
+/* ── COPY SOLANA ADDRESS ── */
+document.getElementById('sol-addr').addEventListener('click',function(){
+  navigator.clipboard.writeText(this.textContent).then(()=>{
+    const orig=this.textContent;
+    this.textContent='[ Copied! ]';
+    this.style.color='var(--c)';
+    setTimeout(()=>{this.textContent=orig;this.style.color='';},1500);
+  });
+});
+
+/* ── RANDOM GLITCH FLICKER ── */
+function randomGlitch(){
+  const elements=document.querySelectorAll('.fl .nm, .rl .ti, .stat-l');
+  if(!bootDone||!elements.length)return;
+  const el=elements[Math.floor(Math.random()*elements.length)];
+  el.style.animation='none';
+  el.offsetHeight; // reflow
+  el.style.animation='textGlitch .15s linear';
+  setTimeout(()=>{el.style.animation='none';},150);
+}
+setInterval(randomGlitch,3000+Math.random()*4000);
+
+// CSS for text glitch
+const glitchStyle=document.createElement('style');
+glitchStyle.textContent=`@keyframes textGlitch{0%,100%{opacity:1;transform:translate(0)}33%{opacity:.8;transform:translate(-2px,1px);filter:hue-rotate(90deg)}66%{opacity:.9;transform:translate(1px,-1px)}}`;
+document.head.appendChild(glitchStyle);
+
+/* ── AMBIENT SOUND EFFECT ON HOVER (optional visual) ── */
+document.querySelectorAll('.stat, .f-link, .sbtn').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{
+    el.style.textShadow='0 0 15px var(--g)';
+  });
+  el.addEventListener('mouseleave',()=>{
+    el.style.textShadow='';
+  });
+});
+
+/* ── START ── */
+runBoot();
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html><head>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1200px;height:675px;overflow:hidden;font-family:'Inter',sans-serif;background:#08080f;color:white;position:relative}
+
+/* Background layers */
+.bg-grid{position:absolute;inset:0;background-image:
+  linear-gradient(rgba(224,64,251,0.03) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(224,64,251,0.03) 1px,transparent 1px);
+  background-size:40px 40px}
+.bg-orb1{position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(224,64,251,0.12) 0%,transparent 70%);top:-200px;right:-150px}
+.bg-orb2{position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(20,241,149,0.08) 0%,transparent 70%);bottom:-150px;left:-100px}
+.bg-line{position:absolute;top:0;left:80px;width:1px;height:100%;background:linear-gradient(180deg,transparent,rgba(224,64,251,0.15),transparent)}
+.bg-line2{position:absolute;top:0;left:1120px;width:1px;height:100%;background:linear-gradient(180deg,transparent,rgba(224,64,251,0.1),transparent)}
+
+.content{position:relative;z-index:1;padding:50px 80px;height:100%;display:flex;flex-direction:column}
+
+/* Top bar */
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:40px}
+.username{font-size:16px;font-weight:700;color:#E040FB;display:flex;align-items:center;gap:8px}
+.username::before{content:'';width:8px;height:8px;border-radius:50%;background:#E040FB;box-shadow:0 0 12px #E040FB}
+.proto-badge{font-family:'JetBrains Mono',monospace;font-size:11px;color:#64748b;background:rgba(224,64,251,0.08);border:1px solid rgba(224,64,251,0.15);padding:5px 14px;border-radius:4px;letter-spacing:1px}
+
+/* Main content area */
+.main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px}
+
+.title{font-size:38px;font-weight:800;text-align:center;line-height:1.2;letter-spacing:-0.5px}
+.title .highlight{color:#E040FB}
+.title .green{color:#14F195}
+
+.subtitle{font-size:16px;color:#94a3b8;text-align:center;max-width:700px;line-height:1.6}
+
+/* PDA diagram */
+.pda-flow{display:flex;align-items:center;gap:0;margin-top:8px}
+
+.pda-node{background:rgba(224,64,251,0.06);border:1px solid rgba(224,64,251,0.25);border-radius:12px;padding:18px 22px;text-align:center;min-width:150px}
+.pda-node-label{font-size:10px;color:#E040FB;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;font-family:'JetBrains Mono',monospace}
+.pda-node-name{font-size:16px;font-weight:700;color:#e2e8f0}
+.pda-node-desc{font-size:11px;color:#64748b;margin-top:4px}
+
+.pda-node-green{border-color:rgba(20,241,149,0.3);background:rgba(20,241,149,0.05)}
+.pda-node-green .pda-node-label{color:#14F195}
+
+.pda-node-accent{border-color:rgba(224,64,251,0.4);background:rgba(224,64,251,0.1);box-shadow:0 0 30px rgba(224,64,251,0.08)}
+
+.arrow{display:flex;align-items:center;padding:0 6px}
+.arrow-line{width:36px;height:1px;background:linear-gradient(90deg,rgba(224,64,251,0.4),rgba(224,64,251,0.15))}
+.arrow-head{width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:8px solid rgba(224,64,251,0.4)}
+
+/* Code snippet */
+.code-line{font-family:'JetBrains Mono',monospace;font-size:13px;color:#64748b;background:rgba(224,64,251,0.04);border:1px solid rgba(224,64,251,0.1);padding:10px 20px;border-radius:6px;margin-top:4px}
+.code-line .kw{color:#E040FB}
+.code-line .fn{color:#14F195}
+.code-line .str{color:#94a3b8}
+
+/* Bottom section */
+.bottom{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end}
+.tech-tags{display:flex;gap:8px}
+.tech-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:#64748b;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);padding:4px 12px;border-radius:4px}
+.brand{text-align:right}
+.brand-name{font-size:14px;font-weight:700;color:#94a3b8}
+.brand-sub{font-size:11px;color:#475569;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-orb1"></div>
+<div class="bg-orb2"></div>
+<div class="bg-line"></div>
+<div class="bg-line2"></div>
+
+<div class="content">
+  <div class="topbar">
+    <div class="username">@Web3__Youth</div>
+    <div class="proto-badge">PDA ARCHITECTURE</div>
+  </div>
+
+  <div class="main">
+    <div class="title">
+      <span class="highlight">Anchor PDAs</span> = Agent Wallets<br/>
+      <span class="green">No Private Keys</span> Required
+    </div>
+    <div class="subtitle">
+      Deterministic addresses derived from program seeds. Agents own assets on-chain without ever touching a secret key.
+    </div>
+
+    <div class="pda-flow">
+      <div class="pda-node">
+        <div class="pda-node-label">Input</div>
+        <div class="pda-node-name">Agent ID</div>
+        <div class="pda-node-desc">unique seed</div>
+      </div>
+      <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+      <div class="pda-node pda-node-accent">
+        <div class="pda-node-label">Anchor</div>
+        <div class="pda-node-name">PDA Derivation</div>
+        <div class="pda-node-desc">find_program_address</div>
+      </div>
+      <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+      <div class="pda-node pda-node-green">
+        <div class="pda-node-label">Output</div>
+        <div class="pda-node-name">Agent Vault</div>
+        <div class="pda-node-desc">SOL · USDC · SPL</div>
+      </div>
+      <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+      <div class="pda-node">
+        <div class="pda-node-label">Enforce</div>
+        <div class="pda-node-name">Spend Policy</div>
+        <div class="pda-node-desc">limits · rules</div>
+      </div>
+    </div>
+
+    <div class="code-line">
+      <span class="kw">#[account]</span> <span class="str">pub struct</span> <span class="fn">AgentVault</span> { owner: Pubkey, policy: SpendPolicy, balance: u64 }
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="tech-tags">
+      <div class="tech-tag">Anchor</div>
+      <div class="tech-tag">PDA</div>
+      <div class="tech-tag">Solana</div>
+      <div class="tech-tag">MCP</div>
+      <div class="tech-tag">Rust</div>
+    </div>
+    <div class="brand">
+      <div class="brand-name">AgentWallet Protocol</div>
+      <div class="brand-sub">agentwallet.fun</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
