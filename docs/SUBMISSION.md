@@ -4,8 +4,184 @@
 **Project:** AgentWallet Protocol
 **Team:** @Web3__Youth / @agentwallet_pro
 **Live:** [agentwallet.fun](https://agentwallet.fun)
+**API:** [Live API](https://trustworthy-celebration-production-6a3e.up.railway.app/health)
 **GitHub:** [github.com/YouthAIAgent/agentwallet](https://github.com/YouthAIAgent/agentwallet)
+**SDK:** [pypi.org/project/aw-protocol-sdk](https://pypi.org/project/aw-protocol-sdk/)
 **Program ID:** `CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6` ([Solana Explorer](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet))
+
+---
+
+## 🔥 Try It NOW — Live on Solana Devnet
+
+> **The API is live. The dashboard is live. The SDK is on PyPI. You can test everything right now.**
+
+### Quick Start (3 minutes)
+
+**Option A: Use the Dashboard** → [agentwallet.fun](https://agentwallet.fun)
+1. Click "Dashboard" → Register with email + password
+2. Create an agent → A wallet is auto-provisioned with a Solana devnet address
+3. Airdrop devnet SOL → `solana airdrop 2 <wallet_address> --url devnet`
+4. Transfer SOL, create escrow, set spending policies — all from the UI
+
+**Option B: Use curl (API)**
+
+```bash
+# Base URL
+API="https://trustworthy-celebration-production-6a3e.up.railway.app"
+
+# 1. Register (get JWT token)
+curl -s -X POST $API/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@test.com","password":"MyAgent123","org_name":"MyOrg"}' | jq .
+
+# Save your token
+TOKEN="eyJhbG..."  # paste from response
+
+# 2. Create an AI agent (wallet auto-provisioned)
+curl -s -X POST $API/v1/agents \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"trading-bot","capabilities":["trading","data"]}' | jq .
+
+# 3. List your agents + wallets
+curl -s $API/v1/agents -H "Authorization: Bearer $TOKEN" | jq .
+curl -s $API/v1/wallets -H "Authorization: Bearer $TOKEN" | jq .
+
+# 4. Check wallet balance (use wallet address from step 2)
+curl -s $API/v1/wallets/<wallet-id>/balance \
+  -H "Authorization: Bearer $TOKEN" | jq .
+
+# 5. Airdrop devnet SOL to your wallet address
+solana airdrop 2 <wallet_address> --url devnet
+
+# 6. Transfer SOL (policy-enforced, fee-deducted, audit-logged)
+curl -s -X POST $API/v1/transactions/transfer-sol \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from_wallet_id": "<wallet-uuid>",
+    "to_address": "11111111111111111111111111111111",
+    "amount_sol": 0.01,
+    "memo": "test transfer"
+  }' | jq .
+
+# 7. Set spending policy (per-tx limit)
+curl -s -X POST $API/v1/policies \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "daily-limit",
+    "rules": {"spending_limit_lamports": 100000000, "daily_limit_lamports": 500000000},
+    "scope_type": "org"
+  }' | jq .
+
+# 8. Create escrow (trustless agent-to-agent)
+curl -s -X POST $API/v1/escrow \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "funder_wallet_id": "<wallet-uuid>",
+    "recipient_address": "RecipientSolanaAddress...",
+    "amount_sol": 0.5,
+    "expires_in_hours": 24
+  }' | jq .
+
+# 9. View analytics
+curl -s $API/v1/analytics/overview \
+  -H "Authorization: Bearer $TOKEN" | jq .
+
+# 10. View audit log
+curl -s $API/v1/compliance/audit-log \
+  -H "Authorization: Bearer $TOKEN" | jq .
+```
+
+**Option C: Use Python SDK**
+
+```bash
+pip install aw-protocol-sdk==0.2.0
+```
+
+```python
+import asyncio
+from agentwallet import AgentWallet
+
+async def main():
+    async with AgentWallet(
+        base_url="https://trustworthy-celebration-production-6a3e.up.railway.app",
+        api_key="aw_live_..."  # or use JWT token
+    ) as aw:
+        # Create agent (wallet auto-provisioned)
+        agent = await aw.agents.create(
+            name="trading-bot",
+            capabilities=["trading"]
+        )
+        print(f"Agent: {agent.id}")
+
+        # List wallets
+        wallets = await aw.wallets.list(agent_id=agent.id)
+        wallet = wallets.data[0]
+        print(f"Wallet: {wallet.address}")
+
+        # Transfer SOL (after airdropping devnet SOL)
+        tx = await aw.transactions.transfer_sol(
+            from_wallet=wallet.id,
+            to_address="RecipientAddress...",
+            amount_sol=0.01
+        )
+        print(f"TX: {tx.signature}")
+
+        # Create escrow
+        escrow = await aw.escrow.create(
+            funder_wallet=wallet.id,
+            recipient_address="WorkerAgent...",
+            amount_sol=0.5,
+            expires_in_hours=24
+        )
+        print(f"Escrow: {escrow.id}")
+
+        # Release escrow when task is done
+        await aw.escrow.release(escrow.id)
+
+asyncio.run(main())
+```
+
+**Option D: MCP (Claude/GPT/Cursor)**
+
+Any MCP-compatible AI can use AgentWallet as native tools. 27 tools available:
+- `create_agent_wallet`, `transfer_sol`, `create_escrow`, `release_escrow`
+- `check_balance`, `list_transactions`, `set_spending_policy`
+- And 20 more...
+
+### What You Can Test Right Now
+
+| Feature | Endpoint | Status |
+|---|---|---|
+| Register & Auth | `POST /v1/auth/register` | ✅ Live |
+| Create AI Agent | `POST /v1/agents` | ✅ Live |
+| Auto-Provision Wallet | (auto on agent create) | ✅ Live |
+| Check Balance | `GET /v1/wallets/{id}/balance` | ✅ Live |
+| Transfer SOL | `POST /v1/transactions/transfer-sol` | ✅ Live |
+| Spending Policies | `POST /v1/policies` | ✅ Live |
+| Escrow (Create/Release/Refund) | `POST /v1/escrow` | ✅ Live |
+| Analytics Dashboard | `GET /v1/analytics/overview` | ✅ Live |
+| Audit Log | `GET /v1/compliance/audit-log` | ✅ Live |
+| Agent Marketplace | `GET /v1/marketplace/listings` | ✅ Live |
+| x402 Payments | `POST /v1/x402/pay` | ✅ Live |
+| ERC-8004 Identity | `POST /v1/erc8004/register` | ✅ Live |
+| Webhooks | `POST /v1/webhooks` | ✅ Live |
+
+### Live URLs
+
+| Resource | URL |
+|---|---|
+| **Landing Page** | [agentwallet.fun](https://agentwallet.fun) |
+| **Dashboard** | [agentwallet.fun/dashboard.html](https://agentwallet.fun/dashboard.html) |
+| **Docs** | [agentwallet.fun/docs.html](https://agentwallet.fun/docs.html) |
+| **Quest Campaign** | [agentwallet.fun/quest.html](https://agentwallet.fun/quest.html) |
+| **API Health** | [API /health](https://trustworthy-celebration-production-6a3e.up.railway.app/health) |
+| **Solana Program** | [Explorer (Devnet)](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet) |
+| **SDK (PyPI)** | [aw-protocol-sdk](https://pypi.org/project/aw-protocol-sdk/) |
+| **GitHub** | [YouthAIAgent/agentwallet](https://github.com/YouthAIAgent/agentwallet) |
 
 ---
 
@@ -107,6 +283,8 @@ Three PDAs power the core logic:
 - **Dual auth** — JWT tokens + API keys (`aw_live_` / `aw_test_`)
 - **Immutable audit log** for every state change
 - **Anomaly detection** — velocity spikes, unusual amounts, high failure rates
+- **Security headers** — HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
+- **Swagger disabled in production** — API docs only in development mode
 
 ### Python SDK (PyPI Published)
 
@@ -122,14 +300,14 @@ from agentwallet import AgentWallet
 async with AgentWallet(api_key="aw_live_...") as aw:
     agent = await aw.agents.create(name="trading-bot", capabilities=["trading"])
     wallet = (await aw.wallets.list(agent_id=agent.id)).data[0]
-    
+
     # Policy-enforced, fee-deducted, audit-logged transfer
     tx = await aw.transactions.transfer_sol(
         from_wallet=wallet.id,
         to_address="Recipient...",
         amount_sol=0.5
     )
-    
+
     # Trustless escrow for agent-to-agent tasks
     escrow = await aw.escrow.create(
         funder_wallet=wallet.id,
@@ -146,7 +324,19 @@ Any MCP-compatible AI (Claude, GPT, Cursor) can create wallets, transfer SOL, ma
 
 ### Dashboard (React + TypeScript)
 
-9-page dark-themed dashboard: Dashboard overview, Agents, Wallets, Transactions, Analytics (Recharts), Policies, Audit Log, Billing, Login.
+9-page dark-themed hacker terminal dashboard: Dashboard overview, Agents, Wallets, Transactions, Analytics (Recharts), Policies, Audit Log, Billing, Login.
+
+### Quest Campaign (Community Growth)
+
+Supabase-backed anti-tamper quest system with:
+- Magic link OTP authentication
+- Server-side quest verification (no localStorage cheating)
+- Daily check-in streaks with bonus multipliers
+- Knowledge quiz (server-graded)
+- Referral system with attribution
+- Live leaderboard from real data
+- Achievement badges (10 unlockable)
+- XP/Level progression system (10 levels)
 
 ### CLI (Rich Terminal)
 
@@ -231,6 +421,8 @@ The AI agent market is projected to reach $65B by 2030. Every one of these agent
 - ✅ x402 HTTP-native payments (v0.2.0)
 - ✅ ERC-8004 agent identity (v0.2.0)
 - ✅ Agent reputation scoring (v0.2.0)
+- ✅ Quest campaign with anti-tamper Supabase backend
+- ✅ Security hardening (headers, CORS, password policy)
 
 ### Q2 2026
 - Mainnet deployment on Solana
@@ -268,11 +460,13 @@ The AI agent market is projected to reach $65B by 2030. Every one of these agent
 | **Encryption** | Fernet (dev), AWS KMS (prod) |
 | **SDK** | Python 3.11+, httpx, pydantic |
 | **AI Integration** | MCP (Model Context Protocol), 27 tools |
+| **Quest System** | Supabase (Auth + PostgreSQL + Realtime) |
 | **Billing** | Stripe |
 | **Logging** | structlog (JSON) |
 | **Containers** | Docker Compose |
-| **Testing** | pytest, pytest-asyncio, httpx |
+| **Testing** | pytest, pytest-asyncio, httpx (53/53 passing) |
 | **CI/CD** | GitHub Actions |
+| **Deploy** | Railway (API), Vercel (Landing), GitHub Pages |
 
 ---
 
@@ -292,12 +486,18 @@ The AI agent market is projected to reach $65B by 2030. Every one of these agent
 | Test Files | 8 (53 tests passing) |
 | Policy Rule Types | 7 |
 | Security Fixes Shipped | 8 |
+| Quest Types | 12 |
+| Achievement Badges | 10 |
 
 ---
 
 ## Links
 
 - **Live App:** [agentwallet.fun](https://agentwallet.fun)
+- **Dashboard:** [agentwallet.fun/dashboard.html](https://agentwallet.fun/dashboard.html)
+- **Docs:** [agentwallet.fun/docs.html](https://agentwallet.fun/docs.html)
+- **Quest Campaign:** [agentwallet.fun/quest.html](https://agentwallet.fun/quest.html)
+- **API Health:** [trustworthy-celebration-production-6a3e.up.railway.app/health](https://trustworthy-celebration-production-6a3e.up.railway.app/health)
 - **GitHub:** [github.com/YouthAIAgent/agentwallet](https://github.com/YouthAIAgent/agentwallet)
 - **SDK (PyPI):** [pypi.org/project/aw-protocol-sdk](https://pypi.org/project/aw-protocol-sdk/)
 - **Solana Program:** [Explorer (Devnet)](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet)
@@ -311,7 +511,7 @@ The AI agent market is projected to reach $65B by 2030. Every one of these agent
 **Solo Builder** — @Web3__Youth
 
 - 6 years in blockchain & crypto
-- Built the entire stack: Anchor program, FastAPI backend, Python SDK, React dashboard, MCP server, CLI
+- Built the entire stack: Anchor program, FastAPI backend, Python SDK, React dashboard, MCP server, CLI, Quest system
 - Open source contributor, builder-first mentality
 - Based in India, building for the global agentic economy
 

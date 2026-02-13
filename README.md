@@ -32,16 +32,60 @@
 
 ---
 
-## Live on Devnet
+## Try It NOW — Live on Solana Devnet
 
 **Program ID:** `CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6`
 
-- **Solana Explorer:** [View on Devnet](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet)
-- **Backend API:** `https://trustworthy-celebration-production-6a3e.up.railway.app`
-- **SDK on PyPI:** `pip install aw-protocol-sdk==0.2.0`
-- **Website:** [agentwallet.fun](https://agentwallet.fun)
-- **Dashboard:** [agentwallet.fun/dashboard.html](https://agentwallet.fun/dashboard.html)
-- **API Docs:** [agentwallet.fun/docs.html](https://agentwallet.fun/docs.html)
+| Resource | URL |
+|---|---|
+| **Website** | [agentwallet.fun](https://agentwallet.fun) |
+| **Dashboard** | [agentwallet.fun/dashboard.html](https://agentwallet.fun/dashboard.html) |
+| **Docs** | [agentwallet.fun/docs.html](https://agentwallet.fun/docs.html) |
+| **Quest Campaign** | [agentwallet.fun/quest.html](https://agentwallet.fun/quest.html) |
+| **API** | [Live API](https://trustworthy-celebration-production-6a3e.up.railway.app/health) |
+| **Solana Explorer** | [View on Devnet](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet) |
+| **SDK** | `pip install aw-protocol-sdk==0.2.0` |
+
+### Quick Test (Copy-Paste These Commands)
+
+```bash
+# Set base URL
+API="https://trustworthy-celebration-production-6a3e.up.railway.app"
+
+# 1. Register → get JWT token
+curl -s -X POST $API/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"MyAgent123","org_name":"TestOrg"}'
+
+# 2. Create AI agent (auto-provisions Solana devnet wallet)
+curl -s -X POST $API/v1/agents \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"trading-bot","capabilities":["trading"]}'
+
+# 3. Airdrop devnet SOL to your agent's wallet
+solana airdrop 2 WALLET_ADDRESS --url devnet
+
+# 4. Transfer SOL (policy-enforced, fee-deducted, audit-logged)
+curl -s -X POST $API/v1/transactions/transfer-sol \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"from_wallet_id":"WALLET_UUID","to_address":"11111111111111111111111111111111","amount_sol":0.01}'
+
+# 5. Create escrow (trustless agent-to-agent payment)
+curl -s -X POST $API/v1/escrow \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"funder_wallet_id":"WALLET_UUID","recipient_address":"RECIPIENT","amount_sol":0.5,"expires_in_hours":24}'
+
+# 6. Set spending policy
+curl -s -X POST $API/v1/policies \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"daily-cap","rules":{"daily_limit_lamports":500000000},"scope_type":"org"}'
+```
+
+**Full testing guide with SDK + MCP examples:** [docs/SUBMISSION.md](docs/SUBMISSION.md)
 
 **Production-ready on Solana devnet.** Mainnet deployment scheduled for Q2 2026.
 
