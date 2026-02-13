@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /docs.html
+Allow: /quest.html
+Disallow: /dashboard.html
+Disallow: /api/
+Disallow: /.well-known/
+
+Sitemap: https://agentwallet.fun/sitemap.xml

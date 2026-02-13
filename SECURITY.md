@@ -1,84 +1,172 @@
 # Security Policy
 
-## Supported Versions
+## AgentWallet Protocol
 
-| Version | Supported |
-|---------|-----------|
-| 0.1.x (current) | Yes |
-| < 0.1.0 | No |
+AgentWallet is a Solana-based autonomous wallet infrastructure for AI agents. We take the security of our protocol, smart contracts, and user funds seriously. This document outlines how to report vulnerabilities, what falls within scope, and how we handle security disclosures.
 
-## Reporting a Vulnerability
+---
+
+## Reporting Vulnerabilities
+
+If you discover a security vulnerability, please report it responsibly through one of the following channels:
+
+- **Email:** [security@agentwallet.fun](mailto:security@agentwallet.fun)
+- **GitHub Security Advisories:** Use the "Report a vulnerability" feature under the Security tab of this repository.
 
 **Do NOT open a public GitHub issue for security vulnerabilities.**
 
-### Critical Vulnerabilities
+When submitting a report, please include:
 
-For critical issues (private key exposure, fund theft, authentication bypass, escrow manipulation), email directly:
+- A clear description of the vulnerability and its potential impact.
+- Detailed steps to reproduce the issue, including any tools, scripts, or payloads used.
+- The affected component(s) (API, smart contract, SDK, web application, etc.).
+- Any relevant logs, screenshots, or proof-of-concept code.
+- Your suggested severity classification, if applicable.
 
-**web3youth@gmail.com**
+---
 
-Include:
-- Description of the vulnerability
-- Steps to reproduce
-- Potential impact
-- Your suggested fix (if any)
+## Scope
 
-We will acknowledge receipt within **24 hours** and provide an initial assessment within **72 hours**.
+The following components are in scope for security reports:
 
-### Non-Critical Concerns
+- **API Endpoints** -- All endpoints across auth, wallets, agents, transactions, escrow, analytics, compliance, policies, webhooks, tokens, ERC-8004, X402, and marketplace routers.
+- **Smart Contracts** -- Solana programs including PDA-derived vault logic, escrow contracts, and token operations.
+- **SDK** -- The AgentWallet SDK (client libraries, signing utilities, transaction builders).
+- **Authentication System** -- JWT token issuance and validation, API key generation and verification, session management.
+- **Escrow System** -- Fund locking, release conditions, dispute resolution logic.
+- **Web Application** -- The dashboard, landing page, and any associated frontend components.
+- **Key Management** -- Encrypted key storage, derivation paths, and access controls.
 
-For lower-severity issues (rate limiting gaps, minor input validation, informational leaks), you can use the [Security Vulnerability](https://github.com/YouthAIAgent/agentwallet/issues/new?template=security_vulnerability.yml) issue template.
+---
 
-## Security Architecture
+## Out of Scope
 
-### Key Management
-- Private keys encrypted at rest using **Fernet** (dev) / **AWS KMS** (production)
-- Keys are **never** returned in API responses
-- Keys are **never** logged or included in error messages
+The following are excluded from this security policy:
 
-### Authentication
-- **JWT tokens** for session-based auth (short-lived, signed with HS256)
-- **API keys** for programmatic access (prefixed `aw_live_` / `aw_test_`)
-- **bcrypt** password hashing with automatic salting
+- **Social engineering attacks** -- Phishing, pretexting, or other attacks targeting team members or users directly.
+- **Denial of Service (DoS/DDoS)** -- Volumetric or resource-exhaustion attacks against infrastructure.
+- **Third-party services** -- Vulnerabilities in external dependencies, hosting providers (Railway, Solana RPC nodes), or upstream libraries unless the issue is in how AgentWallet integrates with them.
+- **Self-XSS** -- Attacks that require a user to paste code into their own browser console.
+- **Issues requiring physical access** to a user's device.
+- **Bugs in software or protocols not maintained by the AgentWallet team.**
+- **Reports from automated scanners** without a demonstrated, exploitable vulnerability.
 
-### Transaction Security
-- Policy engine evaluates every transaction before chain submission
-- Spending limits (per-transaction and daily rolling)
-- Destination whitelist/blacklist enforcement
-- Idempotency keys prevent double-spend
-- All state changes recorded in immutable audit log
+---
 
-### Escrow Security
-- Funds held in on-chain PDAs (Program Derived Addresses)
-- Only funder or arbiter can release/refund
-- Automatic expiry with refund on timeout
-- No single party can unilaterally withdraw
+## Response Timeline
 
-### Infrastructure
-- CORS restrictions on all endpoints
-- Redis-backed rate limiting per authentication tier
-- HMAC-signed webhook deliveries
-- Input validation on all API endpoints (Pydantic)
-- SQL injection prevention via SQLAlchemy parameterized queries
+We are committed to addressing security reports promptly:
 
-### On-Chain Program
-- Anchor framework with built-in account validation
-- Owner checks on all privileged instructions
-- Signer verification for transfers and escrow operations
-- Overflow-safe arithmetic
+| Stage | Timeline |
+|---|---|
+| **Acknowledgment** | Within 48 hours of receipt |
+| **Triage and Initial Assessment** | Within 5 business days |
+| **Fix -- Critical severity** | Target resolution within 24-48 hours |
+| **Fix -- High severity** | Target resolution within 7 days |
+| **Fix -- Medium severity** | Target resolution within 30 days |
+| **Fix -- Low severity** | Target resolution within 90 days |
 
-## Responsible Disclosure
+We will keep reporters informed of progress throughout the remediation process. Timelines may vary depending on complexity, but we will communicate any delays.
 
-We follow a **90-day disclosure policy**:
+---
 
-1. You report the vulnerability privately
-2. We acknowledge and begin investigation
-3. We develop and test a fix
-4. We release the fix and notify affected users
-5. After 90 days (or after the fix is deployed), you may publicly disclose
+## Severity Classification
 
-We will credit reporters in our security changelog unless you prefer to remain anonymous.
+We classify vulnerabilities using the following severity levels:
+
+### Critical
+
+Vulnerabilities that allow an attacker to compromise user funds, extract private keys, or take full control of the protocol.
+
+- Private key compromise or extraction from encrypted storage.
+- Unauthorized fund theft from wallets or escrow accounts.
+- Arbitrary Solana program instruction injection leading to fund loss.
+- Complete bypass of the policy engine enabling unrestricted transactions.
+
+### High
+
+Vulnerabilities that allow significant unauthorized access or privilege escalation.
+
+- Authentication bypass (JWT forgery, API key leakage through endpoints).
+- Privilege escalation (agent gaining owner-level permissions, cross-tenant access).
+- Escrow manipulation (unauthorized release, condition tampering).
+- SQL injection or remote code execution on API servers.
+
+### Medium
+
+Vulnerabilities that expose sensitive data or allow limited manipulation.
+
+- Personally identifiable information or wallet metadata leakage.
+- Cross-site scripting (XSS) on the dashboard or landing page.
+- Insecure direct object references exposing other users' data.
+- Broken access controls on non-critical endpoints.
+
+### Low
+
+Vulnerabilities with minimal direct impact.
+
+- Verbose error messages disclosing internal implementation details.
+- Information disclosure through HTTP headers or server metadata.
+- Missing security headers or minor configuration issues.
+- Rate limiting gaps on non-sensitive endpoints.
+
+---
 
 ## Bug Bounty
 
-We do not currently have a formal bug bounty program. However, we recognize and credit significant security contributions in our [Security Changelog](SECURITY_CHANGELOG.md) and project documentation.
+We offer rewards in $AW tokens for valid, responsibly disclosed vulnerabilities. Reward amounts are determined based on severity, impact, and quality of the report.
+
+| Severity | Reward (up to) |
+|---|---|
+| **Critical** | 5,000 $AW |
+| **High** | 2,000 $AW |
+| **Medium** | 500 $AW |
+| **Low** | 100 $AW |
+
+### Eligibility
+
+- The vulnerability must be in scope as defined above.
+- The report must include sufficient detail to reproduce the issue.
+- The vulnerability must not have been previously reported or publicly known.
+- You must not have exploited the vulnerability beyond what is necessary for demonstration.
+- You must comply with the responsible disclosure guidelines below.
+
+Rewards are issued at the sole discretion of the AgentWallet team. Duplicate reports will be credited to the first submission received.
+
+---
+
+## Security Measures
+
+AgentWallet employs multiple layers of security across the protocol:
+
+- **Authentication:** Dual-layer authentication using JWT tokens and API keys. All tokens are short-lived with secure refresh flows.
+- **PDA-Derived Vaults:** Agent wallets use Solana Program Derived Addresses, ensuring funds are controlled by on-chain program logic rather than externally held keys.
+- **Policy Engine:** Configurable transaction policies enforce spending limits, whitelist restrictions, and approval workflows before any funds move.
+- **Audit Logging:** All actions across the API are logged with full attribution for forensic review and compliance.
+- **Encrypted Key Storage:** Private keys at rest are encrypted and never exposed through API responses.
+- **Row-Level Security (RLS):** Database access is enforced at the row level to prevent cross-tenant data access.
+
+---
+
+## Responsible Disclosure
+
+We ask that security researchers follow these guidelines:
+
+- **Do not publish or disclose vulnerability details publicly** before a fix has been released and deployed.
+- **Coordinate with the AgentWallet team** on disclosure timing. We aim to resolve issues before any public announcement.
+- **Do not access, modify, or delete data** belonging to other users during your research.
+- **Do not perform actions that could degrade service** for other users (load testing, spam, denial of service).
+- **Use test accounts and testnets** whenever possible.
+
+We will credit researchers in our security acknowledgments (unless anonymity is preferred) and will not pursue legal action against individuals who follow this responsible disclosure policy in good faith.
+
+---
+
+## Contact
+
+- **Security reports:** [security@agentwallet.fun](mailto:security@agentwallet.fun)
+- **General inquiries:** Open an issue on GitHub or reach out through our community channels.
+
+---
+
+This policy is effective as of February 2026 and may be updated periodically. Check this document for the latest version.
