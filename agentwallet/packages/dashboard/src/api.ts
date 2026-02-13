@@ -1,4 +1,4 @@
-const API_BASE = "/api/v1";
+const API_BASE = import.meta.env.VITE_API_URL || "/api/v1";
 
 let authToken: string | null = localStorage.getItem("aw_token");
 
