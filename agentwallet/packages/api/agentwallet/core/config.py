@@ -31,7 +31,10 @@ class Settings(BaseSettings):
     # API
     api_host: str = "0.0.0.0"
     api_port: int = 8000
-    api_cors_origins: str = "http://localhost:5173"
+    api_cors_origins: str = "http://localhost:5173,https://agentwallet.fun,https://youthaiagent.github.io"
+
+    # Environment
+    environment: str = "development"
 
     # Stripe billing
     stripe_secret_key: str = ""
