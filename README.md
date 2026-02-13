@@ -17,6 +17,8 @@
 [![Rust Anchor](https://img.shields.io/badge/Rust-Anchor%200.30-000000?style=for-the-badge&logo=rust)](https://anchor-lang.com)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/Demo-agentwallet.fun-00ff41?style=for-the-badge&logo=vercel)](https://agentwallet.fun)
+[![API Live](https://img.shields.io/badge/API-Live%20on%20Railway-0B0D0E?style=for-the-badge&logo=railway)](https://trustworthy-celebration-production-6a3e.up.railway.app/docs)
 
 > _"Your agents don't need permission. They need a wallet."_
 
@@ -29,6 +31,9 @@
 - **Solana Explorer:** [View on Devnet](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet)
 - **Backend API:** `https://trustworthy-celebration-production-6a3e.up.railway.app`
 - **SDK on PyPI:** `pip install aw-protocol-sdk==0.2.0`
+- **Website:** [agentwallet.fun](https://agentwallet.fun)
+- **Dashboard:** [agentwallet.fun/dashboard.html](https://agentwallet.fun/dashboard.html)
+- **API Docs:** [agentwallet.fun/docs.html](https://agentwallet.fun/docs.html)
 
 **Production-ready on Solana devnet.** Mainnet deployment scheduled for Q2 2026.
 
