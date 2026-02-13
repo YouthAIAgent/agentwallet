@@ -180,6 +180,26 @@ body{animation:flk 10s infinite}
 .escrow-status{text-align:center;margin-top:24px;font-size:13px;color:var(--c);min-height:1.6em}
 .escrow-step-ind{color:var(--m);font-weight:700}
 
+/* ── ENDORSEMENTS ── */
+.endorsement-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.endorsement-card{background:var(--glass);backdrop-filter:blur(10px);border:1px solid var(--gbdr);border-radius:6px;padding:24px;transition:all .4s;position:relative;overflow:hidden}
+.endorsement-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.endorsement-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.endorsement-card[data-accent="toly"]::before{background:linear-gradient(90deg,var(--p),var(--c))}
+.endorsement-card[data-accent="mike"]::before{background:linear-gradient(90deg,var(--y),var(--o))}
+.endorsement-quote{font-size:18px;font-weight:700;line-height:1.5;margin-bottom:16px;min-height:56px}
+.endorsement-card[data-accent="toly"] .endorsement-quote{color:var(--c);text-shadow:var(--glow-c)}
+.endorsement-card[data-accent="mike"] .endorsement-quote{color:var(--y)}
+.endorsement-context{font-size:11px;color:var(--dim);line-height:1.6;margin-bottom:16px;padding:12px;background:rgba(255,255,255,.02);border-left:2px solid var(--gbdr);border-radius:0 4px 4px 0}
+.endorsement-author{display:flex;align-items:center;gap:10px;padding-top:12px;border-top:1px solid var(--gbdr)}
+.endorsement-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;background:linear-gradient(135deg,rgba(168,85,247,.2),rgba(0,212,255,.2))}
+.endorsement-name{font-size:13px;font-weight:700;color:var(--g)}
+.endorsement-handle{font-size:11px;color:var(--dim)}
+.endorsement-role{font-size:10px;color:var(--p);letter-spacing:1px}
+.endorsement-link{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:11px;color:var(--dim);letter-spacing:1px;transition:all .3s;padding:4px 10px;border:1px solid var(--gbdr);border-radius:2px}
+.endorsement-link:hover{color:var(--c);border-color:rgba(0,212,255,.3);background:rgba(0,212,255,.05)}
+@media(max-width:768px){.endorsement-grid{grid-template-columns:1fr}}
+
 /* ── MARKETPLACE ── */
 .mp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .agent-card{background:var(--glass);backdrop-filter:blur(8px);border:1px solid var(--gbdr);border-radius:6px;padding:20px;transition:all .3s;overflow:hidden}
@@ -374,8 +394,32 @@ body{animation:flk 10s infinite}
 </div>
 </section>
 
+<section class="sec" id="sec-endorsed">
+<div class="sec-title"><span class="sec-accent">07</span> ENDORSED BY SOLANA LEADERSHIP</div>
+<div class="endorsement-grid">
+<div class="endorsement-card" data-accent="toly">
+<div class="endorsement-quote">"EVM minds cannot comprehend this"</div>
+<div class="endorsement-context">Responding to AgentWallet's PDA vault architecture — deterministic agent wallets with policy-enforced spending, no private keys required.</div>
+<div class="endorsement-author"><div class="endorsement-avatar">AY</div><div><div class="endorsement-name">toly</div><div class="endorsement-role">CO-FOUNDER, SOLANA LABS</div><div class="endorsement-handle">@toly</div></div></div>
+<a href="https://x.com/toly/status/2021861588656136303" target="_blank" class="endorsement-link">VIEW ON X &rarr;</a>
+</div>
+<div class="endorsement-card" data-accent="mike">
+<div class="endorsement-quote">"Narrative should have been: Solana has an inbuilt key value store"</div>
+<div class="endorsement-context">Validating our PDA-first approach — PDAs aren't complex, they're Solana's most powerful primitive. AgentWallet proves it.</div>
+<div class="endorsement-author"><div class="endorsement-avatar">MM</div><div><div class="endorsement-name">Mike MacCana</div><div class="endorsement-role">SOLANA CORE CONTRIBUTOR</div><div class="endorsement-handle">@mikemaccana</div></div></div>
+<a href="https://x.com/mikemaccana/status/2021974942246695275" target="_blank" class="endorsement-link">VIEW ON X &rarr;</a>
+</div>
+<div class="endorsement-card" data-accent="toly">
+<div class="endorsement-quote">"🛳️🛳️🛳️"</div>
+<div class="endorsement-context">Shipment approved. toly quote-tweeted our PDA Spend Policies launch — configurable per-tx caps, daily limits, whitelist-only mode on Solana.</div>
+<div class="endorsement-author"><div class="endorsement-avatar">AY</div><div><div class="endorsement-name">toly</div><div class="endorsement-role">CO-FOUNDER, SOLANA LABS</div><div class="endorsement-handle">@toly</div></div></div>
+<a href="https://x.com/toly/status/2022014589354094842" target="_blank" class="endorsement-link">VIEW ON X &rarr;</a>
+</div>
+</div>
+</section>
+
 <section class="sec" id="sec-about">
-<div class="sec-title"><span class="sec-accent">07</span> WHAT IS AGENTWALLET?</div>
+<div class="sec-title"><span class="sec-accent">08</span> WHAT IS AGENTWALLET?</div>
 <div class="tb"><div class="tb-in">
 <div class="cmd"><span class="d">$</span> agentwallet --about</div>
 <p style="color:var(--g);opacity:.85;margin-bottom:20px;line-height:1.8">AgentWallet is the <span style="color:var(--c);font-weight:700">autonomous financial infrastructure</span> for the agentic economy. We give AI agents their own Solana wallets — with programmatic custody, trustless escrow, and an MCP server that any AI (Claude, GPT, Gemini, Cursor) can plug into instantly.</p>
@@ -390,7 +434,7 @@ body{animation:flk 10s infinite}
 </section>
 
 <section class="sec" id="sec-pricing">
-<div class="sec-title"><span class="sec-accent">08</span> PRICING</div>
+<div class="sec-title"><span class="sec-accent">09</span> PRICING</div>
 <div class="pricing-grid">
 <div class="price-card"><div class="price-tier">Free</div><div class="price-amount">$0 <span class="price-unit">/ month</span></div><div class="price-desc">For indie hackers and experimentation</div><ul class="price-features"><li>3 agent wallets</li><li>1,000 transactions / month</li><li>Basic spending policies</li><li>Community support</li><li>Devnet access</li></ul></div>
 <div class="price-card featured"><div class="price-tier">Pro</div><div class="price-amount">$49 <span class="price-unit">/ month</span></div><div class="price-desc">For teams shipping agentic products</div><ul class="price-features"><li>50 agent wallets</li><li>50,000 transactions / month</li><li>Advanced policies + escrow</li><li>x402 micropayments</li><li>Priority support + webhooks</li><li>Analytics dashboard</li><li>Mainnet access</li></ul></div>
@@ -419,7 +463,7 @@ body{animation:flk 10s infinite}
 </section>
 
 <section class="sec" id="sec-roadmap">
-<div class="sec-title"><span class="sec-accent">09</span> ROADMAP TO MAINNET</div>
+<div class="sec-title"><span class="sec-accent">10</span> ROADMAP TO MAINNET</div>
 <div class="tb"><div class="tb-in">
 <div class="cmd"><span class="d">$</span> agentwallet --roadmap</div>
 <div class="rl"><span class="tr">├──</span><span style="color:var(--g)">✅</span><span class="ti" style="color:var(--g)">Phase 1: Core</span><span class="aw">→</span><span class="vl">Wallet creation, transfers, escrow, policies, MCP server</span></div>
@@ -431,7 +475,7 @@ body{animation:flk 10s infinite}
 </section>
 
 <section class="sec" id="sec-rewards">
-<div class="sec-title"><span class="sec-accent">10</span> BETA REWARDS</div>
+<div class="sec-title"><span class="sec-accent">11</span> BETA REWARDS</div>
 <div class="tb"><div class="tb-in">
 <div class="cmd"><span class="d">$</span> agentwallet --rewards</div>
 <div class="rtit">🏆 MAINNET BETA REWARDS:</div>
@@ -469,7 +513,7 @@ body{animation:flk 10s infinite}
 
 <script>
 (function(){'use strict';
-const SUPABASE_URL='https://rlajsbxsculwamkpgsmm.supabase.co',SUPABASE_ANON_KEY='sb_publishable_AMIQuEjpxXEdTXEyzE35vw_CKm34lRX',SOLANA_RPC='https://api.devnet.solana.com';
+const SUPABASE_URL='https://rlajsbxsculwamkpgsmm.supabase.co',SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsYWpzYnhzY3Vsd2Fta3Bnc21tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5NDUwNTUsImV4cCI6MjA4NjUyMTA1NX0.3C0AxpkvFBfGsbYZQYHDE25DY4UgVPMur4c6zK5Lu7A',SOLANA_RPC='https://api.devnet.solana.com';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const fmt=n=>n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,',');
