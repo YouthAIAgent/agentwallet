@@ -22,9 +22,17 @@
 
 > _"Your agents don't need permission. They need a wallet."_
 
+### Endorsed by Solana Leadership
+
+> **"EVM minds cannot comprehend this"** — [toly](https://x.com/toly/status/2021861588656136303), Co-Founder of Solana Labs
+>
+> **"Narrative should have been: ✨Solana has an inbuilt key value store✨"** — [Mike MacCana](https://x.com/mikemaccana/status/2021974942246695275), Solana Core Contributor
+>
+> **"🛳️🛳️🛳️"** — [toly](https://x.com/toly/status/2022014589354094842), on AgentWallet's PDA Spend Policies launch
+
 ---
 
-## 🔥 Live on Devnet
+## Live on Devnet
 
 **Program ID:** `CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6`
 

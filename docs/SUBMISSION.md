@@ -9,6 +9,16 @@
 
 ---
 
+## Endorsed by Solana Leadership
+
+| Who | What They Said | Link |
+|---|---|---|
+| **toly** (Co-Founder, Solana Labs) | "EVM minds cannot comprehend this" — on AgentWallet's PDA vault architecture | [View](https://x.com/toly/status/2021861588656136303) |
+| **Mike MacCana** (Solana Core Contributor) | "Narrative should have been ✨Solana has an inbuilt key value store✨" — validating our PDA-first approach | [View](https://x.com/mikemaccana/status/2021974942246695275) |
+| **toly** (Co-Founder, Solana Labs) | "🛳️🛳️🛳️" — quote-tweeting AgentWallet's PDA Spend Policies launch | [View](https://x.com/toly/status/2022014589354094842) |
+
+---
+
 ## Problem Statement
 
 AI agents are becoming autonomous economic actors — they negotiate, trade, pay for services, and manage funds. But today, they operate with human wallets that were never designed for programmatic control.
@@ -270,16 +280,16 @@ The AI agent market is projected to reach $65B by 2030. Every one of these agent
 
 | Component | Count |
 |---|---|
-| MCP Tools | 27 |
+| MCP Tools | 47 |
 | Anchor Instructions | 7 |
 | API Routers | 13 |
-| API Endpoints | 53 |
-| SQLAlchemy Models | 16 |
+| API Endpoints | 68 |
+| SQLAlchemy Models | 15 |
 | Database Tables | 14 |
 | Background Workers | 7 |
 | SDK Resources | 7 |
 | Dashboard Pages | 9 |
-| Test Files | 8 |
+| Test Files | 8 (53 tests passing) |
 | Policy Rule Types | 7 |
 | Security Fixes Shipped | 8 |
 
