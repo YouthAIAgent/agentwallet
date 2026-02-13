@@ -34,7 +34,7 @@ AgentWallet is a **full-stack wallet-as-a-service protocol** built on Solana, de
 ```
 Foundation Model (Claude/GPT/Gemini)
         ↕
-MCP Layer (33 AI-native tools)
+MCP Layer (27 AI-native tools)
         ↕
 Agent Identity & Registry
         ↕
@@ -84,7 +84,7 @@ Three PDAs power the core logic:
 
 ### Backend (FastAPI + PostgreSQL + Redis)
 
-- **12 API routers** covering agents, wallets, transactions, escrow, policies, analytics, compliance, webhooks, billing, auth
+- **13 API routers** covering agents, wallets, transactions, escrow, policies, analytics, compliance, webhooks, billing, auth, marketplace, erc8004, x402
 - **16 SQLAlchemy models** — 14-table schema with full relational integrity
 - **7 background workers** — tx processing, webhook delivery, analytics rollup, escrow expiry, usage metering
 - **Permission Engine** — JSON policy rules evaluated on every transaction:
@@ -101,7 +101,7 @@ Three PDAs power the core logic:
 ### Python SDK (PyPI Published)
 
 ```bash
-pip install aw-protocol-sdk==0.1.0
+pip install aw-protocol-sdk==0.2.0
 ```
 
 Stripe-like async client with typed responses:
@@ -130,7 +130,7 @@ async with AgentWallet(api_key="aw_live_...") as aw:
     await aw.escrow.release(escrow.id)
 ```
 
-### MCP Integration (33 AI-Native Tools)
+### MCP Integration (27 AI-Native Tools)
 
 Any MCP-compatible AI (Claude, GPT, Cursor) can create wallets, transfer SOL, manage escrow as native tools. Zero integration friction — agents interact with AgentWallet the same way they interact with everything else.
 
@@ -154,7 +154,7 @@ Live terminal dashboard with real-time stats, agent management, wallet operation
 | Policy Engine | ❌ None | ✅ 7 rule types, auto-enforced |
 | Agent Identity | ❌ Share human wallet | ✅ Dedicated PDA per agent |
 | Key Security | ❌ `.env` files | ✅ Encrypted at rest (Fernet/KMS) |
-| MCP Integration | ❌ None | ✅ 33 native tools |
+| MCP Integration | ❌ None | ✅ 27 native tools |
 | Compliance | ❌ None | ✅ EU AI Act reporting |
 | Multi-agent | ❌ Not designed for it | ✅ Built for fleets of agents |
 
@@ -213,21 +213,22 @@ The AI agent market is projected to reach $65B by 2030. Every one of these agent
 
 ### Q1 2026 (Now)
 - ✅ Core protocol live on Solana devnet
-- ✅ Python SDK on PyPI
-- ✅ 33 MCP tools
+- ✅ Python SDK on PyPI (v0.2.0)
+- ✅ 27 MCP tools
 - ✅ Security audit complete (8 fixes shipped)
 - ✅ Dashboard + CLI
+- ✅ Agent-to-agent marketplace (v0.2.0)
+- ✅ x402 HTTP-native payments (v0.2.0)
+- ✅ ERC-8004 agent identity (v0.2.0)
+- ✅ Agent reputation scoring (v0.2.0)
 
 ### Q2 2026
 - Mainnet deployment on Solana
-- x402 HTTP-native payments integration
-- Agent reputation scoring (on-chain)
 - TypeScript/Node.js SDK
+- Cross-chain balance aggregation
 
 ### Q3 2026
 - Multi-chain expansion (Base, Arbitrum, Polygon)
-- Agent-to-agent marketplace protocol
-- Cross-chain balance aggregation
 - Enterprise compliance suite (SOX, EU AI Act Article 52)
 
 ### Q4 2026
@@ -256,7 +257,7 @@ The AI agent market is projected to reach $65B by 2030. Every one of these agent
 | **Auth** | JWT (python-jose), bcrypt, API Keys |
 | **Encryption** | Fernet (dev), AWS KMS (prod) |
 | **SDK** | Python 3.11+, httpx, pydantic |
-| **AI Integration** | MCP (Model Context Protocol), 33 tools |
+| **AI Integration** | MCP (Model Context Protocol), 27 tools |
 | **Billing** | Stripe |
 | **Logging** | structlog (JSON) |
 | **Containers** | Docker Compose |
@@ -269,9 +270,10 @@ The AI agent market is projected to reach $65B by 2030. Every one of these agent
 
 | Component | Count |
 |---|---|
-| MCP Tools | 33 |
+| MCP Tools | 27 |
 | Anchor Instructions | 7 |
-| API Routers | 12 |
+| API Routers | 13 |
+| API Endpoints | 53 |
 | SQLAlchemy Models | 16 |
 | Database Tables | 14 |
 | Background Workers | 7 |

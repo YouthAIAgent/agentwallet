@@ -7,6 +7,8 @@ import { StatsNumbers } from './compositions/StatsNumbers';
 import { FullExplainer } from './compositions/FullExplainer';
 import { ProductDemo } from './compositions/ProductDemo';
 import { HackathonDemo } from './compositions/HackathonDemo';
+import { FuturisticPromo } from './compositions/FuturisticPromo';
+import { TokenDetails } from './compositions/TokenDetails';
 
 // Keep the original composition for backwards compat
 import { AgentWalletPromo } from './AgentWalletPromo';
@@ -16,6 +18,33 @@ const FPS = 60;
 export const RemotionRoot = () => {
   return (
     <>
+      {/* ═══════════════════════════════════════════════════
+          TOKEN DETAILS (55s, 1920x1080, 30fps)
+         ═══════════════════════════════════════════════════ */}
+      <Composition
+        id="TokenDetails"
+        component={TokenDetails}
+        durationInFrames={30 * 66}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          voiceoverSrc: staticFile('token-details-vo.mp3'),
+        }}
+      />
+
+      {/* ═══════════════════════════════════════════════════
+          2030 FUTURISTIC PROMO (30s, 1920x1080, 30fps)
+         ═══════════════════════════════════════════════════ */}
+      <Composition
+        id="FuturisticPromo"
+        component={FuturisticPromo}
+        durationInFrames={30 * 28}
+        fps={30}
+        width={1920}
+        height={1080}
+      />
+
       {/* ═══════════════════════════════════════════════════
           HACKATHON DEMO (60s, 1920x1080, 30fps)
          ═══════════════════════════════════════════════════ */}
