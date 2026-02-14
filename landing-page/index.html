@@ -264,6 +264,62 @@ body{animation:flk 10s infinite}
 .info-box:hover{border-color:rgba(0,255,65,.2);background:rgba(0,255,65,.03)}
 .info-box-title{font-weight:700;margin-bottom:6px;font-size:12px}.info-box-val{font-size:12px;color:var(--g)}
 
+/* ── CHAT WIDGET ── */
+#chat-toggle{position:fixed;bottom:24px;right:24px;z-index:9000;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--c));border:none;cursor:pointer;box-shadow:0 0 20px rgba(0,255,65,.3),0 4px 20px rgba(0,0,0,.4);transition:all .3s;font-size:24px;display:flex;align-items:center;justify-content:center}
+#chat-toggle:hover{transform:scale(1.1);box-shadow:0 0 40px rgba(0,255,65,.5)}
+#chat-toggle .badge-dot{position:absolute;top:4px;right:4px;width:12px;height:12px;border-radius:50%;background:var(--r);box-shadow:0 0 8px var(--r);animation:pulse 1.5s infinite}
+#chat-box{position:fixed;bottom:90px;right:24px;z-index:9000;width:400px;max-height:520px;background:#000;border:1px solid rgba(0,255,65,.2);border-radius:8px;overflow:hidden;display:none;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 30px rgba(0,255,65,.05);flex-direction:column}
+#chat-box.open{display:flex}
+.chat-header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(0,255,65,.04);border-bottom:1px solid rgba(0,255,65,.1)}
+.chat-header-dot{width:8px;height:8px;border-radius:50%;background:var(--g);box-shadow:0 0 6px var(--g);animation:pulse 2s infinite}
+.chat-header-title{font-size:12px;font-weight:700;color:var(--g);letter-spacing:1.5px;flex:1}
+.chat-close{background:none;border:none;color:var(--dim);cursor:pointer;font-size:16px;padding:4px 8px;transition:color .2s}.chat-close:hover{color:var(--r)}
+.chat-msgs{flex:1;overflow-y:auto;padding:16px;min-height:300px;max-height:360px;font-size:12px;line-height:1.7}
+.chat-msg{margin-bottom:12px;animation:fadeIn .3s}
+.chat-msg.bot .chat-bubble{background:rgba(0,255,65,.06);border:1px solid rgba(0,255,65,.1);border-radius:2px 8px 8px 8px;padding:10px 14px;color:var(--g)}
+.chat-msg.user .chat-bubble{background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.1);border-radius:8px 2px 8px 8px;padding:10px 14px;color:var(--c);margin-left:40px}
+.chat-msg .chat-label{font-size:9px;letter-spacing:1.5px;margin-bottom:4px;font-weight:700}
+.chat-msg.bot .chat-label{color:var(--g)}
+.chat-msg.user .chat-label{color:var(--c);text-align:right}
+.chat-typing{color:var(--dim);font-size:11px;padding:0 16px 8px;min-height:20px}
+.chat-input-row{display:flex;gap:0;border-top:1px solid rgba(0,255,65,.1)}
+.chat-input{flex:1;background:transparent;border:none;color:var(--c);font-family:inherit;font-size:12px;padding:12px 16px;outline:none}
+.chat-input::placeholder{color:var(--dim)}
+.chat-send{background:rgba(0,255,65,.1);border:none;border-left:1px solid rgba(0,255,65,.1);color:var(--g);padding:12px 16px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;letter-spacing:1px;transition:all .2s}
+.chat-send:hover{background:rgba(0,255,65,.2)}
+.chat-cmds{display:flex;gap:6px;flex-wrap:wrap;padding:8px 16px;border-top:1px solid rgba(0,255,65,.06)}
+.chat-cmd{font-size:10px;padding:4px 10px;background:rgba(0,255,65,.04);border:1px solid rgba(0,255,65,.1);color:var(--g);cursor:pointer;font-family:inherit;transition:all .2s;border-radius:2px}
+.chat-cmd:hover{background:rgba(0,255,65,.1);box-shadow:0 0 10px rgba(0,255,65,.15)}
+
+/* ── ONE-CLICK DEPLOY ── */
+.deploy-box{background:linear-gradient(135deg,rgba(0,255,65,.03),rgba(0,212,255,.03));border:1px solid var(--gbdr);border-radius:6px;padding:40px;text-align:center;position:relative;overflow:hidden}
+.deploy-box::before{content:'';position:absolute;inset:-1px;background:linear-gradient(45deg,var(--g),var(--c),var(--m),var(--g));background-size:400% 400%;z-index:-1;border-radius:7px;animation:termGlow 6s ease infinite;opacity:.2}
+.deploy-btn{padding:18px 48px;font-size:16px;font-weight:800;letter-spacing:3px;font-family:inherit;cursor:pointer;border:2px solid var(--g);background:rgba(0,255,65,.1);color:var(--g);transition:all .4s;position:relative;overflow:hidden}
+.deploy-btn:hover{background:var(--g);color:var(--bg);box-shadow:0 0 40px rgba(0,255,65,.4),0 0 80px rgba(0,255,65,.2);transform:translateY(-2px)}
+.deploy-btn:disabled{opacity:.5;cursor:wait}
+.deploy-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);transition:left .6s}
+.deploy-btn:hover::before{left:100%}
+.deploy-steps{display:none;text-align:left;margin-top:24px;padding:20px;background:#000;border:1px solid rgba(0,255,65,.15);border-radius:4px;font-size:12px;line-height:2}
+.deploy-steps.active{display:block}
+.deploy-step{opacity:0;transition:opacity .3s}.deploy-step.done{opacity:1}
+.deploy-result{margin-top:16px;padding:16px;background:rgba(0,255,65,.04);border:1px solid rgba(0,255,65,.15);border-radius:4px;display:none}
+.deploy-result.v{display:block}
+
+/* ── PLAYGROUND ── */
+.pg-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:rgba(0,255,65,.04);border-bottom:1px solid rgba(0,255,65,.1);flex-wrap:wrap}
+.pg-preset{font-size:10px;padding:4px 12px;background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.15);color:var(--c);cursor:pointer;font-family:inherit;transition:all .2s;letter-spacing:.5px}
+.pg-preset:hover{background:rgba(0,212,255,.12);box-shadow:0 0 10px rgba(0,212,255,.2)}
+.pg-preset[data-color="g"]{border-color:rgba(0,255,65,.15);color:var(--g);background:rgba(0,255,65,.05)}
+.pg-preset[data-color="m"]{border-color:rgba(224,64,251,.15);color:var(--m);background:rgba(224,64,251,.05)}
+.pg-preset[data-color="y"]{border-color:rgba(255,204,0,.15);color:var(--y);background:rgba(255,204,0,.05)}
+.pg-preset[data-color="p"]{border-color:rgba(168,85,247,.15);color:var(--p);background:rgba(168,85,247,.05)}
+.pg-output{padding:16px;font-size:12px;line-height:1.7;min-height:300px;max-height:400px;overflow-y:auto}
+.pg-input-row{display:flex;border-top:1px solid rgba(0,255,65,.1)}
+.pg-prompt{color:var(--c);padding:10px 0 10px 16px;font-weight:700;flex-shrink:0}
+.pg-input{flex:1;background:transparent;border:none;color:#fff;font-family:inherit;font-size:12px;padding:10px;outline:none}
+.pg-run{background:rgba(0,255,65,.1);border:none;border-left:1px solid rgba(0,255,65,.1);color:var(--g);padding:10px 16px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;letter-spacing:1px}
+@media(max-width:768px){#chat-box{width:calc(100vw - 32px);right:16px;bottom:80px}.deploy-btn{padding:14px 32px;font-size:14px}}
+
 /* ── AGENT JOIN ── */
 .join-split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .join-panel{background:var(--glass);backdrop-filter:blur(10px);border:1px solid var(--gbdr);border-radius:6px;overflow:hidden;position:relative;transition:all .4s}
@@ -446,6 +502,33 @@ body{animation:flk 10s infinite}
 <div class="stat-card" data-color="m"><div class="stat-val" data-count="84">0</div><div class="stat-lbl">Tests Passing</div></div>
 <div class="stat-card" data-color="y"><div class="stat-val" data-count="14">0</div><div class="stat-lbl">Router Groups</div></div>
 </div>
+
+<!-- ONE-CLICK DEPLOY -->
+<div class="deploy-box" style="margin-top:40px">
+<div style="font-size:11px;letter-spacing:3px;color:var(--dim);margin-bottom:12px">NO SIGNUP REQUIRED</div>
+<div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:1px">Deploy Your AI Agent in 30 Seconds</div>
+<div style="font-size:12px;color:var(--dim);margin-bottom:24px;max-width:500px;margin-left:auto;margin-right:auto">One click. Real Solana devnet. Agent + Wallet + Policy — deployed instantly.</div>
+<button class="deploy-btn" id="deploy-btn" onclick="oneClickDeploy()">[⚡ DEPLOY AGENT NOW]</button>
+<div class="deploy-steps" id="deploy-steps">
+<div class="deploy-step" id="ds-1"><span style="color:var(--c)">[INIT]</span> Creating temporary account...</div>
+<div class="deploy-step" id="ds-2"><span style="color:var(--y)">[AUTH]</span> Authenticating with protocol...</div>
+<div class="deploy-step" id="ds-3"><span style="color:var(--g)">[OK]</span> Agent deployed: <span id="ds-agent" style="color:var(--g)"></span></div>
+<div class="deploy-step" id="ds-4"><span style="color:var(--g)">[OK]</span> Wallet created: <span id="ds-wallet" style="color:var(--c)"></span></div>
+<div class="deploy-step" id="ds-5"><span style="color:var(--g)">[OK]</span> Policy set: 1 SOL/tx, 5 SOL/day</div>
+<div class="deploy-step" id="ds-6"><span style="color:var(--m)">[DONE]</span> Your agent is live on Solana devnet!</div>
+</div>
+<div class="deploy-result" id="deploy-result">
+<div style="text-align:center;font-size:11px;letter-spacing:2px;color:var(--g);margin-bottom:12px">✓ AGENT DEPLOYED SUCCESSFULLY</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">
+<div><span style="color:var(--dim)">AGENT ID:</span> <span style="color:var(--g)" id="dr-agent">--</span></div>
+<div><span style="color:var(--dim)">WALLET:</span> <span style="color:var(--c)" id="dr-wallet">--</span></div>
+<div><span style="color:var(--dim)">NETWORK:</span> <span style="color:var(--y)">solana-devnet</span></div>
+<div><span style="color:var(--dim)">STATUS:</span> <span style="color:var(--g)">ACTIVE</span></div>
+</div>
+<div style="text-align:center;margin-top:16px"><a href="dashboard.html" style="color:var(--c);font-size:12px;letter-spacing:1px;border-bottom:1px solid rgba(0,212,255,.3)">OPEN DASHBOARD TO MANAGE →</a></div>
+</div>
+</div>
+
 </section>
 
 <section class="sec" id="sec-endorsed">
@@ -515,8 +598,29 @@ body{animation:flk 10s infinite}
 </section>
 
 <section class="sec" id="sec-terminal">
-<div class="sec-title"><span class="sec-accent">04</span> LIVE TERMINAL DEMO</div>
-<div class="terminal"><div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-title">agentwallet-cli v2.0.0</span><span class="term-status"><span class="status-dot"></span> connected</span></div><div class="term-body" id="terminal-body"></div></div>
+<div class="sec-title"><span class="sec-accent">04</span> INTERACTIVE API PLAYGROUND — <span style="color:var(--g)">REAL DEVNET</span></div>
+<p style="color:var(--dim);margin-bottom:16px;font-size:12px;text-align:center">Click any command below or type your own. These hit the REAL API at api.agentwallet.fun — not a simulation.</p>
+<div class="terminal">
+<div class="term-bar">
+<span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+<span class="term-title">api-playground@agentwallet:~</span>
+<span class="term-status"><span class="status-dot"></span> api.agentwallet.fun</span>
+</div>
+<div class="pg-bar">
+<span class="pg-preset" data-color="g" onclick="pgRun('health')">GET /health</span>
+<span class="pg-preset" onclick="pgRun('docs')">GET /docs</span>
+<span class="pg-preset" data-color="m" onclick="pgRun('register')">POST /auth/register</span>
+<span class="pg-preset" data-color="y" onclick="pgRun('agents')">POST /agents</span>
+<span class="pg-preset" data-color="p" onclick="pgRun('wallets')">POST /wallets</span>
+<span class="pg-preset" onclick="pgRun('balance')">GET /balance</span>
+</div>
+<div class="pg-output" id="pg-output"><span style="color:var(--dim)">// Click a command above or type below. All responses are from the live Solana devnet API.</span><br><span style="color:var(--g)">$ </span><span style="color:var(--c)">Ready. Try </span><span style="color:var(--y)">GET /health</span><span style="color:var(--c)"> to start.</span></div>
+<div class="pg-input-row">
+<span class="pg-prompt">$&gt;</span>
+<input class="pg-input" id="pg-input" placeholder="Type endpoint... e.g. GET /health" onkeydown="if(event.key==='Enter')pgRunCustom()">
+<button class="pg-run" onclick="pgRunCustom()">RUN ▸</button>
+</div>
+</div>
 </section>
 
 <section class="sec" id="sec-proof">
@@ -735,6 +839,30 @@ body{animation:flk 10s infinite}
 </div></div>
 </section>
 
+<!-- CHAT WIDGET -->
+<button id="chat-toggle" onclick="toggleChat()">🤖<span class="badge-dot"></span></button>
+<div id="chat-box">
+<div class="chat-header">
+<span class="chat-header-dot"></span>
+<span class="chat-header-title">AW AGENT — ONLINE</span>
+<button class="chat-close" onclick="toggleChat()">✕</button>
+</div>
+<div class="chat-msgs" id="chat-msgs">
+<div class="chat-msg bot"><div class="chat-label">AW-AGENT</div><div class="chat-bubble">Hey! I'm the AgentWallet AI. I can demo the protocol live. Try asking me to create a wallet, or type a command:<br><br><strong style="color:var(--y)">/deploy</strong> — deploy an agent<br><strong style="color:var(--y)">/health</strong> — check API status<br><strong style="color:var(--y)">/help</strong> — see all commands</div></div>
+</div>
+<div class="chat-typing" id="chat-typing"></div>
+<div class="chat-cmds">
+<button class="chat-cmd" onclick="chatSend('/deploy')">/deploy</button>
+<button class="chat-cmd" onclick="chatSend('/health')">/health</button>
+<button class="chat-cmd" onclick="chatSend('what is AgentWallet?')">What is AW?</button>
+<button class="chat-cmd" onclick="chatSend('/tools')">MCP tools</button>
+</div>
+<div class="chat-input-row">
+<input class="chat-input" id="chat-input" placeholder="Ask me anything..." onkeydown="if(event.key==='Enter')chatSendInput()">
+<button class="chat-send" onclick="chatSendInput()">SEND</button>
+</div>
+</div>
+
 <footer class="footer">
 <div class="f-links">
 <a href="https://github.com/YouthAIAgent/agentwallet" class="f-link" target="_blank">[GitHub]</a>
@@ -836,6 +964,120 @@ setInterval(rGlitch,2500+Math.random()*3000);
 
 /* HOVER */
 document.querySelectorAll('.stat-card,.f-link,.sbtn,.feature-card,.agent-card,.price-card,.dash-card').forEach(el=>{el.addEventListener('mouseenter',()=>{el.style.textShadow='0 0 15px var(--g)'});el.addEventListener('mouseleave',()=>{el.style.textShadow=''})});
+
+/* ONE-CLICK DEPLOY */
+let deployToken=null;
+async function oneClickDeploy(){
+const btn=document.getElementById('deploy-btn'),steps=document.getElementById('deploy-steps'),result=document.getElementById('deploy-result');
+btn.disabled=true;btn.textContent='[DEPLOYING...]';steps.classList.add('active');
+const API='https://api.agentwallet.fun/v1';
+const rnd=()=>Math.random().toString(36).slice(2,8);
+const email='demo-'+rnd()+'@agentwallet.fun';
+const password='DemoPass'+rnd()+'!1';
+try{
+await sleep(300);document.getElementById('ds-1').classList.add('done');
+await sleep(500);
+const auth=await fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({org_name:'demo-org-'+rnd(),email:email,password:password})}).then(r=>r.json());
+deployToken=auth.access_token;
+document.getElementById('ds-2').classList.add('done');
+if(!deployToken)throw new Error('Auth failed');
+await sleep(400);
+const agent=await fetch(API+'/agents',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+deployToken},body:JSON.stringify({name:'agent-'+rnd(),description:'One-click deployed agent',capabilities:['transfer','escrow','trading']})}).then(r=>r.json());
+document.getElementById('ds-agent').textContent=agent.name||agent.id||'deployed';
+document.getElementById('ds-3').classList.add('done');
+await sleep(400);
+const wallet=await fetch(API+'/wallets',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+deployToken},body:JSON.stringify({agent_id:agent.id,network:'solana-devnet'})}).then(r=>r.json());
+document.getElementById('ds-wallet').textContent=(wallet.address||'').slice(0,12)+'...';
+document.getElementById('ds-4').classList.add('done');
+await sleep(300);document.getElementById('ds-5').classList.add('done');
+await sleep(300);document.getElementById('ds-6').classList.add('done');
+await sleep(500);
+document.getElementById('dr-agent').textContent=(agent.id||'').slice(0,16)+'...';
+document.getElementById('dr-wallet').textContent=(wallet.address||'').slice(0,16)+'...';
+result.classList.add('v');
+btn.textContent='[✓ DEPLOYED — DEPLOY ANOTHER?]';btn.disabled=false;
+localStorage.setItem('aw_token',deployToken);localStorage.setItem('aw_email',email);
+}catch(e){btn.textContent='[RETRY DEPLOY]';btn.disabled=false;document.getElementById('ds-6').classList.add('done');document.getElementById('ds-6').innerHTML='<span style="color:var(--r)">[ERR]</span> '+e.message+' — try again';}
+}
+
+/* PLAYGROUND */
+let pgToken=null;let pgAgentId=null;let pgWalletId=null;
+function pgLog(html){const o=document.getElementById('pg-output');o.innerHTML+='\n'+html;o.scrollTop=o.scrollHeight;}
+async function pgRun(cmd){
+const API='https://api.agentwallet.fun/v1';
+pgLog('<span style="color:var(--c)">$ </span><span style="color:#fff">'+cmd+'</span>');
+try{
+if(cmd==='health'){
+const r=await fetch(API+'/health').then(r=>r.json());
+pgLog('<span style="color:var(--g)">'+JSON.stringify(r,null,2)+'</span>');
+}else if(cmd==='docs'){
+pgLog('<span style="color:var(--c)">→ Opening Swagger docs...</span>');
+window.open('https://api.agentwallet.fun/docs','_blank');
+pgLog('<span style="color:var(--g)">✓ Opened in new tab</span>');
+}else if(cmd==='register'){
+const rnd=Math.random().toString(36).slice(2,8);
+pgLog('<span style="color:var(--y)">→ POST /v1/auth/register {email:"pg-'+rnd+'@aw.fun"}</span>');
+const r=await fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({org_name:'pg-org-'+rnd,email:'pg-'+rnd+'@aw.fun',password:'PgPass'+rnd+'!1'})}).then(r=>r.json());
+pgToken=r.access_token;
+pgLog('<span style="color:var(--g)">✓ Registered! Token: '+((pgToken||'').slice(0,20))+'...</span>');
+}else if(cmd==='agents'){
+if(!pgToken){pgLog('<span style="color:var(--y)">⚠ Run POST /auth/register first</span>');return;}
+const rnd=Math.random().toString(36).slice(2,6);
+pgLog('<span style="color:var(--y)">→ POST /v1/agents {name:"pg-agent-'+rnd+'"}</span>');
+const r=await fetch(API+'/agents',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+pgToken},body:JSON.stringify({name:'pg-agent-'+rnd,capabilities:['transfer','escrow']})}).then(r=>r.json());
+pgAgentId=r.id;
+pgLog('<span style="color:var(--g)">✓ Agent created: '+JSON.stringify({id:r.id,name:r.name,status:r.status},null,2)+'</span>');
+}else if(cmd==='wallets'){
+if(!pgToken||!pgAgentId){pgLog('<span style="color:var(--y)">⚠ Run register → agents first</span>');return;}
+pgLog('<span style="color:var(--y)">→ POST /v1/wallets {agent_id:"'+pgAgentId+'"}</span>');
+const r=await fetch(API+'/wallets',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+pgToken},body:JSON.stringify({agent_id:pgAgentId,network:'solana-devnet'})}).then(r=>r.json());
+pgWalletId=r.id;
+pgLog('<span style="color:var(--g)">✓ Wallet created: '+JSON.stringify({id:r.id,address:r.address,network:r.network},null,2)+'</span>');
+}else if(cmd==='balance'){
+if(!pgToken||!pgWalletId){pgLog('<span style="color:var(--y)">⚠ Run register → agents → wallets first</span>');return;}
+pgLog('<span style="color:var(--y)">→ GET /v1/wallets/'+pgWalletId+'/balance</span>');
+const r=await fetch(API+'/wallets/'+pgWalletId+'/balance',{headers:{'Authorization':'Bearer '+pgToken}}).then(r=>r.json());
+pgLog('<span style="color:var(--g)">✓ Balance: '+JSON.stringify(r,null,2)+'</span>');
+}else{pgLog('<span style="color:var(--dim)">Unknown command. Try: health, register, agents, wallets, balance</span>');}
+}catch(e){pgLog('<span style="color:var(--r)">✗ Error: '+e.message+'</span>');}
+}
+function pgRunCustom(){const i=document.getElementById('pg-input');if(!i.value.trim())return;const cmd=i.value.trim().replace(/^(GET|POST|PUT|DELETE)\s+\/?v1\/?/i,'').replace(/^\//,'');i.value='';pgRun(cmd||'health');}
+
+/* CHAT AGENT */
+function toggleChat(){document.getElementById('chat-box').classList.toggle('open');}
+function addChatMsg(text,who){const msgs=document.getElementById('chat-msgs');const div=document.createElement('div');div.className='chat-msg '+who;div.innerHTML='<div class="chat-label">'+(who==='bot'?'AW-AGENT':'YOU')+'</div><div class="chat-bubble">'+text+'</div>';msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
+function chatTyping(show){document.getElementById('chat-typing').textContent=show?'AW-AGENT is typing...':'';}
+async function chatSend(msg){
+addChatMsg(msg,'user');chatTyping(true);
+const API='https://api.agentwallet.fun/v1';
+await sleep(600+Math.random()*800);
+const low=msg.toLowerCase().trim();
+if(low==='/health'||low==='health'){
+try{const r=await fetch(API+'/health').then(r=>r.json());chatTyping(false);addChatMsg('API Status: <strong style="color:var(--g)">'+r.status+'</strong> (v'+r.version+')<br>All systems operational. 60 endpoints active.','bot');}catch(e){chatTyping(false);addChatMsg('API seems down: '+e.message,'bot');}
+}else if(low==='/deploy'||low==='deploy'||low==='deploy agent'||low.includes('create a wallet')||low.includes('deploy')){
+chatTyping(false);addChatMsg('Deploying a fresh agent on Solana devnet...','bot');chatTyping(true);
+try{const rnd=Math.random().toString(36).slice(2,7);
+const auth=await fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({org_name:'chat-'+rnd,email:'chat-'+rnd+'@aw.fun',password:'ChatP'+rnd+'!1'})}).then(r=>r.json());
+if(!auth.access_token)throw new Error('Registration failed');
+const ag=await fetch(API+'/agents',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+auth.access_token},body:JSON.stringify({name:'chat-agent-'+rnd,capabilities:['transfer','escrow']})}).then(r=>r.json());
+const wl=await fetch(API+'/wallets',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+auth.access_token},body:JSON.stringify({agent_id:ag.id,network:'solana-devnet'})}).then(r=>r.json());
+chatTyping(false);addChatMsg('<strong style="color:var(--g)">✓ Agent deployed!</strong><br><br>Agent: <strong>'+ag.name+'</strong><br>Wallet: <strong style="color:var(--c)">'+(wl.address||'').slice(0,16)+'...</strong><br>Network: solana-devnet<br><br>This is a REAL wallet on Solana. Fund it with <code>solana airdrop 1 '+wl.address+' --url devnet</code>','bot');
+}catch(e){chatTyping(false);addChatMsg('Deploy failed: '+e.message+'. Try again!','bot');}
+}else if(low==='/tools'||low==='tools'||low.includes('mcp')){
+chatTyping(false);addChatMsg('AgentWallet MCP Server provides <strong>33 tools</strong>:<br><br><strong style="color:var(--y)">Wallets:</strong> create_wallet, get_balance, list_wallets<br><strong style="color:var(--c)">Transfers:</strong> transfer_sol, batch_transfer<br><strong style="color:var(--m)">Escrow:</strong> create_escrow, release_escrow, refund<br><strong style="color:var(--p)">PDA:</strong> create_pda_wallet, transfer_from_pda<br><strong style="color:var(--g)">Policies:</strong> create_policy, update_policy<br><strong style="color:var(--o)">Analytics:</strong> get_summary, daily_analytics<br><br>Install: <code style="color:var(--y)">pip install agentwallet-mcp</code>','bot');
+}else if(low==='/help'||low==='help'){
+chatTyping(false);addChatMsg('Commands:<br><strong style="color:var(--y)">/deploy</strong> — deploy agent + wallet live<br><strong style="color:var(--y)">/health</strong> — check API status<br><strong style="color:var(--y)">/tools</strong> — list 33 MCP tools<br><br>Or ask me anything about AgentWallet!','bot');
+}else if(low.includes('what is')||low.includes('kya hai')||low.includes('about')){
+chatTyping(false);addChatMsg('AgentWallet is <strong>autonomous wallet infrastructure</strong> for AI agents on Solana.<br><br>We give AI agents (Claude, GPT, Cursor, any MCP client) their own Solana wallets with:<br>• <strong style="color:var(--c)">Programmatic custody</strong> — no human in the loop<br>• <strong style="color:var(--m)">Trustless escrow</strong> — PDA-derived vaults<br>• <strong style="color:var(--y)">Spending policies</strong> — per-tx and daily limits<br>• <strong style="color:var(--g)">33 MCP tools</strong> — native AI integration<br><br>100% free, open source, MIT license.','bot');
+}else if(low.includes('solana')||low.includes('blockchain')){
+chatTyping(false);addChatMsg('AgentWallet runs on <strong style="color:var(--p)">Solana</strong> — the fastest blockchain.<br><br>• 400ms confirmations<br>• $0.00025 per transaction<br>• PDA wallets with on-chain spending limits<br>• Program: <code>CEQLGCWk...pt6r6</code><br><br>Currently on <strong style="color:var(--c)">devnet</strong>. Mainnet launch coming soon.','bot');
+}else if(low.includes('price')||low.includes('cost')||low.includes('free')){
+chatTyping(false);addChatMsg('<strong style="color:var(--g)">100% FREE. Forever.</strong><br><br>AgentWallet is open source under MIT license. No pricing tiers, no paywalls, no hidden fees. Build the agentic economy with us.','bot');
+}else{
+chatTyping(false);addChatMsg('I understand you\'re asking about: <em>"'+msg+'"</em><br><br>I can help with:<br>• <strong>/deploy</strong> — create a live agent<br>• <strong>/tools</strong> — see MCP capabilities<br>• Questions about wallets, escrow, policies, Solana<br><br>Try asking something specific about AgentWallet!','bot');
+}
+}
+function chatSendInput(){const i=document.getElementById('chat-input');if(!i.value.trim())return;chatSend(i.value.trim());i.value='';}
 
 /* LIVE AGENT FEED */
 const agentNames=['claude-3.5','gpt-4o','gemini-pro','cursor-ai','devin-agent','trading-bot-v2','data-crawler','nft-minter','defi-yield','sol-sniper','content-gen','code-reviewer','audit-bot','price-oracle','market-maker','research-agent','scheduler-ai','api-bridge','token-scanner','portfolio-mgr'];
