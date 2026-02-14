@@ -5,7 +5,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 
 class ServiceCreate(BaseModel):
@@ -56,7 +56,8 @@ class ServiceResponse(BaseModel):
     agent_name: Optional[str] = None
     agent_reputation_score: Optional[float] = None
 
-    @validator('price_usdc', pre=True)
+    @field_validator('price_usdc', mode='before')
+    @classmethod
     def convert_price_from_lamports(cls, v):
         if isinstance(v, int):  # If it's still in lamports
             return v / 1_000_000
@@ -127,7 +128,8 @@ class JobRate(BaseModel):
     rating: int = Field(..., ge=1, le=5, description="Rating from 1 to 5 stars")
     review: Optional[str] = Field(None, max_length=1000, description="Written review")
 
-    @validator('rating')
+    @field_validator('rating')
+    @classmethod
     def validate_rating(cls, v):
         if not (1 <= v <= 5):
             raise ValueError('Rating must be between 1 and 5')
@@ -139,7 +141,8 @@ class JobMessageCreate(BaseModel):
     message_type: str = Field("chat", description="Message type")
     attachments: Optional[Dict[str, Any]] = Field(default_factory=dict, description="File attachments")
 
-    @validator('message_type')
+    @field_validator('message_type')
+    @classmethod
     def validate_message_type(cls, v):
         allowed_types = ["chat", "update", "delivery", "dispute"]
         if v not in allowed_types:
@@ -189,7 +192,8 @@ class AgentReputationResponse(BaseModel):
     last_job_at: Optional[datetime]
     updated_at: datetime
 
-    @validator('total_volume_usdc', 'total_earnings_usdc', 'total_spent_usdc', pre=True)
+    @field_validator('total_volume_usdc', 'total_earnings_usdc', 'total_spent_usdc', mode='before')
+    @classmethod
     def convert_lamports_to_usdc(cls, v):
         if isinstance(v, int):  # If it's still in lamports
             return v / 1_000_000

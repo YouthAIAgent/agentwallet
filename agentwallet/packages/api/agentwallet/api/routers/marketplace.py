@@ -193,12 +193,12 @@ async def update_service(
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
 
-    update_data = req.dict(exclude_unset=True)
+    update_data = req.model_dump(exclude_unset=True)
     if "price_usdc" in update_data:
         service.price_lamports = int(update_data.pop("price_usdc") * 1_000_000)
     for field, value in update_data.items():
         setattr(service, field, value)
-    await db.commit()
+    await db.flush()
     await db.refresh(service)
     return _service_to_response(service)
 
