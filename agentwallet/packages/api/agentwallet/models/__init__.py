@@ -1,3 +1,4 @@
+from .acp import AcpJob, AcpMemo, ResourceOffering
 from .agent import Agent
 from .analytics_daily import AnalyticsDaily
 from .api_key import ApiKey
@@ -9,6 +10,7 @@ from .marketplace import AgentReputation, Job, JobMessage, Service, ServiceCateg
 from .organization import Organization
 from .pda_wallet import PDAWallet
 from .policy import Policy
+from .swarm import AgentSwarm, SwarmMember, SwarmTask
 from .transaction import Transaction
 from .usage_meter import UsageMeter
 from .user import User
@@ -39,4 +41,10 @@ __all__ = [
     "ServiceCategory",
     "JobMessage",
     "PDAWallet",
+    "AcpJob",
+    "AcpMemo",
+    "ResourceOffering",
+    "AgentSwarm",
+    "SwarmMember",
+    "SwarmTask",
 ]
