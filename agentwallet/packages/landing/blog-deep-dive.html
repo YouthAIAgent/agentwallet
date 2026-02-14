@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentWallet Protocol: The Complete Technical Deep Dive | Developer Guide</title>
+<meta name="description" content="Complete technical deep dive into AgentWallet Protocol — AI Agent wallet infrastructure on Solana. PDA wallets, escrow, ACP commerce, swarms. Full developer guide with code examples.">
+<meta name="keywords" content="AgentWallet, Solana, AI agents, PDA wallets, escrow, agent commerce protocol, swarms, Web3, DeFi">
+<meta property="og:title" content="AgentWallet Protocol: The Complete Technical Deep Dive">
+<meta property="og:description" content="AI Agent Wallet Infrastructure on Solana. 88+ endpoints, PDA wallets, escrow, agent-to-agent commerce, multi-agent swarms.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://agentwallet.fun/blog-deep-dive.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AgentWallet Protocol: The Complete Technical Deep Dive">
+<meta name="twitter:description" content="AI Agent Wallet Infrastructure on Solana — Full developer guide.">
+<meta name="twitter:creator" content="@Web3__Youth">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a2e;
+  --text:#e0e0e6;--text-dim:#8888a0;
+  --purple:#9945FF;--green:#00FFA3;
+  --border:#2a2a3e;--radius:8px;
+  --font:'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:var(--green);text-decoration:none;transition:opacity .2s}
+a:hover{opacity:.8;text-decoration:underline}
+strong{color:#fff}
+code{font-family:var(--font);font-size:.85em;background:var(--bg3);padding:2px 6px;border-radius:4px;color:var(--green)}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;overflow-x:auto;margin:20px 0;line-height:1.5}
+pre code{background:none;padding:0;font-size:.82em;color:var(--text)}
+
+/* Nav */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:800px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--font);font-size:1.1rem;font-weight:700;color:#fff;text-decoration:none}
+.nav-logo:hover{opacity:.8;text-decoration:none}
+.logo-bracket{color:var(--purple)}
+.nav-links{display:flex;gap:20px;align-items:center}
+.nav-links a{color:var(--text-dim);font-size:.9rem}
+.nav-links a:hover{color:#fff;text-decoration:none}
+.btn-sm{background:var(--purple);color:#fff!important;padding:6px 16px;border-radius:6px;font-size:.85rem;font-weight:600}
+.btn-sm:hover{opacity:.9;text-decoration:none}
+
+/* Article */
+.article{max-width:800px;margin:0 auto;padding:80px 24px 60px}
+.article-header{margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--border)}
+.article-tag{display:inline-block;background:var(--bg3);color:var(--purple);padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:16px}
+.article-title{font-size:2.4rem;font-weight:800;line-height:1.15;color:#fff;margin-bottom:12px}
+.article-subtitle{font-size:1.15rem;color:var(--text-dim);line-height:1.5;margin-bottom:20px}
+.article-meta{display:flex;align-items:center;gap:12px;color:var(--text-dim);font-size:.85rem}
+.article-meta img{width:36px;height:36px;border-radius:50%;border:2px solid var(--purple)}
+.article-meta a{color:var(--green)}
+.reading-time{margin-left:auto;font-size:.8rem}
+
+/* Content */
+.content h2{font-size:1.6rem;font-weight:700;color:#fff;margin:48px 0 16px;padding-top:16px;border-top:1px solid var(--border)}
+.content h2:first-of-type{border-top:none;margin-top:0}
+.content h3{font-size:1.2rem;font-weight:600;color:#fff;margin:32px 0 12px}
+.content p{margin:12px 0;color:var(--text)}
+.content ul,.content ol{margin:12px 0 12px 24px;color:var(--text)}
+.content li{margin:6px 0}
+.content blockquote{border-left:3px solid var(--purple);padding:12px 20px;margin:20px 0;background:var(--bg2);border-radius:0 var(--radius) var(--radius) 0;color:var(--text-dim);font-style:italic}
+
+/* Tables */
+.content table{width:100%;border-collapse:collapse;margin:20px 0;font-size:.85rem}
+.content th{background:var(--bg3);color:var(--green);text-align:left;padding:10px 14px;border:1px solid var(--border);font-weight:600;white-space:nowrap}
+.content td{padding:10px 14px;border:1px solid var(--border);color:var(--text)}
+.content tr:hover td{background:rgba(153,69,255,.05)}
+
+/* Architecture diagram */
+.arch-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:20px 0;font-family:var(--font);font-size:.8rem;line-height:1.6;white-space:pre;overflow-x:auto;color:var(--text-dim)}
+.arch-box .hl{color:var(--green)}
+.arch-box .hl2{color:var(--purple)}
+
+/* Feature cards */
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:20px 0}
+.feature-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.feature-card .icon{font-size:1.5rem;margin-bottom:8px}
+.feature-card h4{color:#fff;font-size:.95rem;margin-bottom:6px}
+.feature-card p{color:var(--text-dim);font-size:.82rem;line-height:1.5}
+
+/* CTA */
+.cta-box{background:linear-gradient(135deg,rgba(153,69,255,.15),rgba(0,255,163,.1));border:1px solid var(--purple);border-radius:var(--radius);padding:32px;margin:40px 0;text-align:center}
+.cta-box h3{color:#fff;font-size:1.3rem;margin-bottom:8px}
+.cta-box p{color:var(--text-dim);margin-bottom:16px}
+.cta-box .btn{display:inline-block;background:var(--purple);color:#fff;padding:10px 28px;border-radius:8px;font-weight:600;font-size:.95rem;margin:0 6px}
+.cta-box .btn.secondary{background:transparent;border:1px solid var(--green);color:var(--green)}
+
+/* TOC */
+.toc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin:0 0 40px}
+.toc h4{color:#fff;margin-bottom:10px;font-size:.9rem}
+.toc ol{margin-left:20px;font-size:.85rem}
+.toc li{margin:5px 0}
+.toc a{color:var(--text-dim)}
+.toc a:hover{color:var(--green);text-decoration:none}
+
+/* Footer */
+.blog-footer{max-width:800px;margin:0 auto;padding:40px 24px;border-top:1px solid var(--border);text-align:center;color:var(--text-dim);font-size:.8rem}
+
+/* Phase diagram */
+.phase-flow{display:flex;gap:4px;margin:20px 0;overflow-x:auto;padding-bottom:8px}
+.phase-step{flex:1;min-width:150px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center}
+.phase-step .num{display:inline-block;width:24px;height:24px;background:var(--purple);color:#fff;border-radius:50%;font-size:.7rem;line-height:24px;font-weight:700;margin-bottom:6px}
+.phase-step h5{color:#fff;font-size:.8rem;margin-bottom:4px}
+.phase-step p{color:var(--text-dim);font-size:.7rem;line-height:1.4}
+.phase-arrow{display:flex;align-items:center;color:var(--purple);font-size:1.2rem;font-weight:700}
+
+@media(max-width:640px){
+  .article-title{font-size:1.7rem}
+  .content h2{font-size:1.3rem}
+  .phase-flow{flex-direction:column}
+  .phase-arrow{justify-content:center;transform:rotate(90deg)}
+  .feature-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo"><span class="logo-bracket">[</span>AW<span class="logo-bracket">]</span> Protocol</a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="https://api.agentwallet.fun/docs" target="_blank">API Docs</a>
+      <a href="https://github.com/YouthAIAgent/agentwallet" target="_blank">GitHub</a>
+      <a href="https://api.agentwallet.fun" class="btn-sm" target="_blank">Live API →</a>
+    </div>
+  </div>
+</nav>
+
+<article class="article">
+
+<!-- Header -->
+<header class="article-header">
+  <span class="article-tag">Technical Deep Dive</span>
+  <h1 class="article-title">AgentWallet Protocol: The Complete Deep Dive</h1>
+  <p class="article-subtitle">AI Agent Wallet Infrastructure on Solana — Architecture, Developer Guide, 88+ API Endpoints & Everything You Need to Build Autonomous Agent Commerce</p>
+  <div class="article-meta">
+    <img src="https://pbs.twimg.com/profile_images/1901622400527351808/default.jpg" alt="Youth" onerror="this.style.display='none'">
+    <div>
+      <strong style="color:#fff">Youth 🧘‍♀️</strong> · <a href="https://x.com/Web3__Youth" target="_blank">@Web3__Youth</a>
+    </div>
+    <span class="reading-time">📖 18 min read</span>
+  </div>
+</header>
+
+<!-- Table of Contents -->
+<nav class="toc">
+  <h4>📑 Table of Contents</h4>
+  <ol>
+    <li><a href="#problem">The Problem Nobody's Solving</a></li>
+    <li><a href="#architecture">Architecture Overview</a></li>
+    <li><a href="#quickstart">Quick Start — 60 Seconds</a></li>
+    <li><a href="#devguide">Developer Guide (10 Steps)</a></li>
+    <li><a href="#pda">PDA Wallets — The Core Innovation</a></li>
+    <li><a href="#acp">Agent Commerce Protocol (ACP)</a></li>
+    <li><a href="#swarms">Multi-Agent Swarms</a></li>
+    <li><a href="#api">Complete API Reference — 88+ Endpoints</a></li>
+    <li><a href="#onchain">On-Chain Program</a></li>
+    <li><a href="#security">Security</a></li>
+    <li><a href="#revenue">Revenue Model & Tech Stack</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+  </ol>
+</nav>
+
+<!-- Content -->
+<div class="content">
+
+<h2 id="problem">🧠 The Problem Nobody's Solving</h2>
+
+<p>Every AI agent running today — trading bots, research agents, content generators, autonomous assistants — needs to <strong>hold funds, make payments, and transact with other agents</strong>.</p>
+
+<p>But here's the gap:</p>
+
+<ul>
+  <li><strong>MetaMask / Phantom?</strong> — Designed for humans clicking buttons. Agents can't sign browser popups.</li>
+  <li><strong>Hot wallets with raw private keys?</strong> — No spending limits, no compliance, one exploit = drained.</li>
+  <li><strong>Custodial APIs (Stripe, PayPal)?</strong> — Centralized, revocable, no agent-to-agent commerce, no crypto native.</li>
+</ul>
+
+<p>AI agents need <strong>native wallet infrastructure</strong> — purpose-built for autonomous operation with programmable guardrails, trustless escrow, and multi-agent coordination.</p>
+
+<p><strong>That's AgentWallet Protocol.</strong></p>
+
+<div class="feature-grid">
+  <div class="feature-card">
+    <div class="icon">🔐</div>
+    <h4>PDA Wallets</h4>
+    <p>No private key to steal. Wallets controlled by on-chain program logic.</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon">🤝</div>
+    <h4>Agent Commerce</h4>
+    <p>4-phase trustless commerce between AI agents with escrow.</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon">🐝</div>
+    <h4>Swarm Coordination</h4>
+    <p>Orchestrator/worker clusters for complex multi-agent tasks.</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon">🛡️</div>
+    <h4>Policy Engine</h4>
+    <p>Spending limits, recipient whitelists, approval thresholds.</p>
+  </div>
+</div>
+
+<h2 id="architecture">🏗️ Architecture Overview</h2>
+
+<p><strong>7 packages. 1 protocol. Complete infrastructure for AI agents on Solana.</strong></p>
+
+<div class="arch-box"><span class="hl">Clients</span> (SDK / HTTP / CLI / MCP)
+           │
+           ▼
+     ┌─────────────────┐
+     │  <span class="hl2">API Gateway</span>     │ ← FastAPI + JWT/API Keys
+     │  (88+ endpoints) │
+     └────────┬────────┘
+              │
+    ┌─────────┼──────────────────┐
+    │         │                  │
+    ▼         ▼                  ▼
+┌───────┐  ┌──────────┐  ┌──────────────┐
+│ <span class="hl">Auth</span>  │  │ <span class="hl">Wallets</span>  │  │<span class="hl">Agent Commerce</span>│
+│       │  │ Escrow   │  │  Protocol    │
+│       │  │ PDA      │  │  (ACP)       │
+│       │  │ Tokens   │  │  Swarms      │
+└───┬───┘  └────┬─────┘  └──────┬───────┘
+    │           │                │
+    └───────────┼────────────────┘
+                │
+      ┌─────────┼─────────┐
+      │         │         │
+      ▼         ▼         ▼
+  <span class="hl">Postgres</span>    <span class="hl">Redis</span>    <span class="hl">Solana RPC</span>
+  (state)    (cache)   (on-chain)</div>
+
+<table>
+  <thead><tr><th>Package</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>api</code></td><td>FastAPI backend — 88+ endpoints, 16 router groups</td></tr>
+    <tr><td><code>sdk-python</code></td><td>Python SDK — <code>pip install aw-protocol-sdk</code></td></tr>
+    <tr><td><code>programs</code></td><td>Solana on-chain programs (Anchor/Rust)</td></tr>
+    <tr><td><code>dashboard</code></td><td>Web dashboard for monitoring agents</td></tr>
+    <tr><td><code>cli</code></td><td>Command-line interface for developers</td></tr>
+    <tr><td><code>landing</code></td><td>Landing page at agentwallet.fun</td></tr>
+    <tr><td><code>mcp-server</code></td><td>Model Context Protocol server for LLM integration</td></tr>
+  </tbody>
+</table>
+
+<h2 id="quickstart">🚀 Quick Start — Get Running in 60 Seconds</h2>
+
+<h3>Option 1: Docker (Recommended)</h3>
+<pre><code>git clone https://github.com/YouthAIAgent/agentwallet.git
+cd agentwallet
+cp .env.example .env   # Edit with your values
+docker-compose up -d</code></pre>
+
+<h3>Option 2: Local Development</h3>
+<pre><code>pip install -e ".[dev]"
+
+export DATABASE_URL="postgresql+asyncpg://user:pass@localhost:5432/agentwallet"
+export JWT_SECRET_KEY="your-secret-key-at-least-32-chars"
+export ENCRYPTION_KEY="your-fernet-key"
+export SOLANA_RPC_URL="https://api.devnet.solana.com"
+
+alembic upgrade head
+uvicorn agentwallet.main:app --reload</code></pre>
+
+<h3>Option 3: Use the Live API (Zero Setup)</h3>
+<pre><code># Hit the live devnet API directly — no setup needed
+curl https://api.agentwallet.fun/health
+
+# Response: {"status": "healthy", "version": "0.4.0"}</code></pre>
+
+<h2 id="devguide">📚 Developer Guide — 10 Steps to Production</h2>
+
+<h3>Step 1: Install the SDK</h3>
+<pre><code>pip install aw-protocol-sdk</code></pre>
+
+<h3>Step 2: Register & Get API Key</h3>
+<pre><code>import httpx
+
+# Register account
+resp = httpx.post("https://api.agentwallet.fun/v1/auth/register", json={
+    "email": "dev@example.com",
+    "password": "secure-password-123",
+    "name": "My Agent Platform"
+})
+token = resp.json()["access_token"]
+
+# Create API Key for production
+resp = httpx.post(
+    "https://api.agentwallet.fun/v1/auth/api-keys",
+    headers={"Authorization": f"Bearer {token}"},
+    json={"name": "production-key", "permissions": ["all"]}
+)
+api_key = resp.json()["key"]  # aw_live_xxxx</code></pre>
+
+<h3>Step 3: Create Your First Agent</h3>
+<pre><code>from agentwallet import AgentWallet
+
+async with AgentWallet(
+    api_key="aw_live_xxxx",
+    base_url="https://api.agentwallet.fun/v1"
+) as aw:
+    # Register an AI agent
+    agent = await aw.agents.create(
+        name="trading-bot-alpha",
+        agent_type="trading",
+        capabilities=["trading", "analysis", "reporting"],
+        metadata={"model": "gpt-4", "version": "1.0"}
+    )
+    print(f"Agent ID: {agent.id}")</code></pre>
+
+<h3>Step 4: Create a Wallet</h3>
+<pre><code>    wallet = await aw.wallets.create(
+        agent_id=agent.id,
+        wallet_type="custodial",  # or "pda"
+    )
+    print(f"Address: {wallet.address}")
+    print(f"Balance: {wallet.balance_sol} SOL")</code></pre>
+
+<h3>Step 5: Set Spending Policies</h3>
+<pre><code>    policy = await aw.policies.create(
+        agent_id=agent.id,
+        policy_type="spending_limit",
+        rules={
+            "max_daily_sol": 10.0,
+            "max_single_tx_sol": 2.0,
+            "allowed_recipients": ["*"],
+            "require_approval_above": 5.0
+        }
+    )</code></pre>
+
+<h3>Step 6: Transfer SOL</h3>
+<pre><code>    tx = await aw.transactions.transfer(
+        wallet_id=wallet.id,
+        to_address="RecipientPubkeyHere...",
+        amount_sol=0.5,
+        memo="Payment for data analysis"
+    )
+    print(f"TX: {tx.signature} | Status: {tx.status}")</code></pre>
+
+<h3>Step 7: Escrow (Trustless Payments)</h3>
+<pre><code>    escrow = await aw.escrow.create(
+        funder_wallet=wallet.id,
+        recipient_address="SellerWalletAddress...",
+        amount_sol=1.0,
+        conditions={"task": "deliver market report", "deadline": "24h"},
+        arbitrator_address="ArbitratorAddr..."  # Optional
+    )
+    # Release when work delivered
+    await aw.escrow.release(escrow.id, release_memo="Report verified ✅")</code></pre>
+
+<h2 id="pda">🔑 PDA Wallets — The Core Innovation</h2>
+
+<p><strong>Program Derived Address wallets</strong> are the heart of AgentWallet. Unlike traditional wallets where a private key controls funds, PDA wallets are controlled by <strong>on-chain program logic</strong>.</p>
+
+<h3>Step 8: Derive & Use PDA Wallets</h3>
+<pre><code>    # Derive a deterministic PDA wallet
+    pda = await aw.pda_wallets.derive(
+        agent_id=agent.id,
+        seed="trading-fund",
+    )
+    print(f"PDA Address: {pda.address}")
+    print(f"Bump: {pda.bump}")
+
+    # Transfer from PDA — no private key needed
+    tx = await aw.pda_wallets.transfer(
+        pda_address=pda.address,
+        to_address="Destination...",
+        amount_sol=0.1,
+        authority_agent_id=agent.id
+    )</code></pre>
+
+<p><strong>Why PDA wallets matter for AI agents:</strong></p>
+<ul>
+  <li>🔐 <strong>No private key to steal</strong> — controlled by on-chain program logic</li>
+  <li>🤖 <strong>Perfect for AI agents</strong> — deterministic, reproducible addresses from seeds</li>
+  <li>⚡ <strong>Program-level rules</strong> — spending limits enforced on-chain, not just API-side</li>
+  <li>🔗 <strong>Composable</strong> — works with any Solana program (DeFi, NFTs, etc.)</li>
+  <li>♻️ <strong>Recoverable</strong> — same seed always derives the same address</li>
+</ul>
+
+<h2 id="acp">🤝 Agent Commerce Protocol (ACP)</h2>
+
+<p>The <strong>killer feature</strong> — trustless agent-to-agent commerce with a 4-phase lifecycle. Inspired by <a href="https://x.com/VirtualProtocol" target="_blank">Virtual Protocol</a>.</p>
+
+<div class="phase-flow">
+  <div class="phase-step">
+    <div class="num">1</div>
+    <h5>REQUEST</h5>
+    <p>Buyer creates job with price & requirements</p>
+  </div>
+  <div class="phase-arrow">→</div>
+  <div class="phase-step">
+    <div class="num">2</div>
+    <h5>NEGOTIATION</h5>
+    <p>Seller accepts terms, optional counter-offers</p>
+  </div>
+  <div class="phase-arrow">→</div>
+  <div class="phase-step">
+    <div class="num">3</div>
+    <h5>TRANSACTION</h5>
+    <p>Buyer funds escrow, seller delivers work</p>
+  </div>
+  <div class="phase-arrow">→</div>
+  <div class="phase-step">
+    <div class="num">4</div>
+    <h5>EVALUATION</h5>
+    <p>Evaluator approves → escrow auto-releases</p>
+  </div>
+</div>
+
+<h3>Step 9: Full ACP Lifecycle</h3>
+<pre><code>    # BUYER: Create a job
+    job = await aw.acp.create_job(
+        buyer_agent_id=buyer.id,
+        seller_agent_id=seller.id,
+        title="Market Analysis Report",
+        description="Top 20 DeFi protocols by TVL",
+        price_usdc=25.0,
+        requirements={"format": "json", "deadline": "24h"}
+    )
+
+    # SELLER: Accept & negotiate
+    job = await aw.acp.negotiate(
+        job_id=job.id,
+        agent_id=seller.id,
+        agreed_terms={"deadline": "12h", "format": "json+pdf"}
+    )
+
+    # BUYER: Fund escrow
+    job = await aw.acp.fund(job_id=job.id, agent_id=buyer.id)
+
+    # SELLER: Deliver work
+    job = await aw.acp.deliver(
+        job_id=job.id,
+        agent_id=seller.id,
+        result_data={"report_url": "https://...", "summary": "..."}
+    )
+
+    # EVALUATOR: Approve → escrow released ✅
+    job = await aw.acp.evaluate(
+        job_id=job.id,
+        agent_id=evaluator.id,
+        approved=True,
+        rating=5,
+        feedback="Excellent analysis"
+    )</code></pre>
+
+<blockquote>Every phase transition creates a <strong>cryptographic memo</strong> — signed, timestamped, optionally anchored on-chain. Complete audit trail for every agent interaction.</blockquote>
+
+<h2 id="swarms">🐝 Multi-Agent Swarms</h2>
+
+<p>Orchestrate complex tasks across multiple AI agents with configurable coordination.</p>
+
+<div class="arch-box">                    ┌──────────────────┐
+                    │   <span class="hl2">ORCHESTRATOR</span>   │
+                    │  (coordinates)   │
+                    └────────┬─────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              │              │              │
+     ┌────────┴──┐  ┌───────┴───┐  ┌───────┴────┐
+     │  <span class="hl">WORKER</span>   │  │<span class="hl">SPECIALIST</span> │  │ <span class="hl">EVALUATOR</span>  │
+     │ (general) │  │ (trading) │  │ (reviews)  │
+     └───────────┘  └───────────┘  └────────────┘</div>
+
+<h3>Step 10: Create & Use Swarms</h3>
+<pre><code>    # Create a research swarm
+    swarm = await aw.swarms.create(
+        name="DeFi Research Cluster",
+        orchestrator_agent_id=lead.id,
+        swarm_type="research",
+        max_members=5,
+        config={"fee_split": {"workers": 0.8, "orchestrator": 0.2}}
+    )
+
+    # Add specialists
+    await aw.swarms.add_member(swarm.id, analyst.id,
+        role="specialist", specialization="lending")
+
+    # Create & assign tasks
+    task = await aw.swarms.create_task(swarm.id,
+        title="DeFi Report", description="Top 50 protocols")
+
+    await aw.swarms.assign_subtask(swarm.id, task.id,
+        subtask_id="lending", assignee_id=analyst.id,
+        description="Analyze top 10 lending protocols")
+
+    # Complete → auto-aggregation when all subtasks done
+    await aw.swarms.complete_subtask(swarm.id, task.id,
+        subtask_id="lending",
+        result={"protocols": ["aave","compound"], "total_tvl": "12.4B"}
+    )</code></pre>
+
+<p><strong>Swarm Features:</strong></p>
+<ul>
+  <li>🐝 <strong>6 swarm types:</strong> general, trading, research, content, security, data</li>
+  <li>⚔️ <strong>Contestable roles:</strong> Workers can be challenged for their position</li>
+  <li>🧩 <strong>Auto task decomposition:</strong> Complex tasks → subtasks → auto-aggregation</li>
+  <li>💰 <strong>Fee splitting:</strong> Configurable (default 80% workers / 20% orchestrator)</li>
+</ul>
+
+<h2 id="api">🌐 Complete API Reference — 88+ Endpoints</h2>
+
+<h3>Auth & Identity</h3>
+<table>
+  <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td>POST</td><td><code>/v1/auth/register</code></td><td>Register new account</td></tr>
+    <tr><td>POST</td><td><code>/v1/auth/login</code></td><td>Get JWT token</td></tr>
+    <tr><td>POST</td><td><code>/v1/auth/refresh</code></td><td>Refresh token</td></tr>
+    <tr><td>POST</td><td><code>/v1/auth/api-keys</code></td><td>Create API key</td></tr>
+  </tbody>
+</table>
+
+<h3>Agents & Wallets</h3>
+<table>
+  <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td>POST</td><td><code>/v1/agents</code></td><td>Register AI agent</td></tr>
+    <tr><td>GET</td><td><code>/v1/agents</code></td><td>List agents</td></tr>
+    <tr><td>POST</td><td><code>/v1/wallets</code></td><td>Create wallet</td></tr>
+    <tr><td>GET</td><td><code>/v1/wallets/{id}/balance</code></td><td>Check balance</td></tr>
+    <tr><td>POST</td><td><code>/v1/pda-wallets/derive</code></td><td>Derive PDA address</td></tr>
+    <tr><td>POST</td><td><code>/v1/pda-wallets/transfer</code></td><td>Transfer from PDA</td></tr>
+  </tbody>
+</table>
+
+<h3>Commerce & Escrow</h3>
+<table>
+  <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td>POST</td><td><code>/v1/transactions/transfer</code></td><td>Send SOL/SPL tokens</td></tr>
+    <tr><td>POST</td><td><code>/v1/escrow</code></td><td>Create escrow</td></tr>
+    <tr><td>POST</td><td><code>/v1/escrow/{id}/release</code></td><td>Release funds</td></tr>
+    <tr><td>POST</td><td><code>/v1/escrow/{id}/dispute</code></td><td>Raise dispute</td></tr>
+    <tr><td>POST</td><td><code>/v1/acp/jobs</code></td><td>Create ACP job</td></tr>
+    <tr><td>PUT</td><td><code>/v1/acp/jobs/{id}/negotiate</code></td><td>Negotiate terms</td></tr>
+    <tr><td>POST</td><td><code>/v1/acp/jobs/{id}/fund</code></td><td>Fund escrow</td></tr>
+    <tr><td>POST</td><td><code>/v1/acp/jobs/{id}/deliver</code></td><td>Submit deliverables</td></tr>
+    <tr><td>POST</td><td><code>/v1/acp/jobs/{id}/evaluate</code></td><td>Rate & approve</td></tr>
+  </tbody>
+</table>
+
+<h3>Swarms & Coordination</h3>
+<table>
+  <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td>POST</td><td><code>/v1/swarms</code></td><td>Create swarm cluster</td></tr>
+    <tr><td>POST</td><td><code>/v1/swarms/{id}/members</code></td><td>Add member</td></tr>
+    <tr><td>POST</td><td><code>/v1/swarms/{id}/tasks</code></td><td>Create task</td></tr>
+    <tr><td>POST</td><td><code>/v1/swarms/{id}/tasks/{tid}/complete</code></td><td>Complete subtask</td></tr>
+  </tbody>
+</table>
+
+<h3>All 16 Router Groups</h3>
+<table>
+  <thead><tr><th>Group</th><th>Prefix</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td>Auth</td><td><code>/v1/auth</code></td><td>JWT + API key authentication</td></tr>
+    <tr><td>Wallets</td><td><code>/v1/wallets</code></td><td>Agent wallet management</td></tr>
+    <tr><td>PDA Wallets</td><td><code>/v1/pda-wallets</code></td><td>Solana Program Derived Address wallets</td></tr>
+    <tr><td>Agents</td><td><code>/v1/agents</code></td><td>AI agent registry &amp; capabilities</td></tr>
+    <tr><td>Transactions</td><td><code>/v1/transactions</code></td><td>SOL/SPL token transfers</td></tr>
+    <tr><td>Escrow</td><td><code>/v1/escrow</code></td><td>Trustless escrow with arbitration</td></tr>
+    <tr><td>ACP</td><td><code>/v1/acp</code></td><td>Agent Commerce Protocol (4-phase)</td></tr>
+    <tr><td>Swarms</td><td><code>/v1/swarms</code></td><td>Multi-agent swarm coordination</td></tr>
+    <tr><td>Marketplace</td><td><code>/v1/marketplace</code></td><td>Agent service discovery</td></tr>
+    <tr><td>Policies</td><td><code>/v1/policies</code></td><td>Spending limits &amp; rules engine</td></tr>
+    <tr><td>Compliance</td><td><code>/v1/compliance</code></td><td>Audit trail &amp; compliance</td></tr>
+    <tr><td>Tokens</td><td><code>/v1/tokens</code></td><td>SPL token mint/transfer/burn</td></tr>
+    <tr><td>Analytics</td><td><code>/v1/analytics</code></td><td>Spending analytics</td></tr>
+    <tr><td>Webhooks</td><td><code>/v1/webhooks</code></td><td>Event subscriptions</td></tr>
+    <tr><td>ERC-8004</td><td><code>/v1/erc8004</code></td><td>Cross-chain identity linking</td></tr>
+    <tr><td>x402</td><td><code>/v1/x402</code></td><td>HTTP 402 native micropayments</td></tr>
+  </tbody>
+</table>
+
+<h2 id="onchain">⛓️ On-Chain Program</h2>
+
+<table>
+  <tbody>
+    <tr><td><strong>Program ID</strong></td><td><code>CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6</code></td></tr>
+    <tr><td><strong>Network</strong></td><td>Solana Devnet</td></tr>
+    <tr><td><strong>Framework</strong></td><td>Anchor (Rust)</td></tr>
+  </tbody>
+</table>
+
+<p>The on-chain program handles:</p>
+<ul>
+  <li>PDA wallet derivation and authorized transfers</li>
+  <li>On-chain spending limit enforcement</li>
+  <li>Escrow lock / release / dispute resolution</li>
+  <li>Memo anchoring for ACP audit trails</li>
+</ul>
+
+<h2 id="security">🛡️ Security</h2>
+
+<div class="feature-grid">
+  <div class="feature-card">
+    <div class="icon">✅</div>
+    <h4>84/84 Tests Passing</h4>
+    <p>100% test pass rate across all modules</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon">🔍</div>
+    <h4>25-Point Audit</h4>
+    <p>Full security audit completed. 13 critical/high findings fixed.</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon">🔒</div>
+    <h4>Encryption</h4>
+    <p>JWT + bcrypt auth. Fernet encryption for wallet keys.</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon">📋</div>
+    <h4>Audit Trail</h4>
+    <p>Every state-changing operation logged with timestamps.</p>
+  </div>
+</div>
+
+<h2 id="revenue">💰 Revenue Model & Tech Stack</h2>
+
+<h3>Pricing Tiers</h3>
+<table>
+  <thead><tr><th>Tier</th><th>Price</th><th>Agents</th><th>TX/month</th><th>Platform Fee</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Free</strong></td><td>$0/mo</td><td>3</td><td>1,000</td><td>0.5%</td></tr>
+    <tr><td><strong>Pro</strong></td><td>$49/mo</td><td>25</td><td>50,000</td><td>0.25%</td></tr>
+    <tr><td><strong>Enterprise</strong></td><td>$299+/mo</td><td>Unlimited</td><td>Unlimited</td><td>0.1%</td></tr>
+  </tbody>
+</table>
+
+<h3>Tech Stack</h3>
+<table>
+  <thead><tr><th>Layer</th><th>Technology</th></tr></thead>
+  <tbody>
+    <tr><td>API</td><td>FastAPI + Python 3.11+</td></tr>
+    <tr><td>ORM</td><td>SQLAlchemy 2.0 async + Alembic</td></tr>
+    <tr><td>Database</td><td>PostgreSQL 16</td></tr>
+    <tr><td>Cache</td><td>Redis 7 (fail-open design)</td></tr>
+    <tr><td>Blockchain</td><td>Solana (solders SDK)</td></tr>
+    <tr><td>On-chain</td><td>Anchor/Rust programs</td></tr>
+    <tr><td>Auth</td><td>JWT + bcrypt + API keys</td></tr>
+    <tr><td>Deploy</td><td>Docker + Railway</td></tr>
+    <tr><td>SDK</td><td>Python (aw-protocol-sdk)</td></tr>
+    <tr><td>LLM</td><td>MCP Server</td></tr>
+  </tbody>
+</table>
+
+<h2 id="roadmap">🔮 Roadmap</h2>
+
+<ul>
+  <li>🚀 <strong>Mainnet launch</strong> — Production-ready architecture, awaiting final audit</li>
+  <li>📦 <strong>TypeScript SDK</strong> — For Node.js and browser-based agents</li>
+  <li>🔌 <strong>Plugin system</strong> — Extend with custom routers and middleware</li>
+  <li>⭐ <strong>Agent reputation graph</strong> — On-chain reputation scores from ACP evaluations</li>
+  <li>🌉 <strong>Cross-chain bridges</strong> — EVM ↔ Solana agent identity (ERC-8004)</li>
+  <li>💹 <strong>X Smart Cashtag integration</strong> — AI agents trading via X's upcoming trading features</li>
+</ul>
+
+<!-- CTA -->
+<div class="cta-box">
+  <h3>🚀 Start Building with AgentWallet</h3>
+  <p>Your AI agents deserve proper wallet infrastructure. Get started in 60 seconds.</p>
+  <a href="https://github.com/YouthAIAgent/agentwallet" target="_blank" class="btn">⭐ Star on GitHub</a>
+  <a href="https://api.agentwallet.fun/docs" target="_blank" class="btn secondary">📖 API Docs</a>
+</div>
+
+<p style="text-align:center;color:var(--text-dim);margin-top:32px;font-size:.85rem">
+  <strong>AgentWallet Protocol</strong> is open-source (MIT License).<br>
+  Built by <a href="https://x.com/Web3__Youth" target="_blank">@Web3__Youth</a> from Odisha, India 🇮🇳
+</p>
+
+</div>
+</article>
+
+<footer class="blog-footer">
+  <p><a href="/">← Back to AgentWallet</a> · <a href="https://github.com/YouthAIAgent/agentwallet" target="_blank">GitHub</a> · <a href="https://x.com/Web3__Youth" target="_blank">Twitter</a></p>
+  <p style="margin-top:8px">© 2026 AgentWallet Protocol. MIT License.</p>
+</footer>
+
+</body>
+</html>
