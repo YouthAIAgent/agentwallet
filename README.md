@@ -46,7 +46,7 @@
 | **API Docs** | [Swagger UI](https://trustworthy-celebration-production-6a3e.up.railway.app/docs) |
 | **API Health** | [Live API](https://trustworthy-celebration-production-6a3e.up.railway.app/health) |
 | **Solana Explorer** | [View on Devnet](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet) |
-| **SDK** | `pip install aw-protocol-sdk==0.2.0` |
+| **SDK** | `pip install aw-protocol-sdk==0.3.0` |
 
 ### Quick Test (Copy-Paste These Commands)
 
@@ -141,7 +141,7 @@ AgentWallet is a **wallet-as-a-service protocol** built for autonomous AI agents
 ### Install SDK
 
 ```bash
-pip install aw-protocol-sdk==0.2.0
+pip install aw-protocol-sdk==0.3.0
 ```
 
 ### MCP Server (AI-Native Tools)
@@ -150,7 +150,7 @@ pip install aw-protocol-sdk==0.2.0
 pip install agentwallet-mcp
 ```
 
-Any MCP-compatible AI can now create wallets, transfer SOL, manage escrow — as native tools. **27 tools** covering the full protocol. [See MCP docs →](agentwallet/packages/mcp-server/README.md)
+Any MCP-compatible AI can now create wallets, transfer SOL, manage escrow — as native tools. **33 tools** covering the full protocol. [See MCP docs →](agentwallet/packages/mcp-server/README.md)
 
 ### Deploy Your First Agent
 
@@ -244,11 +244,12 @@ curl -X POST http://localhost:8000/v1/auth/register \
 - ✅ **Python SDK** — Published on PyPI (`pip install aw-protocol-sdk`)
 - ✅ **Devnet Deployment** — Live on Solana devnet with program ID
 - ✅ **Security Audit & Hardening** — Production-ready security model
-- ✅ **MCP Integration** — 27 AI-native tools via Model Context Protocol
+- ✅ **MCP Integration** — 33 AI-native tools via Model Context Protocol
 - ✅ **A2A Commerce Protocol** — Agent-to-agent marketplace (v0.2.0)
 - ✅ **x402 Payments** — HTTP-native auto-pay middleware (v0.2.0)
 - ✅ **ERC-8004 Identity** — On-chain agent identity system (v0.2.0)
 - ✅ **Agent Reputation System** — On-chain reputation scoring (v0.2.0)
+- ✅ **PDA Wallets** — On-chain policy-enforced wallets via Anchor program (v0.3.0)
 - 📋 **Multi-chain Support** — EVM L2s (Arbitrum, Base, Polygon)
 - 📋 **Mainnet Launch** — Production deployment (Q2 2026)
 
@@ -269,7 +270,7 @@ curl -X POST http://localhost:8000/v1/auth/register \
                     └──────┬───────┘
                            │
                     ┌──────▼───────┐
-                    │   FastAPI    │  ← 13 routers, 3 middleware layers
+                    │   FastAPI    │  ← 14 routers, 3 middleware layers
                     │   /v1/*      │  ← JWT + API Key dual auth
                     └──┬───────┬───┘
                        │       │
@@ -321,8 +322,8 @@ agentwallet/
     │       ├── models/         # 15+ SQLAlchemy ORM models
     │       ├── services/       # 13+ business logic services
     │       ├── api/
-    │       │   ├── routers/    # 13 route modules
-    │       │   ├── schemas/    # 13+ Pydantic schema modules
+    │       │   ├── routers/    # 14 route modules
+    │       │   ├── schemas/    # 14+ Pydantic schema modules
     │       │   └── middleware/ # Auth, Rate Limit, Audit
     │       ├── workers/        # 5 background workers + scheduler
     │       └── migrations/     # Alembic (001_initial = 14 tables)
@@ -560,12 +561,47 @@ Base URL: `http://localhost:8000/v1`
 | `POST` | `/x402/pay` | Process x402 payment |
 | `GET` | `/x402/verify/{payment_id}` | Verify payment status |
 
+### PDA Wallets
+
+On-chain policy-enforced wallets powered by the AgentWallet Anchor program (`CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6`). PDA wallets derive their address from the organization pubkey and an agent ID seed, enabling deterministic, per-agent wallets with spending limits enforced directly on Solana. Every transfer goes through the on-chain program, which checks per-transaction and daily limits before executing.
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/pda-wallets` | Create a new PDA wallet on-chain with spending limits |
+| `GET` | `/pda-wallets` | List PDA wallets for the organization |
+| `GET` | `/pda-wallets/{id}` | Get a PDA wallet by ID |
+| `GET` | `/pda-wallets/{id}/state` | Read live on-chain state from Solana |
+| `POST` | `/pda-wallets/{id}/transfer` | Transfer SOL with on-chain limit enforcement |
+| `PATCH` | `/pda-wallets/{id}/limits` | Update spending limits and active status on-chain |
+| `POST` | `/pda-wallets/derive` | Derive a PDA address from org pubkey and agent ID seed |
+
+**Example: Create a PDA wallet**
+
+```bash
+curl -s -X POST $API/v1/pda-wallets \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "authority_wallet_id": "WALLET_UUID",
+    "agent_id_seed": "trading-bot-1",
+    "spending_limit_per_tx": 100000000,
+    "daily_limit": 500000000
+  }'
+```
+
+**Example: Read on-chain state**
+
+```bash
+curl -s $API/v1/pda-wallets/PDA_WALLET_UUID/state \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
 ---
 
 ## SDK Usage
 
 ```bash
-pip install aw-protocol-sdk==0.2.0
+pip install aw-protocol-sdk==0.3.0
 ```
 
 ```python

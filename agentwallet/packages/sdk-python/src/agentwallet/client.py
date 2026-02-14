@@ -16,6 +16,7 @@ from .exceptions import (
 from .resources.agents import AgentsResource
 from .resources.analytics import AnalyticsResource
 from .resources.escrow import EscrowResource
+from .resources.pda_wallets import PDAWalletsResource
 from .resources.policies import PoliciesResource
 from .resources.transactions import TransactionsResource
 from .resources.wallets import WalletsResource
@@ -62,6 +63,7 @@ class AgentWallet:
         self.escrow = EscrowResource(self)
         self.analytics = AnalyticsResource(self)
         self.policies = PoliciesResource(self)
+        self.pda_wallets = PDAWalletsResource(self)
         self.x402 = X402Resource(self)
 
     async def __aenter__(self):

@@ -22,7 +22,7 @@ AgentWallet isn't just a wallet — it's the **financial operating system** for 
 │                              ↕                                   │
 │  ┌────────────────────────────────────────────────────────────┐  │
 │  │  Layer 9: MCP (Model Context Protocol)                     │  │
-│  │  27 AgentWallet tools — the agent's hands                  │  │
+│  │  33 AgentWallet tools — the agent's hands                  │  │
 │  │  create_wallet, transfer_sol, create_escrow, etc.          │  │
 │  └────────────────────────────────────────────────────────────┘  │
 │                              ↕                                   │
@@ -306,7 +306,7 @@ Agent A (buyer)                    Agent B (seller)
 ### Layer 9: MCP (Model Context Protocol)
 **The Interface Layer**
 
-MCP is how foundation models actually USE the financial stack. 27 tools that turn any LLM into a financially autonomous agent.
+MCP is how foundation models actually USE the financial stack. 33 tools that turn any LLM into a financially autonomous agent.
 
 ```python
 # Inside AI agent's tool use:
@@ -391,7 +391,7 @@ Audit Log
 - [x] Escrow service
 - [x] REST API (FastAPI)
 - [x] Python SDK on PyPI
-- [x] MCP Server (27 tools) on PyPI
+- [x] MCP Server (33 tools) on PyPI
 - [x] Dashboard (React)
 - [x] CI/CD pipeline
 

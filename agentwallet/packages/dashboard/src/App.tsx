@@ -8,6 +8,7 @@ import Analytics from "./pages/Analytics";
 import Policies from "./pages/Policies";
 import AuditLog from "./pages/AuditLog";
 import Billing from "./pages/Billing";
+import PdaWallets from "./pages/PdaWallets";
 import Login from "./pages/Login";
 import { isAuthenticated } from "./api";
 
@@ -27,6 +28,7 @@ function ProtectedLayout() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/agents" element={<Agents />} />
             <Route path="/wallets" element={<Wallets />} />
+            <Route path="/pda-wallets" element={<PdaWallets />} />
             <Route path="/transactions" element={<Transactions />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/policies" element={<Policies />} />

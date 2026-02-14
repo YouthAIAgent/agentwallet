@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   ScrollText,
   CreditCard,
+  KeyRound,
   LogOut,
   Hexagon,
 } from "lucide-react";
@@ -17,6 +18,7 @@ const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/agents", icon: Bot, label: "Agents" },
   { to: "/wallets", icon: Wallet, label: "Wallets" },
+  { to: "/pda-wallets", icon: KeyRound, label: "PDA Wallets" },
   { to: "/transactions", icon: ArrowLeftRight, label: "Transactions" },
   { to: "/analytics", icon: BarChart3, label: "Analytics" },
   { to: "/policies", icon: ShieldCheck, label: "Policies" },

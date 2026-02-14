@@ -8,6 +8,7 @@ from .exceptions import (
     RateLimitError,
     ValidationError,
 )
+from .types import PDADeriveResult, PDATransferResult, PDAWallet, PDAWalletState
 from .x402_middleware import X402AutoPay, X402Budget
 from .x402_types import (
     X402PaymentInfo,
@@ -23,6 +24,11 @@ __all__ = [
     "NotFoundError",
     "RateLimitError",
     "ValidationError",
+    # PDA wallet types
+    "PDAWallet",
+    "PDAWalletState",
+    "PDATransferResult",
+    "PDADeriveResult",
     # x402 HTTP-native payments
     "X402AutoPay",
     "X402Budget",

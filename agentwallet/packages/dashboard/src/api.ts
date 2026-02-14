@@ -362,6 +362,72 @@ export const billing = {
     }),
 };
 
+// --- PDA Wallets ---
+export interface PdaWallet {
+  id: string;
+  organization_id: string;
+  authority_wallet_id: string;
+  agent_id_seed: string;
+  pda_address: string;
+  spending_limit_per_tx: string;
+  daily_limit: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreatePdaWalletRequest {
+  authority_wallet_id: string;
+  agent_id_seed: string;
+  spending_limit_per_tx: number;
+  daily_limit: number;
+}
+
+export interface PdaOnChainState {
+  authority: string;
+  daily_spent: number;
+  daily_limit: number;
+  spending_limit_per_tx: number;
+  is_active: boolean;
+  sol_balance: number;
+  last_reset_slot: number;
+}
+
+export interface DerivePdaRequest {
+  org_pubkey: string;
+  agent_id_seed: string;
+}
+
+export interface DerivePdaResponse {
+  pda_address: string;
+  bump: number;
+}
+
+export const pdaWallets = {
+  list: (params?: { limit?: number; offset?: number }) => {
+    const qs = new URLSearchParams();
+    if (params?.limit) qs.set("limit", String(params.limit));
+    if (params?.offset) qs.set("offset", String(params.offset));
+    const q = qs.toString();
+    return request<{ pda_wallets: PdaWallet[]; total: number }>(
+      `/pda-wallets${q ? `?${q}` : ""}`
+    );
+  },
+  get: (id: string) => request<PdaWallet>(`/pda-wallets/${id}`),
+  create: (data: CreatePdaWalletRequest) =>
+    request<PdaWallet>("/pda-wallets", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  getState: (id: string) =>
+    request<PdaOnChainState>(`/pda-wallets/${id}/state`),
+  derive: (data: DerivePdaRequest) =>
+    request<DerivePdaResponse>("/pda-wallets/derive", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+};
+
 // --- Dashboard Overview ---
 export interface DashboardOverview {
   total_agents: number;
