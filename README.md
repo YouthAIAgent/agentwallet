@@ -43,10 +43,8 @@
 | Resource | URL |
 |---|---|
 | **Website** | [agentwallet.fun](https://agentwallet.fun) |
-| **Dashboard** | [agentwallet.fun/dashboard.html](https://agentwallet.fun/dashboard.html) |
-| **Docs** | [agentwallet.fun/docs.html](https://agentwallet.fun/docs.html) |
-| **Quest Campaign** | [agentwallet.fun/quest.html](https://agentwallet.fun/quest.html) |
-| **API** | [Live API](https://trustworthy-celebration-production-6a3e.up.railway.app/health) |
+| **API Docs** | [Swagger UI](https://trustworthy-celebration-production-6a3e.up.railway.app/docs) |
+| **API Health** | [Live API](https://trustworthy-celebration-production-6a3e.up.railway.app/health) |
 | **Solana Explorer** | [View on Devnet](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet) |
 | **SDK** | `pip install aw-protocol-sdk==0.2.0` |
 
@@ -89,18 +87,16 @@ curl -s -X POST $API/v1/policies \
   -d '{"name":"daily-cap","rules":{"daily_limit_lamports":500000000},"scope_type":"org"}'
 ```
 
-**Full testing guide with SDK + MCP examples:** [docs/SUBMISSION.md](docs/SUBMISSION.md)
-
 **Production-ready on Solana devnet.** Mainnet deployment scheduled for Q2 2026.
 
 ---
 
 ## Why AgentWallet?
 
-- **🤖 Agent-Native:** Built specifically for autonomous AI agents, not human wallets
-- **⚡ Programmable Limits:** Spending caps, time windows, whitelist/blacklist per agent
-- **🔐 Trustless Escrow:** On-chain PDAs for agent-to-agent task payments
-- **📊 Real-time Analytics:** Complete audit trail and compliance reporting
+- **Agent-Native** — Built specifically for autonomous AI agents, not human wallets
+- **Programmable Limits** — Spending caps, time windows, whitelist/blacklist per agent
+- **Trustless Escrow** — On-chain PDAs for agent-to-agent task payments
+- **Real-time Analytics** — Complete audit trail and compliance reporting
 
 ---
 
@@ -844,26 +840,15 @@ AgentWallet is part of our mission to enable autonomous AI agents to participate
 
 ---
 
-## Get Involved
+## Community
 
-⭐ **Star this repository** if you believe in agent-native financial infrastructure
-
-🐦 **Follow us on Twitter:** [@Web3__Youth](https://twitter.com/Web3__Youth)
-
-💬 **Join our community:** [Discord](https://discord.gg/agentwallet) (coming soon)
-
-🔗 **Connect:** [LinkedIn](https://linkedin.com/company/youthaiagent)
+- **Star this repository** if you believe in agent-native financial infrastructure
+- **Twitter:** [@Web3__Youth](https://twitter.com/Web3__Youth)
+- **Discord:** [Coming soon](https://discord.gg/agentwallet)
 
 ---
 
 <p align="center">
   <strong>Built for the agentic economy.</strong><br>
   <sub>Every agent deserves a wallet. Every wallet deserves limits. Every transaction deserves a trail.</sub>
-</p>
-
-<p align="center">
-  <a href="https://github.com/YouthAIAgent/agentwallet">🌟 Star on GitHub</a> •
-  <a href="https://pypi.org/project/aw-protocol-sdk/">📦 SDK on PyPI</a> •
-  <a href="https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet">⛓️ Live on Solana</a> •
-  <a href="https://twitter.com/Web3__Youth">🐦 Follow Us</a>
 </p>
