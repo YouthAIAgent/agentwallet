@@ -16,11 +16,12 @@
                 <span class="logo-bracket">[</span>AgentWallet<span class="logo-bracket">]</span>
             </a>
             <div class="nav-links">
+                <a href="#live">Live Proof</a>
                 <a href="#features">Features</a>
                 <a href="#sdk">SDK</a>
-                <a href="#pricing">Pricing</a>
+                <a href="https://api.agentwallet.fun/docs" target="_blank">API Docs</a>
                 <a href="https://github.com/YouthAIAgent/agentwallet" target="_blank">GitHub</a>
-                <a href="#waitlist" class="btn btn-sm">Get Early Access</a>
+                <a href="https://api.agentwallet.fun/docs" class="btn btn-sm" target="_blank">Try API</a>
             </div>
         </div>
     </nav>
@@ -44,25 +45,30 @@
                 Spending limits. Escrow. Analytics. Compliance. <strong>One SDK call.</strong>
             </p>
             <div class="hero-ctas">
-                <a href="https://github.com/YouthAIAgent/agentwallet" class="btn btn-primary" target="_blank">
-                    <span class="btn-icon">&#9654;</span> View on GitHub
+                <a href="https://api.agentwallet.fun/docs" class="btn btn-primary" target="_blank">
+                    <span class="btn-icon">&#9654;</span> Try Live API
                 </a>
-                <a href="#waitlist" class="btn btn-outline">Join Waitlist</a>
+                <a href="https://github.com/YouthAIAgent/agentwallet" class="btn btn-outline" target="_blank">View on GitHub</a>
             </div>
             <div class="hero-stats">
                 <div class="stat">
-                    <span class="stat-value">$8.5B</span>
-                    <span class="stat-label">AI Agent Market 2026</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat">
-                    <span class="stat-value">14</span>
+                    <span class="stat-value">60</span>
                     <span class="stat-label">API Endpoints</span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat">
-                    <span class="stat-value">&lt;50ms</span>
-                    <span class="stat-label">Avg Latency</span>
+                    <span class="stat-value">84</span>
+                    <span class="stat-label">Tests Passing</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-value">Live</span>
+                    <span class="stat-label">Solana Devnet</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-value">33</span>
+                    <span class="stat-label">MCP Tools</span>
                 </div>
             </div>
         </div>
@@ -98,6 +104,73 @@
         </div>
     </section>
 
+    <!-- Live Proof -->
+    <section class="live-proof" id="live">
+        <div class="container">
+            <h2 class="section-title reveal">Verified on <span class="gradient-text">Solana Devnet</span></h2>
+            <p class="live-subtitle reveal">Not a demo. Not a mockup. Real on-chain transactions you can verify right now.</p>
+            <div class="live-grid">
+                <div class="live-card reveal">
+                    <div class="live-header">
+                        <span class="live-status">Confirmed</span>
+                        <span class="live-type">PDA Wallet Created</span>
+                    </div>
+                    <div class="live-detail">
+                        <span class="live-label">Program</span>
+                        <a href="https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet" target="_blank" class="live-value link">CEQLGC...pt6r6</a>
+                    </div>
+                    <div class="live-detail">
+                        <span class="live-label">PDA Address</span>
+                        <span class="live-value">FnMmEV...KD7Mn</span>
+                    </div>
+                    <div class="live-detail">
+                        <span class="live-label">Limits</span>
+                        <span class="live-value">0.1 SOL/tx, 0.5 SOL/day</span>
+                    </div>
+                    <a href="https://explorer.solana.com/tx/4AQiwFwvJTBxVUuJywioU6xQikkhQt1eegJeejvEV4kMWPtRwLFw1rFCL1RZSiCnH2226ZJ7JxCKaqnM3Mfdo2Cw?cluster=devnet" target="_blank" class="btn btn-sm btn-outline btn-full">View on Explorer &rarr;</a>
+                </div>
+                <div class="live-card reveal">
+                    <div class="live-header">
+                        <span class="live-status">Confirmed</span>
+                        <span class="live-type">Limit-Enforced Transfer</span>
+                    </div>
+                    <div class="live-detail">
+                        <span class="live-label">Amount</span>
+                        <span class="live-value">0.05 SOL</span>
+                    </div>
+                    <div class="live-detail">
+                        <span class="live-label">Enforcement</span>
+                        <span class="live-value">On-chain spending limit check</span>
+                    </div>
+                    <div class="live-detail">
+                        <span class="live-label">Daily Spent</span>
+                        <span class="live-value">0.05 / 0.5 SOL (10%)</span>
+                    </div>
+                    <a href="https://explorer.solana.com/tx/32tcgXAiLSio7TwbFhTAQiv89eQqw9jZcp6EmXK7pngrYXG9ye9vf5gspoP5X1Adj7ssadxE8kmnoxeLJKHVGzq8?cluster=devnet" target="_blank" class="btn btn-sm btn-outline btn-full">View on Explorer &rarr;</a>
+                </div>
+                <div class="live-card reveal">
+                    <div class="live-header">
+                        <span class="live-status live-api">Live API</span>
+                        <span class="live-type">Try It Yourself</span>
+                    </div>
+                    <div class="live-detail">
+                        <span class="live-label">Base URL</span>
+                        <span class="live-value">api.agentwallet.fun</span>
+                    </div>
+                    <div class="live-detail">
+                        <span class="live-label">Docs</span>
+                        <a href="https://api.agentwallet.fun/docs" target="_blank" class="live-value link">Swagger UI</a>
+                    </div>
+                    <div class="live-detail">
+                        <span class="live-label">SDK</span>
+                        <code class="live-value">pip install aw-protocol-sdk</code>
+                    </div>
+                    <a href="https://api.agentwallet.fun/docs" target="_blank" class="btn btn-sm btn-primary btn-full">Open API Docs &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Features -->
     <section class="features" id="features">
         <div class="container">
@@ -125,8 +198,13 @@
                 </div>
                 <div class="feature-card reveal">
                     <div class="feature-icon">&#128187;</div>
-                    <h3>Python SDK</h3>
-                    <p>Stripe-like async interface. <code>pip install agentwallet</code>. Create agents, transfer SOL, manage escrow in 5 lines.</p>
+                    <h3>Python SDK + MCP</h3>
+                    <p>Stripe-like async SDK. <code>pip install aw-protocol-sdk</code>. Plus 33 MCP tools for AI-native wallet access.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon">&#9878;</div>
+                    <h3>PDA Wallets</h3>
+                    <p>On-chain policy-enforced wallets via Anchor program. Per-transaction and daily spending limits enforced by Solana, not our server.</p>
                 </div>
                 <div class="feature-card reveal">
                     <div class="feature-icon">&#128220;</div>
@@ -177,7 +255,7 @@
     <span class="kw">await</span> aw.escrow.release(escrow.id)</code></pre>
             </div>
             <p class="sdk-install reveal">
-                <code class="install-cmd">$ pip install agentwallet</code>
+                <code class="install-cmd">$ pip install aw-protocol-sdk</code>
             </p>
         </div>
     </section>
