@@ -91,7 +91,7 @@ These are established patterns — please don't change them:
 - **Redis fail-open** — rate limiter skips if Redis is unavailable
 - **Fernet encryption** for dev, AWS KMS for production
 
-See `CLAUDE.md` for the full list of architecture decisions.
+See project docs for the full list of architecture decisions.
 
 ## What to Work On
 

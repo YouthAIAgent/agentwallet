@@ -32,6 +32,7 @@ from .api.routers import (
     erc8004,
     escrow,
     marketplace,
+    pda_wallets,
     policies,
     tokens,
     transactions,
@@ -102,6 +103,7 @@ app.include_router(webhooks.router, prefix="/v1")
 app.include_router(erc8004.router, prefix="/v1")
 app.include_router(x402.router, prefix="/v1")
 app.include_router(marketplace.router, prefix="/v1")
+app.include_router(pda_wallets.router, prefix="/v1")
 
 
 # Global exception handlers

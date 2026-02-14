@@ -145,7 +145,7 @@ async def main():
 asyncio.run(main())
 ```
 
-**Option D: MCP (Claude/GPT/Cursor)**
+**Option D: MCP (AI Agents)**
 
 Any MCP-compatible AI can use AgentWallet as native tools. 27 tools available:
 - `create_agent_wallet`, `transfer_sol`, `create_escrow`, `release_escrow`
@@ -218,7 +218,7 @@ Every major AI lab (Anthropic, OpenAI, Google) is shipping agent frameworks. Non
 AgentWallet is a **full-stack wallet-as-a-service protocol** built on Solana, designed ground-up for autonomous AI agents.
 
 ```
-Foundation Model (Claude/GPT/Gemini)
+Foundation Model (LLM)
         ↕
 MCP Layer (27 AI-native tools)
         ↕
@@ -320,7 +320,7 @@ async with AgentWallet(api_key="aw_live_...") as aw:
 
 ### MCP Integration (27 AI-Native Tools)
 
-Any MCP-compatible AI (Claude, GPT, Cursor) can create wallets, transfer SOL, manage escrow as native tools. Zero integration friction — agents interact with AgentWallet the same way they interact with everything else.
+Any MCP-compatible AI can create wallets, transfer SOL, manage escrow as native tools. Zero integration friction — agents interact with AgentWallet the same way they interact with everything else.
 
 ### Dashboard (React + TypeScript)
 

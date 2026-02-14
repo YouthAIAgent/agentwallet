@@ -81,6 +81,9 @@ class Settings(BaseSettings):
     erc8004_reputation_address: str = "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63"
     evm_platform_private_key: str = ""  # Platform's EVM key for signing identity registrations
 
+    # Anchor program
+    anchor_program_id: str = "CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6"
+
     # RPC timeouts
     rpc_timeout: int = 15
     rpc_confirm_max_polls: int = 20
