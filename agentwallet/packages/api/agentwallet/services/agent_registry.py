@@ -30,17 +30,13 @@ class AgentRegistry:
     ) -> Agent:
         """Register a new agent. Auto-creates a default wallet."""
         # Check tier limit
-        count = await self.db.scalar(
-            select(func.count()).where(Agent.org_id == org_id)
-        )
+        count = await self.db.scalar(select(func.count()).where(Agent.org_id == org_id))
         limit = TIER_AGENT_LIMITS.get(org_tier, 3)
         if count >= limit:
             raise TierLimitError("agents", limit, org_tier)
 
         # Check name uniqueness within org
-        existing = await self.db.scalar(
-            select(Agent).where(Agent.org_id == org_id, Agent.name == name)
-        )
+        existing = await self.db.scalar(select(Agent).where(Agent.org_id == org_id, Agent.name == name))
         if existing:
             raise ConflictError(f"Agent '{name}' already exists in this organization")
 
@@ -103,9 +99,7 @@ class AgentRegistry:
 
         agent = await self.get_agent(agent_id, org_id)
 
-        total = await self.db.scalar(
-            select(func.count()).where(Transaction.agent_id == agent_id)
-        )
+        total = await self.db.scalar(select(func.count()).where(Transaction.agent_id == agent_id))
         confirmed = await self.db.scalar(
             select(func.count()).where(
                 Transaction.agent_id == agent_id,
@@ -124,16 +118,10 @@ class AgentRegistry:
         await self.db.flush()
         return score
 
-    async def list_public_agents(
-        self, limit: int = 50, offset: int = 0
-    ) -> tuple[list[Agent], int]:
+    async def list_public_agents(self, limit: int = 50, offset: int = 0) -> tuple[list[Agent], int]:
         """Public directory of discoverable agents."""
         query = select(Agent).where(Agent.is_public.is_(True), Agent.status == "active")
-        count_query = select(func.count()).select_from(Agent).where(
-            Agent.is_public.is_(True), Agent.status == "active"
-        )
+        count_query = select(func.count()).select_from(Agent).where(Agent.is_public.is_(True), Agent.status == "active")
         total = await self.db.scalar(count_query)
-        result = await self.db.execute(
-            query.order_by(Agent.reputation_score.desc()).offset(offset).limit(limit)
-        )
+        result = await self.db.execute(query.order_by(Agent.reputation_score.desc()).offset(offset).limit(limit))
         return list(result.scalars().all()), total or 0

@@ -15,7 +15,6 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.database import get_db
-from ..middleware.rate_limit import check_rate_limit
 from ...models.api_key import ApiKey
 from ...models.organization import Organization
 from ...models.user import User
@@ -27,6 +26,7 @@ from ..middleware.auth import (
     hash_password,
     verify_password,
 )
+from ..middleware.rate_limit import check_rate_limit
 from ..schemas.auth import (
     ApiKeyCreateRequest,
     ApiKeyListItem,
@@ -117,9 +117,7 @@ async def list_api_keys(
     db: AsyncSession = Depends(get_db),
 ):
     """List all API keys for the organization."""
-    result = await db.execute(
-        select(ApiKey).where(ApiKey.org_id == auth.org_id)
-    )
+    result = await db.execute(select(ApiKey).where(ApiKey.org_id == auth.org_id))
     keys = result.scalars().all()
     return [
         ApiKeyListItem(

@@ -10,6 +10,7 @@ class AgentWalletError(Exception):
 
 # -- Retry --
 
+
 class RetryableError(AgentWalletError):
     """Raised when an operation fails but can be retried."""
 
@@ -26,6 +27,7 @@ class RetryExhausted(AgentWalletError):
 
 # -- Auth --
 
+
 class AuthenticationError(AgentWalletError):
     """Invalid or missing credentials."""
 
@@ -35,6 +37,7 @@ class AuthorizationError(AgentWalletError):
 
 
 # -- Resource --
+
 
 class NotFoundError(AgentWalletError):
     """Requested resource does not exist."""
@@ -58,16 +61,14 @@ class ValidationError(AgentWalletError):
 
 # -- Transaction --
 
+
 class InsufficientBalanceError(AgentWalletError):
     """Wallet balance too low for the requested operation."""
 
     def __init__(self, available: int, required: int):
         self.available = available
         self.required = required
-        super().__init__(
-            f"Insufficient balance: have {available / 1e9:.4f} SOL, "
-            f"need {required / 1e9:.4f} SOL"
-        )
+        super().__init__(f"Insufficient balance: have {available / 1e9:.4f} SOL, need {required / 1e9:.4f} SOL")
 
 
 class TransactionFailedError(AgentWalletError):
@@ -79,6 +80,7 @@ class IdempotencyConflictError(AgentWalletError):
 
 
 # -- Policy --
+
 
 class PolicyDeniedError(AgentWalletError):
     """Transaction denied by policy engine."""
@@ -99,11 +101,13 @@ class ApprovalRequiredError(AgentWalletError):
 
 # -- Escrow --
 
+
 class EscrowStateError(AgentWalletError):
     """Invalid escrow state transition."""
 
 
 # -- Billing / Tier --
+
 
 class TierLimitError(AgentWalletError):
     """Organization has reached a tier limit."""
@@ -124,6 +128,7 @@ class RateLimitError(AgentWalletError):
 
 
 # -- ERC-8004 / EVM --
+
 
 class ERC8004Error(AgentWalletError):
     """ERC-8004 identity/reputation operation failed."""

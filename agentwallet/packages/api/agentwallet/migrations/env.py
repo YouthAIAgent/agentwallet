@@ -3,13 +3,12 @@
 import asyncio
 from logging.config import fileConfig
 
-from alembic import context
-from sqlalchemy import pool
-from sqlalchemy.ext.asyncio import async_engine_from_config
-
 from agentwallet.core.config import get_settings
 from agentwallet.core.database import Base
 from agentwallet.models import *  # noqa: F401, F403 -- ensure all models are imported
+from alembic import context
+from sqlalchemy import pool
+from sqlalchemy.ext.asyncio import async_engine_from_config
 
 config = context.config
 

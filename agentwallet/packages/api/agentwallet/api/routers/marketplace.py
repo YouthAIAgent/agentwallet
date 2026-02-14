@@ -167,6 +167,7 @@ async def get_service(
 ):
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     from sqlalchemy import select
+
     from ...models.marketplace import Service
 
     result = await db.execute(select(Service).where(Service.id == service_id))
@@ -186,6 +187,7 @@ async def update_service(
 ):
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     from sqlalchemy import select
+
     from ...models.marketplace import Service
 
     result = await db.execute(select(Service).where(Service.id == service_id))
@@ -285,6 +287,7 @@ async def get_job(
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     from sqlalchemy import select
     from sqlalchemy.orm import joinedload
+
     from ...models.marketplace import Job
 
     result = await db.execute(
@@ -504,13 +507,14 @@ async def marketplace_stats(
 ):
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     from sqlalchemy import func, select
+
     from ...models.marketplace import Job, Service
 
     # Aggregate stats
     svc_result = await db.execute(
         select(
             func.count(Service.id).label("total"),
-            func.count(Service.id).filter(Service.is_active == True).label("active"),
+            func.count(Service.id).filter(Service.is_active).label("active"),
         )
     )
     svc_stats = svc_result.first()

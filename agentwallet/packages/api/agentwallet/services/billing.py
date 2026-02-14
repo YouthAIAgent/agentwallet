@@ -3,7 +3,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.config import get_settings
@@ -14,8 +14,8 @@ logger = get_logger(__name__)
 
 TIER_PRICES = {
     "free": 0,
-    "pro": 4900,        # $49/mo in cents
-    "enterprise": 29900, # $299+/mo in cents
+    "pro": 4900,  # $49/mo in cents
+    "enterprise": 29900,  # $299+/mo in cents
 }
 
 
@@ -105,6 +105,7 @@ class BillingService:
             return None
 
         import stripe
+
         stripe.api_key = settings.stripe_secret_key
 
         customer = stripe.Customer.create(
@@ -113,15 +114,14 @@ class BillingService:
         )
         return customer.id
 
-    async def create_subscription(
-        self, stripe_customer_id: str, tier: str
-    ) -> dict | None:
+    async def create_subscription(self, stripe_customer_id: str, tier: str) -> dict | None:
         """Create a Stripe subscription."""
         settings = get_settings()
         if not settings.stripe_secret_key:
             return None
 
         import stripe
+
         stripe.api_key = settings.stripe_secret_key
 
         # Would use actual Stripe price IDs

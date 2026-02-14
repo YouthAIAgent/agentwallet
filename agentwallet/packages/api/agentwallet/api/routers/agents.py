@@ -80,9 +80,7 @@ async def list_agents(
 ):
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     registry = AgentRegistry(db)
-    agents, total = await registry.list_agents(
-        org_id=auth.org_id, status=status, limit=limit, offset=offset
-    )
+    agents, total = await registry.list_agents(org_id=auth.org_id, status=status, limit=limit, offset=offset)
     return AgentListResponse(
         data=[
             AgentResponse(

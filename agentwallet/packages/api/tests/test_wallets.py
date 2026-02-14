@@ -6,10 +6,13 @@ import pytest
 @pytest.mark.asyncio
 async def test_create_wallet(client):
     """Test creating a new wallet."""
-    resp = await client.post("/v1/wallets", json={
-        "wallet_type": "treasury",
-        "label": "Test Treasury",
-    })
+    resp = await client.post(
+        "/v1/wallets",
+        json={
+            "wallet_type": "treasury",
+            "label": "Test Treasury",
+        },
+    )
     assert resp.status_code == 201
     data = resp.json()
     assert data["wallet_type"] == "treasury"

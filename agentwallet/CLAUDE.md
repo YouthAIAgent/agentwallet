@@ -22,7 +22,7 @@ AI agent wallet infrastructure SaaS on Solana. Wallet-as-a-service for autonomou
 | Blockchain | Solana (solders Python SDK) |
 | On-chain | Anchor/Rust programs |
 | Dashboard | React 18 + TypeScript 5.6 + Vite 6 + Tailwind |
-| SDK | Python "agentwallet-sdk" v0.1.0 |
+| SDK | Python "aw-protocol-sdk" v0.3.0 |
 | Auth | JWT + bcrypt (direct, NOT passlib) |
 | Landing | Static HTML/CSS/JS (packages/landing/) |
 | Deploy | Docker + Railway |
@@ -35,7 +35,7 @@ agentwallet/
 ├── packages/
 │   ├── api/          # FastAPI backend (60 endpoints under /v1)
 │   │   └── agentwallet/ (main, api/routers, core, models, services, workers, migrations)
-│   ├── sdk-python/   # pip install agentwallet-sdk
+│   ├── sdk-python/   # pip install aw-protocol-sdk
 │   ├── dashboard/    # React + Vite
 │   ├── programs/     # Anchor/Rust Solana program
 │   ├── cli/          # Rich operator dashboard
@@ -53,7 +53,7 @@ auth, wallets, agents, transactions, escrow, analytics, compliance, policies, we
 5. **Redis fail-open**: Rate limiter caches Redis availability, skips if unavailable
 6. **db.refresh()**: `await db.refresh(obj)` after flush in agents/policies routers and agent_registry service
 7. **Railway sh -c**: startCommand wraps in `sh -c '...'` for env var expansion
-8. **SDK name**: Package is `agentwallet-sdk` on PyPI (plain `agentwallet` was taken)
+8. **SDK name**: Package is `aw-protocol-sdk` on PyPI (plain `agentwallet` and `agentwallet-sdk` were taken)
 
 ## Environment Variables (Railway Production)
 All secrets are managed via Railway dashboard — never commit secrets to the repo.

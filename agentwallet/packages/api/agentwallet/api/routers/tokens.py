@@ -1,6 +1,7 @@
 """Token router -- SPL token transfers and balance queries."""
 
 import uuid
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,19 +10,19 @@ from ...core.exceptions import (
     ApprovalRequiredError,
     IdempotencyConflictError,
     InsufficientBalanceError,
-    PolicyDeniedError,
     NotFoundError,
+    PolicyDeniedError,
     ValidationError,
 )
 from ...services.token_service import TokenService
 from ..middleware.auth import AuthContext, get_auth_context
 from ..middleware.rate_limit import check_rate_limit
 from ..schemas.tokens import (
+    SupportedToken,
+    SupportedTokensResponse,
+    TokenBalancesResponse,
     TokenTransferRequest,
     TokenTransferResponse,
-    TokenBalancesResponse,
-    SupportedTokensResponse,
-    SupportedToken,
 )
 
 router = APIRouter(prefix="/tokens", tags=["tokens"])
@@ -72,10 +73,13 @@ async def transfer_token(
     except PolicyDeniedError as e:
         raise HTTPException(status_code=403, detail=str(e))
     except ApprovalRequiredError as e:
-        raise HTTPException(status_code=202, detail={
-            "status": "approval_required",
-            "approval_request_id": e.approval_request_id,
-        })
+        raise HTTPException(
+            status_code=202,
+            detail={
+                "status": "approval_required",
+                "approval_request_id": e.approval_request_id,
+            },
+        )
     except InsufficientBalanceError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except IdempotencyConflictError as e:
@@ -98,23 +102,23 @@ async def get_token_balances(
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
 
     token_service = TokenService(db)
-    
+
     # Get wallet and validate ownership
     try:
         wallet = await token_service.wallet_mgr.get_wallet(wallet_id)
         if wallet.org_id != auth.org_id:
             raise HTTPException(status_code=404, detail="Wallet not found")
-            
+
         # Get all token balances
         balances = await token_service.get_all_token_balances(wallet.address)
-        
+
         return TokenBalancesResponse(
             wallet_id=wallet_id,
             address=wallet.address,
             sol_balance=balances["sol_balance"],
             tokens=balances["tokens"],
         )
-        
+
     except NotFoundError:
         raise HTTPException(status_code=404, detail="Wallet not found")
     except Exception as e:
@@ -131,11 +135,13 @@ async def list_supported_tokens(
 
     tokens = []
     for symbol, config in TokenService.SUPPORTED_TOKENS.items():
-        tokens.append(SupportedToken(
-            symbol=symbol,
-            name=config["name"],
-            mint_address=config["mint"],
-            decimals=config["decimals"],
-        ))
+        tokens.append(
+            SupportedToken(
+                symbol=symbol,
+                name=config["name"],
+                mint_address=config["mint"],
+                decimals=config["decimals"],
+            )
+        )
 
     return SupportedTokensResponse(tokens=tokens)

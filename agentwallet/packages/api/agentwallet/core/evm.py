@@ -18,6 +18,7 @@ try:
     from eth_account import Account
     from eth_account.signers.local import LocalAccount
     from web3 import Web3
+
     _HAS_WEB3 = True
 except ImportError:
     _HAS_WEB3 = False
@@ -117,9 +118,7 @@ def encode_function_call(abi: list[dict], fn_name: str, args: list) -> str:
 
 def decode_function_result(abi: list[dict], fn_name: str, data: str) -> tuple:
     """ABI-decode a function return value."""
-    output_types = [o["type"] for o in next(
-        a for a in abi if a.get("name") == fn_name
-    )["outputs"]]
+    output_types = [o["type"] for o in next(a for a in abi if a.get("name") == fn_name)["outputs"]]
     return _w3.codec.decode(output_types, bytes.fromhex(data.removeprefix("0x")))
 
 

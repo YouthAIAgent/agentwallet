@@ -70,10 +70,13 @@ async def transfer_sol(
     except PolicyDeniedError as e:
         raise HTTPException(status_code=403, detail=str(e))
     except ApprovalRequiredError as e:
-        raise HTTPException(status_code=202, detail={
-            "status": "approval_required",
-            "approval_request_id": e.approval_request_id,
-        })
+        raise HTTPException(
+            status_code=202,
+            detail={
+                "status": "approval_required",
+                "approval_request_id": e.approval_request_id,
+            },
+        )
     except InsufficientBalanceError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except IdempotencyConflictError as e:

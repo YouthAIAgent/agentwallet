@@ -4,10 +4,11 @@ Revision ID: 004_pda_wallets
 Revises: 003_marketplace
 Create Date: 2026-02-14 00:00:00.000000
 """
+
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 revision: str = "004_pda_wallets"

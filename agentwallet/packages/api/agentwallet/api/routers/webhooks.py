@@ -58,9 +58,7 @@ async def list_webhooks(
     db: AsyncSession = Depends(get_db),
 ):
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
-    count = await db.scalar(
-        select(func.count()).select_from(Webhook).where(Webhook.org_id == auth.org_id)
-    )
+    count = await db.scalar(select(func.count()).select_from(Webhook).where(Webhook.org_id == auth.org_id))
     result = await db.execute(select(Webhook).where(Webhook.org_id == auth.org_id))
     webhooks = result.scalars().all()
     return WebhookListResponse(

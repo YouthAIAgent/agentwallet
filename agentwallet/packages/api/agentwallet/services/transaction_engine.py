@@ -16,7 +16,7 @@ from ..core.exceptions import (
     PolicyDeniedError,
 )
 from ..core.logging import get_logger
-from ..core.solana import confirm_transaction, transfer_sol
+from ..core.solana import transfer_sol
 from ..models.transaction import Transaction
 from .fee_collector import FeeCollector
 from .permission_engine import PermissionEngine
@@ -54,9 +54,8 @@ class TransactionEngine:
         # Idempotency check
         if idempotency_key:
             from sqlalchemy import select
-            existing = await self.db.scalar(
-                select(Transaction).where(Transaction.idempotency_key == idempotency_key)
-            )
+
+            existing = await self.db.scalar(select(Transaction).where(Transaction.idempotency_key == idempotency_key))
             if existing:
                 if existing.org_id != org_id or existing.amount_lamports != amount_lamports:
                     raise IdempotencyConflictError(
@@ -179,9 +178,7 @@ class TransactionEngine:
 
         return results
 
-    async def get_transaction(
-        self, tx_id: uuid.UUID, org_id: uuid.UUID
-    ) -> Transaction:
+    async def get_transaction(self, tx_id: uuid.UUID, org_id: uuid.UUID) -> Transaction:
         from ..core.exceptions import NotFoundError
 
         tx = await self.db.get(Transaction, tx_id)
@@ -201,9 +198,7 @@ class TransactionEngine:
         from sqlalchemy import func, select
 
         query = select(Transaction).where(Transaction.org_id == org_id)
-        count_query = select(func.count()).select_from(Transaction).where(
-            Transaction.org_id == org_id
-        )
+        count_query = select(func.count()).select_from(Transaction).where(Transaction.org_id == org_id)
 
         if agent_id:
             query = query.where(Transaction.agent_id == agent_id)
@@ -216,7 +211,5 @@ class TransactionEngine:
             count_query = count_query.where(Transaction.status == status)
 
         total = await self.db.scalar(count_query)
-        result = await self.db.execute(
-            query.order_by(Transaction.created_at.desc()).offset(offset).limit(limit)
-        )
+        result = await self.db.execute(query.order_by(Transaction.created_at.desc()).offset(offset).limit(limit))
         return list(result.scalars().all()), total or 0

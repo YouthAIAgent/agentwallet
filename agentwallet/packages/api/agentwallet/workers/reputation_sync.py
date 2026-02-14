@@ -19,9 +19,7 @@ class ReputationSyncWorker(BaseWorker):
         factory = get_session_factory()
         async with factory() as db:
             # Find all confirmed identities
-            result = await db.execute(
-                select(ERC8004Identity).where(ERC8004Identity.status == "confirmed")
-            )
+            result = await db.execute(select(ERC8004Identity).where(ERC8004Identity.status == "confirmed"))
             identities = result.scalars().all()
 
             if not identities:

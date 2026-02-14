@@ -10,12 +10,11 @@ from solders.keypair import Keypair
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..core.config import get_settings
 from ..core.exceptions import NotFoundError, TierLimitError
 from ..core.kms import get_key_manager
 from ..core.logging import get_logger
 from ..core.redis_client import CacheService
-from ..core.solana import get_balance, get_balance_sol, get_token_accounts
+from ..core.solana import get_balance, get_token_accounts
 from ..models.wallet import Wallet
 
 logger = get_logger(__name__)
@@ -39,9 +38,7 @@ class WalletManager:
     ) -> Wallet:
         """Create a new custodial Solana wallet. Keypair is encrypted at rest."""
         # Check tier limit
-        count = await self.db.scalar(
-            select(func.count()).where(Wallet.org_id == org_id)
-        )
+        count = await self.db.scalar(select(func.count()).where(Wallet.org_id == org_id))
         limit = TIER_WALLET_LIMITS.get(org_tier, 5)
         if count >= limit:
             raise TierLimitError("wallets", limit, org_tier)
@@ -82,8 +79,8 @@ class WalletManager:
     ) -> tuple[list[Wallet], int]:
         """List wallets for an org with optional filters."""
         query = select(Wallet).where(Wallet.org_id == org_id, Wallet.is_active.is_(True))
-        count_query = select(func.count()).select_from(Wallet).where(
-            Wallet.org_id == org_id, Wallet.is_active.is_(True)
+        count_query = (
+            select(func.count()).select_from(Wallet).where(Wallet.org_id == org_id, Wallet.is_active.is_(True))
         )
 
         if agent_id:
@@ -104,6 +101,7 @@ class WalletManager:
         # Check cache
         if self.cache:
             import json
+
             cached = await self.cache.get(f"bal:{wallet.address}")
             if cached:
                 return json.loads(cached)
@@ -122,6 +120,7 @@ class WalletManager:
         # Cache for 30 seconds
         if self.cache:
             import json
+
             await self.cache.set(f"bal:{wallet.address}", json.dumps(result), ttl=30)
 
         return result

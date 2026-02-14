@@ -6,11 +6,14 @@ import pytest
 @pytest.mark.asyncio
 async def test_create_agent(client):
     """Test creating a new agent."""
-    resp = await client.post("/v1/agents", json={
-        "name": "test-crud-agent",
-        "description": "Agent for CRUD test",
-        "capabilities": ["trading"],
-    })
+    resp = await client.post(
+        "/v1/agents",
+        json={
+            "name": "test-crud-agent",
+            "description": "Agent for CRUD test",
+            "capabilities": ["trading"],
+        },
+    )
     assert resp.status_code == 201
     data = resp.json()
     assert data["name"] == "test-crud-agent"
@@ -49,9 +52,12 @@ async def test_get_agent_not_found(client):
 @pytest.mark.asyncio
 async def test_update_agent(client, test_agent):
     """Test updating an agent."""
-    resp = await client.patch(f"/v1/agents/{test_agent.id}", json={
-        "description": "Updated description",
-    })
+    resp = await client.patch(
+        f"/v1/agents/{test_agent.id}",
+        json={
+            "description": "Updated description",
+        },
+    )
     assert resp.status_code == 200
     assert resp.json()["description"] == "Updated description"
 
@@ -59,8 +65,11 @@ async def test_update_agent(client, test_agent):
 @pytest.mark.asyncio
 async def test_create_agent_unauthenticated(unauthed_client):
     """Test creating an agent without auth should fail."""
-    resp = await unauthed_client.post("/v1/agents", json={
-        "name": "unauth-agent",
-        "description": "Should fail",
-    })
+    resp = await unauthed_client.post(
+        "/v1/agents",
+        json={
+            "name": "unauth-agent",
+            "description": "Should fail",
+        },
+    )
     assert resp.status_code == 401

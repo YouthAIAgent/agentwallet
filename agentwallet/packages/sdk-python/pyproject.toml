@@ -10,7 +10,8 @@ readme = "README.md"
 license = "MIT"
 
 [project.urls]
-Homepage = "https://agentwallet.dev"
+Homepage = "https://github.com/YouthAIAgent/agentwallet"
+Documentation = "https://api.agentwallet.fun/docs"
 Repository = "https://github.com/YouthAIAgent/agentwallet"
 
 [build-system]

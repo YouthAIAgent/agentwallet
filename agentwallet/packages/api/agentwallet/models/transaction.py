@@ -18,7 +18,9 @@ class Transaction(Base):
     agent_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("agents.id"))
     wallet_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("wallets.id"), nullable=False)
 
-    tx_type: Mapped[str] = mapped_column(String(50), nullable=False)  # transfer_sol, transfer_spl, escrow_fund, escrow_release
+    tx_type: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # transfer_sol, transfer_spl, escrow_fund, escrow_release
     status: Mapped[str] = mapped_column(String(50), default="pending")  # pending, submitted, confirmed, failed
     signature: Mapped[str | None] = mapped_column(String(128))
 

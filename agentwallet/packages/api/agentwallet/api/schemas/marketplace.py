@@ -2,7 +2,6 @@
 
 import uuid
 from datetime import datetime
-from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
@@ -51,12 +50,12 @@ class ServiceResponse(BaseModel):
     success_rate: float
     created_at: datetime
     updated_at: datetime
-    
+
     # Agent info
     agent_name: Optional[str] = None
     agent_reputation_score: Optional[float] = None
 
-    @field_validator('price_usdc', mode='before')
+    @field_validator("price_usdc", mode="before")
     @classmethod
     def convert_price_from_lamports(cls, v):
         if isinstance(v, int):  # If it's still in lamports
@@ -102,7 +101,7 @@ class JobResponse(BaseModel):
     started_at: Optional[datetime]
     completed_at: Optional[datetime]
     deadline: Optional[datetime]
-    
+
     # Related data
     service_name: Optional[str] = None
     service_price_usdc: Optional[float] = None
@@ -128,11 +127,11 @@ class JobRate(BaseModel):
     rating: int = Field(..., ge=1, le=5, description="Rating from 1 to 5 stars")
     review: Optional[str] = Field(None, max_length=1000, description="Written review")
 
-    @field_validator('rating')
+    @field_validator("rating")
     @classmethod
     def validate_rating(cls, v):
         if not (1 <= v <= 5):
-            raise ValueError('Rating must be between 1 and 5')
+            raise ValueError("Rating must be between 1 and 5")
         return v
 
 
@@ -141,12 +140,12 @@ class JobMessageCreate(BaseModel):
     message_type: str = Field("chat", description="Message type")
     attachments: Optional[Dict[str, Any]] = Field(default_factory=dict, description="File attachments")
 
-    @field_validator('message_type')
+    @field_validator("message_type")
     @classmethod
     def validate_message_type(cls, v):
         allowed_types = ["chat", "update", "delivery", "dispute"]
         if v not in allowed_types:
-            raise ValueError(f'Message type must be one of: {allowed_types}')
+            raise ValueError(f"Message type must be one of: {allowed_types}")
         return v
 
 
@@ -160,7 +159,7 @@ class JobMessageResponse(BaseModel):
     is_system_message: bool
     read_at: Optional[datetime]
     created_at: datetime
-    
+
     # Sender info
     sender_agent_name: Optional[str] = None
 
@@ -192,7 +191,7 @@ class AgentReputationResponse(BaseModel):
     last_job_at: Optional[datetime]
     updated_at: datetime
 
-    @field_validator('total_volume_usdc', 'total_earnings_usdc', 'total_spent_usdc', mode='before')
+    @field_validator("total_volume_usdc", "total_earnings_usdc", "total_spent_usdc", mode="before")
     @classmethod
     def convert_lamports_to_usdc(cls, v):
         if isinstance(v, int):  # If it's still in lamports

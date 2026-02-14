@@ -43,17 +43,13 @@ class ERC8004Service:
     # EVM Wallet Management
     # ------------------------------------------------------------------
 
-    async def create_evm_wallet(
-        self, agent_id: uuid.UUID, org_id: uuid.UUID, label: str | None = None
-    ) -> EVMWallet:
+    async def create_evm_wallet(self, agent_id: uuid.UUID, org_id: uuid.UUID, label: str | None = None) -> EVMWallet:
         """Generate an ETH keypair for an agent. Encrypts private key at rest."""
         # Verify agent exists and belongs to org
         agent = await self._get_agent(agent_id, org_id)
 
         # Check if agent already has an EVM wallet
-        existing = await self.db.scalar(
-            select(EVMWallet).where(EVMWallet.agent_id == agent_id)
-        )
+        existing = await self.db.scalar(select(EVMWallet).where(EVMWallet.agent_id == agent_id))
         if existing:
             return existing
 
@@ -81,9 +77,7 @@ class ERC8004Service:
 
     async def get_evm_wallet(self, agent_id: uuid.UUID, org_id: uuid.UUID) -> EVMWallet:
         """Get an agent's EVM wallet."""
-        wallet = await self.db.scalar(
-            select(EVMWallet).where(EVMWallet.agent_id == agent_id)
-        )
+        wallet = await self.db.scalar(select(EVMWallet).where(EVMWallet.agent_id == agent_id))
         if not wallet or wallet.org_id != org_id:
             raise NotFoundError("EVMWallet", str(agent_id))
         return wallet
@@ -103,26 +97,20 @@ class ERC8004Service:
         settings = get_settings()
 
         # Check if already registered
-        existing = await self.db.scalar(
-            select(ERC8004Identity).where(ERC8004Identity.agent_id == agent_id)
-        )
+        existing = await self.db.scalar(select(ERC8004Identity).where(ERC8004Identity.agent_id == agent_id))
         if existing and existing.status == "confirmed":
             raise ERC8004Error(f"Agent {agent_id} already has a confirmed ERC-8004 identity")
         if existing and existing.status == "pending":
             return existing  # Return pending registration
 
         # Ensure agent has an EVM wallet
-        evm_wallet = await self.db.scalar(
-            select(EVMWallet).where(EVMWallet.agent_id == agent_id)
-        )
+        evm_wallet = await self.db.scalar(select(EVMWallet).where(EVMWallet.agent_id == agent_id))
         if not evm_wallet:
             evm_wallet = await self.create_evm_wallet(agent_id, org_id)
 
         # Build and submit registration tx
         metadata_uri = metadata_uri or ""
-        calldata = encode_function_call(
-            IDENTITY_ABI, "registerAgent", [agent.name, metadata_uri]
-        )
+        calldata = encode_function_call(IDENTITY_ABI, "registerAgent", [agent.name, metadata_uri])
 
         identity = ERC8004Identity(
             org_id=org_id,
@@ -184,9 +172,7 @@ class ERC8004Service:
 
     async def get_identity(self, agent_id: uuid.UUID, org_id: uuid.UUID) -> ERC8004Identity:
         """Get an agent's ERC-8004 identity."""
-        identity = await self.db.scalar(
-            select(ERC8004Identity).where(ERC8004Identity.agent_id == agent_id)
-        )
+        identity = await self.db.scalar(select(ERC8004Identity).where(ERC8004Identity.agent_id == agent_id))
         if not identity or identity.org_id != org_id:
             raise NotFoundError("ERC8004Identity", str(agent_id))
         return identity
@@ -212,8 +198,8 @@ class ERC8004Service:
             raise ValidationError("Cannot submit feedback for yourself")
 
         # Verify both agents exist
-        from_agent = await self._get_agent(from_agent_id, org_id)
-        to_agent = await self._get_agent(to_agent_id, org_id)
+        await self._get_agent(from_agent_id, org_id)
+        await self._get_agent(to_agent_id, org_id)
 
         # Verify recipient has ERC-8004 identity
         to_identity = await self.db.scalar(
@@ -302,17 +288,11 @@ class ERC8004Service:
         # Try to read from chain
         if agent.erc8004_token_id is not None:
             try:
-                calldata = encode_function_call(
-                    REPUTATION_ABI, "getReputation", [agent.erc8004_token_id]
-                )
+                calldata = encode_function_call(REPUTATION_ABI, "getReputation", [agent.erc8004_token_id])
                 async with httpx.AsyncClient(timeout=15) as client:
-                    raw_result = await eth_call(
-                        client, settings.erc8004_reputation_address, calldata
-                    )
+                    raw_result = await eth_call(client, settings.erc8004_reputation_address, calldata)
                     if raw_result and raw_result != "0x":
-                        decoded = decode_function_result(
-                            REPUTATION_ABI, "getReputation", raw_result
-                        )
+                        decoded = decode_function_result(REPUTATION_ABI, "getReputation", raw_result)
                         result["on_chain_score"] = decoded[0]
                         result["feedback_count"] = decoded[1]
             except Exception as e:
@@ -361,9 +341,7 @@ class ERC8004Service:
             raise ERC8004Error("Funder wallet has no associated agent")
 
         # Find recipient agent by address
-        recipient_wallet = await self.db.scalar(
-            select(Wallet).where(Wallet.address == escrow.recipient_address)
-        )
+        recipient_wallet = await self.db.scalar(select(Wallet).where(Wallet.address == escrow.recipient_address))
         if not recipient_wallet or not recipient_wallet.agent_id:
             raise ERC8004Error("Recipient address has no associated agent wallet")
 
@@ -397,14 +375,12 @@ class ERC8004Service:
             condition = ERC8004Feedback.from_agent_id == agent_id
 
         query = select(ERC8004Feedback).where(condition, ERC8004Feedback.org_id == org_id)
-        count_query = select(func.count()).select_from(ERC8004Feedback).where(
-            condition, ERC8004Feedback.org_id == org_id
+        count_query = (
+            select(func.count()).select_from(ERC8004Feedback).where(condition, ERC8004Feedback.org_id == org_id)
         )
 
         total = await self.db.scalar(count_query)
-        result = await self.db.execute(
-            query.order_by(ERC8004Feedback.created_at.desc()).offset(offset).limit(limit)
-        )
+        result = await self.db.execute(query.order_by(ERC8004Feedback.created_at.desc()).offset(offset).limit(limit))
         return list(result.scalars().all()), total or 0
 
     # ------------------------------------------------------------------

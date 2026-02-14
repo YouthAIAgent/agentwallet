@@ -76,9 +76,7 @@ async def list_escrows(
 ):
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     svc = EscrowService(db)
-    escrows, total = await svc.list_escrows(
-        org_id=auth.org_id, status=status, limit=limit, offset=offset
-    )
+    escrows, total = await svc.list_escrows(org_id=auth.org_id, status=status, limit=limit, offset=offset)
     return EscrowListResponse(
         data=[_escrow_to_response(e) for e in escrows],
         total=total,

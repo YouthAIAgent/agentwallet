@@ -13,7 +13,7 @@ from solders.instruction import AccountMeta, Instruction
 from solders.pubkey import Pubkey
 
 from .config import get_settings
-from .exceptions import RetryableError, TransactionFailedError
+from .exceptions import RetryableError
 from .logging import get_logger
 from .retry import retry
 
@@ -27,6 +27,7 @@ SYSTEM_PROGRAM = Pubkey.from_string("11111111111111111111111111111111")
 # Anchor discriminator
 # ---------------------------------------------------------------------------
 
+
 def _anchor_discriminator(name: str) -> bytes:
     """Compute 8-byte Anchor instruction discriminator: sha256("global:<name>")[:8]."""
     return hashlib.sha256(f"global:{name}".encode()).digest()[:8]
@@ -35,6 +36,7 @@ def _anchor_discriminator(name: str) -> bytes:
 # ---------------------------------------------------------------------------
 # Borsh serialization helpers
 # ---------------------------------------------------------------------------
+
 
 def _encode_u64(value: int) -> bytes:
     return struct.pack("<Q", value)
@@ -56,6 +58,7 @@ def _encode_bool(value: bool) -> bytes:
 # ---------------------------------------------------------------------------
 # PDA derivation
 # ---------------------------------------------------------------------------
+
 
 def derive_pda(org_pubkey: Pubkey, agent_id_seed: str) -> tuple[Pubkey, int]:
     """Derive the AgentWallet PDA address from org pubkey and agent id seed.
@@ -81,6 +84,7 @@ def derive_platform_config_pda() -> tuple[Pubkey, int]:
 # ---------------------------------------------------------------------------
 # Instruction builders
 # ---------------------------------------------------------------------------
+
 
 def build_create_agent_wallet_ix(
     authority: Pubkey,
@@ -131,10 +135,7 @@ def build_transfer_with_limit_ix(
         else:
             fee_wallet = SYSTEM_PROGRAM
 
-    data = (
-        _anchor_discriminator("transfer_with_limit")
-        + _encode_u64(amount)
-    )
+    data = _anchor_discriminator("transfer_with_limit") + _encode_u64(amount)
 
     accounts = [
         AccountMeta(authority, is_signer=True, is_writable=True),
@@ -175,6 +176,7 @@ def build_update_limits_ix(
 # On-chain state deserialization
 # ---------------------------------------------------------------------------
 
+
 def deserialize_agent_wallet_state(data: bytes) -> dict:
     """Deserialize AgentWallet account data (after 8-byte Anchor discriminator).
 
@@ -191,27 +193,27 @@ def deserialize_agent_wallet_state(data: bytes) -> dict:
     """
     offset = 8  # skip discriminator
 
-    authority = Pubkey.from_bytes(data[offset:offset + 32])
+    authority = Pubkey.from_bytes(data[offset : offset + 32])
     offset += 32
 
-    org = Pubkey.from_bytes(data[offset:offset + 32])
+    org = Pubkey.from_bytes(data[offset : offset + 32])
     offset += 32
 
-    agent_id_len = struct.unpack("<I", data[offset:offset + 4])[0]
+    agent_id_len = struct.unpack("<I", data[offset : offset + 4])[0]
     offset += 4
-    agent_id = data[offset:offset + agent_id_len].decode("utf-8")
+    agent_id = data[offset : offset + agent_id_len].decode("utf-8")
     offset += agent_id_len
 
-    spending_limit_per_tx = struct.unpack("<Q", data[offset:offset + 8])[0]
+    spending_limit_per_tx = struct.unpack("<Q", data[offset : offset + 8])[0]
     offset += 8
 
-    daily_limit = struct.unpack("<Q", data[offset:offset + 8])[0]
+    daily_limit = struct.unpack("<Q", data[offset : offset + 8])[0]
     offset += 8
 
-    daily_spent = struct.unpack("<Q", data[offset:offset + 8])[0]
+    daily_spent = struct.unpack("<Q", data[offset : offset + 8])[0]
     offset += 8
 
-    last_reset_day = struct.unpack("<q", data[offset:offset + 8])[0]
+    last_reset_day = struct.unpack("<q", data[offset : offset + 8])[0]
     offset += 8
 
     is_active = data[offset] == 1
@@ -235,6 +237,7 @@ def deserialize_agent_wallet_state(data: bytes) -> dict:
 # ---------------------------------------------------------------------------
 # RPC helpers for reading PDA state
 # ---------------------------------------------------------------------------
+
 
 def _rpc_url() -> str:
     return get_settings().solana_rpc_url

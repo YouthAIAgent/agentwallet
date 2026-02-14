@@ -113,20 +113,24 @@ async def transfer_sol(
 
     # Build instructions
     instructions = [
-        transfer(TransferParams(
-            from_pubkey=from_keypair.pubkey(),
-            to_pubkey=Pubkey.from_string(to_address),
-            lamports=lamports,
-        ))
+        transfer(
+            TransferParams(
+                from_pubkey=from_keypair.pubkey(),
+                to_pubkey=Pubkey.from_string(to_address),
+                lamports=lamports,
+            )
+        )
     ]
 
     if fee_lamports > 0 and fee_recipient:
         instructions.append(
-            transfer(TransferParams(
-                from_pubkey=from_keypair.pubkey(),
-                to_pubkey=Pubkey.from_string(fee_recipient),
-                lamports=fee_lamports,
-            ))
+            transfer(
+                TransferParams(
+                    from_pubkey=from_keypair.pubkey(),
+                    to_pubkey=Pubkey.from_string(fee_recipient),
+                    lamports=fee_lamports,
+                )
+            )
         )
 
     msg = Message(instructions, from_keypair.pubkey())
@@ -338,9 +342,7 @@ async def submit_transaction(
 # ---------------------------------------------------------------------------
 
 
-async def get_token_balance(
-    client: httpx.AsyncClient, owner: str, mint: str
-) -> dict:
+async def get_token_balance(client: httpx.AsyncClient, owner: str, mint: str) -> dict:
     """Get SPL token balance for a specific mint. Returns {amount, decimals, ui_amount}."""
     accounts = await get_token_accounts(client, owner)
     for account in accounts:
@@ -379,16 +381,16 @@ async def transfer_spl_token(
     from solders.instruction import Instruction
     from solders.pubkey import Pubkey
     from solders.system_program import TransferParams, transfer
-    
+
     from_addr = str(from_keypair.pubkey())
-    
+
     # Check SOL balance for transaction fees
     sol_balance = await get_balance(client, from_addr)
     tx_fee = 5000  # base transaction fee
     total_fee_needed = fee_lamports + tx_fee
     if sol_balance < total_fee_needed:
         raise InsufficientBalanceError(available=sol_balance, required=total_fee_needed)
-    
+
     # Get sender's token account
     token_accounts = await get_token_accounts(client, from_addr)
     sender_token_account = None
@@ -396,34 +398,32 @@ async def transfer_spl_token(
         if account["mint"] == mint:
             sender_token_account = account
             break
-    
+
     if not sender_token_account or sender_token_account["amount"] < amount:
         available = sender_token_account["amount"] if sender_token_account else 0
         raise InsufficientBalanceError(available=available, required=amount)
-    
+
     # Get or create recipient's associated token account
-    recipient_pubkey = Pubkey.from_string(to_address)
-    mint_pubkey = Pubkey.from_string(mint)
-    
+    Pubkey.from_string(to_address)
+    Pubkey.from_string(mint)
+
     # Calculate associated token account address for recipient
     # Using the standard Associated Token Program formula
-    associated_token_program = Pubkey.from_string("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL")
+    Pubkey.from_string("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL")
     token_program = Pubkey.from_string("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
-    
+
     # Find recipient's associated token account
-    recipient_token_account = None
     try:
         recipient_accounts = await get_token_accounts(client, to_address)
         for account in recipient_accounts:
             if account["mint"] == mint:
-                recipient_token_account = account
                 break
     except Exception:
         pass  # Recipient might not have any token accounts yet
-    
+
     # For simplicity, we'll assume the associated token account exists
     # In a production system, you'd want to check and create it if needed
-    
+
     # Get sender's token account address (we need the actual account pubkey)
     sender_accounts_resp = await client.post(
         _rpc_url(),
@@ -441,14 +441,12 @@ async def transfer_spl_token(
     )
     sender_accounts_resp.raise_for_status()
     sender_accounts_data = sender_accounts_resp.json()
-    
+
     if not sender_accounts_data.get("result", {}).get("value"):
         raise InsufficientBalanceError(available=0, required=amount)
-    
-    sender_token_account_pubkey = Pubkey.from_string(
-        sender_accounts_data["result"]["value"][0]["pubkey"]
-    )
-    
+
+    sender_token_account_pubkey = Pubkey.from_string(sender_accounts_data["result"]["value"][0]["pubkey"])
+
     # Get recipient's token account address
     recipient_accounts_resp = await client.post(
         _rpc_url(),
@@ -466,14 +464,12 @@ async def transfer_spl_token(
     )
     recipient_accounts_resp.raise_for_status()
     recipient_accounts_data = recipient_accounts_resp.json()
-    
+
     if not recipient_accounts_data.get("result", {}).get("value"):
         raise ValueError(f"Recipient {to_address} does not have a token account for mint {mint}")
-    
-    recipient_token_account_pubkey = Pubkey.from_string(
-        recipient_accounts_data["result"]["value"][0]["pubkey"]
-    )
-    
+
+    recipient_token_account_pubkey = Pubkey.from_string(recipient_accounts_data["result"]["value"][0]["pubkey"])
+
     # Get blockhash
     resp = await client.post(
         _rpc_url(),
@@ -485,11 +481,11 @@ async def transfer_spl_token(
     if "error" in bh_data:
         raise RetryableError(f"Blockhash RPC error: {bh_data['error']}")
     bh = Hash.from_string(bh_data["result"]["value"]["blockhash"])
-    
+
     # Build SPL token transfer instruction
     # Token transfer instruction data: [1, amount (8 bytes little endian)]
-    instruction_data = bytes([1]) + amount.to_bytes(8, byteorder='little')
-    
+    instruction_data = bytes([1]) + amount.to_bytes(8, byteorder="little")
+
     token_transfer_ix = Instruction(
         program_id=token_program,
         accounts=[
@@ -499,25 +495,27 @@ async def transfer_spl_token(
         ],
         data=instruction_data,
     )
-    
+
     # Build instructions list
     instructions = [token_transfer_ix]
-    
+
     # Add platform fee transfer if specified
     if fee_lamports > 0 and fee_recipient:
         instructions.append(
-            transfer(TransferParams(
-                from_pubkey=from_keypair.pubkey(),
-                to_pubkey=Pubkey.from_string(fee_recipient),
-                lamports=fee_lamports,
-            ))
+            transfer(
+                TransferParams(
+                    from_pubkey=from_keypair.pubkey(),
+                    to_pubkey=Pubkey.from_string(fee_recipient),
+                    lamports=fee_lamports,
+                )
+            )
         )
-    
+
     # Build and sign transaction
     msg = Message(instructions, from_keypair.pubkey())
     tx = Transaction([from_keypair], msg, bh)
     tx_b58 = base58.b58encode(bytes(tx)).decode()
-    
+
     # Send transaction
     resp = await client.post(
         _rpc_url(),
@@ -531,14 +529,14 @@ async def transfer_spl_token(
     )
     resp.raise_for_status()
     result = resp.json()
-    
+
     if result.get("error"):
         raise RetryableError(f"sendTransaction error: {result['error']}")
-    
+
     sig = result.get("result")
     if not sig:
         raise RetryableError(f"sendTransaction returned no signature: {result}")
-    
+
     logger.info(
         "spl_token_transferred",
         from_addr=from_addr[:16],
@@ -551,9 +549,7 @@ async def transfer_spl_token(
     return sig
 
 
-async def get_token_accounts(
-    client: httpx.AsyncClient, owner: str
-) -> list[dict]:
+async def get_token_accounts(client: httpx.AsyncClient, owner: str) -> list[dict]:
     """Get all SPL token accounts for an owner. Returns list of {mint, amount, decimals}."""
     resp = await client.post(
         _rpc_url(),
@@ -575,10 +571,12 @@ async def get_token_accounts(
     for item in body.get("result", {}).get("value", []):
         info = item.get("account", {}).get("data", {}).get("parsed", {}).get("info", {})
         token_amount = info.get("tokenAmount", {})
-        accounts.append({
-            "mint": info.get("mint", ""),
-            "amount": int(token_amount.get("amount", "0")),
-            "decimals": token_amount.get("decimals", 0),
-            "ui_amount": token_amount.get("uiAmount", 0),
-        })
+        accounts.append(
+            {
+                "mint": info.get("mint", ""),
+                "amount": int(token_amount.get("amount", "0")),
+                "decimals": token_amount.get("decimals", 0),
+                "ui_amount": token_amount.get("uiAmount", 0),
+            }
+        )
     return accounts
