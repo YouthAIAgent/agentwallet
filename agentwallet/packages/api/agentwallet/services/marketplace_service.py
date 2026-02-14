@@ -70,9 +70,9 @@ class MarketplaceService:
         )
         
         self.session.add(service)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(service)
-        
+
         return service
 
     async def discover_services(
@@ -225,10 +225,10 @@ class MarketplaceService:
         
         self.session.add(system_message)
 
-        # Update service metrics (increment before commit to avoid expired state)
+        # Update service metrics (increment before flush to avoid expired state)
         service.total_jobs += 1
 
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(job)
 
         return job
@@ -259,8 +259,8 @@ class MarketplaceService:
                 content=f"Job accepted. {seller_notes}"
             )
             self.session.add(message)
-        
-        await self.session.commit()
+
+        await self.session.flush()
         return job
 
     async def complete_job(
@@ -288,9 +288,13 @@ class MarketplaceService:
         job.result_data = result_data or {}
         job.seller_notes = completion_notes
 
-        # Release escrow payment
+        # Release escrow payment (escrow methods require org_id, not agent_id)
         if job.escrow_id:
-            await self.escrow_service.release_escrow(job.escrow_id, seller_agent_id)
+            escrow_result = await self.session.execute(
+                select(Escrow).where(Escrow.id == job.escrow_id)
+            )
+            escrow_obj = escrow_result.scalar_one()
+            await self.escrow_service.release_escrow(job.escrow_id, escrow_obj.org_id)
 
         # Update service metrics (query separately to avoid lazy-loading job.service)
         service_result = await self.session.execute(
@@ -310,9 +314,9 @@ class MarketplaceService:
         )
         self.session.add(message)
 
-        await self.session.commit()
+        await self.session.flush()
 
-        # Update reputation asynchronously
+        # Update reputation
         await self.reputation_service.update_agent_reputation(seller_agent_id)
 
         return job
@@ -343,10 +347,14 @@ class MarketplaceService:
         job.status = "cancelled"
         job.completed_at = datetime.utcnow()
         
-        # Refund escrow if applicable
+        # Refund escrow if applicable (escrow methods require org_id, not agent_id)
         if job.escrow_id:
-            await self.escrow_service.refund_escrow(job.escrow_id, requester_agent_id)
-        
+            escrow_result = await self.session.execute(
+                select(Escrow).where(Escrow.id == job.escrow_id)
+            )
+            escrow_obj = escrow_result.scalar_one()
+            await self.escrow_service.refund_escrow(job.escrow_id, escrow_obj.org_id)
+
         # Create cancellation message
         message = JobMessage(
             job_id=job_id,
@@ -356,9 +364,9 @@ class MarketplaceService:
             is_system_message=True
         )
         self.session.add(message)
-        
-        await self.session.commit()
-        
+
+        await self.session.flush()
+
         # Update reputation for cancellations
         if requester_agent_id == job.seller_agent_id:
             await self.reputation_service.update_agent_reputation(job.seller_agent_id)
@@ -408,7 +416,7 @@ class MarketplaceService:
             service = service_result.scalar_one()
             service.avg_rating = float(avg_rating)
 
-        await self.session.commit()
+        await self.session.flush()
 
         # Update seller's reputation
         await self.reputation_service.update_agent_reputation(job.seller_agent_id)
@@ -479,9 +487,9 @@ class MarketplaceService:
         )
         
         self.session.add(message)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(message)
-        
+
         return message
 
     async def get_agent_jobs(

@@ -6,14 +6,15 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
-from ..core.database import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession
 from ..core.exceptions import NotFoundError
+from ..core.logging import get_logger
 from ..models.agent import Agent
 from ..models.wallet import Wallet
 from ..models.transaction import Transaction
 from ..models.policy import Policy
-from ..core.solana import SolanaClient
-from ..core.evm import EVMClient
+
+logger = get_logger(__name__)
 
 
 class UniversalBalanceService:
@@ -21,8 +22,6 @@ class UniversalBalanceService:
 
     def __init__(self, session: AsyncSession):
         self.session = session
-        self.solana_client = SolanaClient()
-        self.evm_client = EVMClient()
 
     async def get_universal_balance(self, agent_id: uuid.UUID) -> Dict[str, Any]:
         """Get unified balance across all wallets and tokens.
@@ -35,7 +34,7 @@ class UniversalBalanceService:
         )
         agent = agent_result.scalar_one_or_none()
         if not agent:
-            raise NotFoundError(f"Agent {agent_id} not found")
+            raise NotFoundError("Agent", str(agent_id))
         
         total_balance_usd = Decimal('0')
         chain_balances = {}
@@ -218,7 +217,7 @@ class UniversalBalanceService:
                     
             except Exception as e:
                 # Log error but continue with other wallets
-                print(f"Error getting balance for Solana wallet {wallet.address}: {e}")
+                logger.warning("balance_fetch_error", wallet=wallet.address[:16], error=str(e))
                 continue
         
         # Add SOL to tokens if there's any balance
@@ -261,7 +260,7 @@ class UniversalBalanceService:
                 chain_data = await self._get_chain_balances(agent.evm_address, chain)
                 evm_balances[chain] = chain_data
             except Exception as e:
-                print(f"Error getting {chain} balances: {e}")
+                logger.warning("evm_balance_fetch_error", chain=chain, error=str(e))
                 evm_balances[chain] = None
         
         return evm_balances

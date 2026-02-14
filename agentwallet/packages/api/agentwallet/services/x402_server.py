@@ -45,8 +45,9 @@ class X402PricingConfig:
         self._routes: list[dict] = []
         # payment_id -> payment_record
         self._payments: dict[str, dict] = {}
-        # signature -> verified (bool) -- cache to avoid re-verifying
+        # signature -> verified (bool) -- cache to avoid re-verifying (bounded)
         self._verified_signatures: dict[str, bool] = {}
+        self._max_cache_size: int = 10000
 
     def configure(
         self,
@@ -167,6 +168,12 @@ class X402PricingConfig:
         )
 
     def cache_verification(self, signature: str, valid: bool) -> None:
+        # Evict oldest entries if cache is full
+        if len(self._verified_signatures) >= self._max_cache_size:
+            # Remove oldest 20% of entries
+            to_remove = list(self._verified_signatures.keys())[: self._max_cache_size // 5]
+            for key in to_remove:
+                del self._verified_signatures[key]
         self._verified_signatures[signature] = valid
 
     def is_signature_cached(self, signature: str) -> bool | None:
