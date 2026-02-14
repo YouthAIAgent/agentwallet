@@ -28,7 +28,7 @@ async def test_register_and_login(client):
     resp = await client.post("/v1/auth/register", json={
         "org_name": "Test Org",
         "email": "test@example.com",
-        "password": "testpass123",
+        "password": "TestPass123",
     })
     assert resp.status_code == 200
     data = resp.json()
@@ -39,7 +39,7 @@ async def test_register_and_login(client):
     # Login
     resp = await client.post("/v1/auth/login", json={
         "email": "test@example.com",
-        "password": "testpass123",
+        "password": "TestPass123",
     })
     assert resp.status_code == 200
     data = resp.json()
@@ -49,7 +49,7 @@ async def test_register_and_login(client):
     resp = await client.post("/v1/auth/register", json={
         "org_name": "Test Org 2",
         "email": "test@example.com",
-        "password": "testpass456",
+        "password": "TestPass456",
     })
     assert resp.status_code == 409
 
@@ -66,7 +66,7 @@ async def test_agents_crud(client):
     resp = await client.post("/v1/auth/register", json={
         "org_name": "Agent Test Org",
         "email": "agents@example.com",
-        "password": "testpass123",
+        "password": "TestPass123",
     })
     token = resp.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
@@ -108,7 +108,7 @@ async def test_wallets(client):
     resp = await client.post("/v1/auth/register", json={
         "org_name": "Wallet Test Org",
         "email": "wallets@example.com",
-        "password": "testpass123",
+        "password": "TestPass123",
     })
     token = resp.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
@@ -135,7 +135,7 @@ async def test_policies_crud(client):
     resp = await client.post("/v1/auth/register", json={
         "org_name": "Policy Test Org",
         "email": "policies@example.com",
-        "password": "testpass123",
+        "password": "TestPass123",
     })
     token = resp.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}

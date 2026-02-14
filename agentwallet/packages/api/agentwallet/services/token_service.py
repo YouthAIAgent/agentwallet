@@ -103,17 +103,15 @@ class TokenService:
         if idempotency_key:
             existing = await self._check_idempotency(org_id, idempotency_key)
             if existing:
-                raise IdempotencyConflictError(existing.id)
-        
-        # Get wallet and validate ownership
-        wallet = await self.wallet_mgr.get_wallet(from_wallet_id)
-        if wallet.org_id != org_id:
-            raise NotFoundError("wallet")
-            
+                raise IdempotencyConflictError(
+                    f"Idempotency key '{idempotency_key}' already used for transaction {existing.id}"
+                )
+
+        # Get wallet and validate ownership (get_wallet checks org_id)
+        wallet = await self.wallet_mgr.get_wallet(from_wallet_id, org_id)
+
         # Decrypt private key
-        private_key = self.wallet_mgr.km.decrypt(wallet.private_key_encrypted)
-        from solders.keypair import Keypair
-        from_keypair = Keypair.from_base58_string(private_key)
+        from_keypair = self.wallet_mgr._decrypt_keypair(wallet)
         from_address = str(from_keypair.pubkey())
         
         # Check token balance
@@ -176,8 +174,8 @@ class TokenService:
             # Update transaction with signature
             tx.signature = signature
             tx.status = "submitted"
-            await self.db.commit()
-            
+            await self.db.flush()
+
             # Background confirmation (fire and forget)
             import asyncio
             asyncio.create_task(self._confirm_transaction(tx.id, signature))
@@ -195,7 +193,7 @@ class TokenService:
         except Exception as e:
             tx.status = "failed"
             tx.error = str(e)
-            await self.db.commit()
+            await self.db.flush()
             raise
     
     async def get_token_balance(self, wallet_address: str, token_symbol: str) -> Dict[str, Any]:

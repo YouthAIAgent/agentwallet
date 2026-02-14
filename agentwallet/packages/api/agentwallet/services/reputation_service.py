@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Tuple
 from sqlalchemy import and_, desc, func, select
 from sqlalchemy.orm import joinedload
 
-from ..core.database import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession
 from ..core.exceptions import NotFoundError
 from ..models.marketplace import AgentReputation, Job, Service
 from ..models.agent import Agent
@@ -37,8 +37,8 @@ class ReputationService:
         score = await self._calculate_composite_score(reputation)
         
         reputation.score = score
-        await self.session.commit()
-        
+        await self.session.flush()
+
         return score
 
     async def get_or_create_reputation(self, agent_id: uuid.UUID) -> AgentReputation:
@@ -57,7 +57,7 @@ class ReputationService:
             
             reputation = AgentReputation(agent_id=agent_id)
             self.session.add(reputation)
-            await self.session.commit()
+            await self.session.flush()
             await self.session.refresh(reputation)
         
         return reputation

@@ -418,7 +418,7 @@ async def transfer_spl_token(
             if account["mint"] == mint:
                 recipient_token_account = account
                 break
-    except:
+    except Exception:
         pass  # Recipient might not have any token accounts yet
     
     # For simplicity, we'll assume the associated token account exists

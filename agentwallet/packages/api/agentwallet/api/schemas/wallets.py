@@ -1,14 +1,15 @@
 """Wallet request/response schemas."""
 
 import uuid
+from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class WalletCreateRequest(BaseModel):
     agent_id: uuid.UUID | None = None
-    wallet_type: str = "agent"
-    label: str | None = None
+    wallet_type: Literal["agent", "treasury", "escrow"] = "agent"
+    label: str | None = Field(default=None, max_length=255)
 
 
 class WalletResponse(BaseModel):

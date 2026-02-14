@@ -18,7 +18,7 @@ class Agent(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(50), default="active")  # active, inactive, suspended
-    capabilities: Mapped[dict] = mapped_column(JSON, default=list)  # ["trading", "payments", ...]
+    capabilities: Mapped[list] = mapped_column(JSON, default=list)  # ["trading", "payments", ...]
     default_wallet_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("wallets.id"))
     reputation_score: Mapped[float] = mapped_column(Float, default=0.0)
     metadata_: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
