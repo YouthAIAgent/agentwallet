@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from .api.routers import (
+    acp,
     agents,
     analytics,
     auth,
@@ -17,6 +18,7 @@ from .api.routers import (
     marketplace,
     pda_wallets,
     policies,
+    swarms,
     tokens,
     transactions,
     wallets,
@@ -60,10 +62,10 @@ _is_prod = _settings.environment == "production"
 app = FastAPI(
     title="AgentWallet Protocol",
     description="AI Agent Wallet Infrastructure on Solana",
-    version="0.3.0",
+    version="0.4.0",
     lifespan=lifespan,
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None if _is_prod else "/docs",
+    redoc_url=None if _is_prod else "/redoc",
 )
 
 
@@ -97,7 +99,7 @@ app.add_middleware(
     allow_origins=[o.strip() for o in settings.api_cors_origins.split(",") if o.strip()],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
+    allow_headers=["Authorization", "Content-Type", "X-Request-ID", "X-API-Key", "X-Agent-Id"],
 )
 
 # Register routers under /v1
@@ -115,6 +117,8 @@ app.include_router(erc8004.router, prefix="/v1")
 app.include_router(x402.router, prefix="/v1")
 app.include_router(marketplace.router, prefix="/v1")
 app.include_router(pda_wallets.router, prefix="/v1")
+app.include_router(acp.router, prefix="/v1")
+app.include_router(swarms.router, prefix="/v1")
 
 
 # Global exception handlers
@@ -194,4 +198,4 @@ async def escrow_state_handler(request: Request, exc: EscrowStateError):
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "version": "0.3.0"}
+    return {"status": "ok", "version": "0.4.0"}
