@@ -264,6 +264,52 @@ body{animation:flk 10s infinite}
 .info-box:hover{border-color:rgba(0,255,65,.2);background:rgba(0,255,65,.03)}
 .info-box-title{font-weight:700;margin-bottom:6px;font-size:12px}.info-box-val{font-size:12px;color:var(--g)}
 
+/* ── AGENT JOIN ── */
+.join-split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.join-panel{background:var(--glass);backdrop-filter:blur(10px);border:1px solid var(--gbdr);border-radius:6px;overflow:hidden;position:relative;transition:all .4s}
+.join-panel:hover{box-shadow:0 10px 50px rgba(0,0,0,.4)}
+.join-panel[data-who="human"]{border-top:2px solid var(--c)}
+.join-panel[data-who="agent"]{border-top:2px solid var(--g)}
+.join-panel-header{display:flex;align-items:center;gap:10px;padding:16px 20px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--gbdr)}
+.join-panel-icon{font-size:24px}
+.join-panel-title{font-weight:700;font-size:13px;letter-spacing:1.5px}
+.join-panel[data-who="human"] .join-panel-title{color:var(--c)}
+.join-panel[data-who="agent"] .join-panel-title{color:var(--g)}
+.join-panel-badge{font-size:9px;padding:3px 10px;border-radius:2px;letter-spacing:1.5px;font-weight:700;margin-left:auto}
+.join-panel[data-who="human"] .join-panel-badge{color:var(--c);border:1px solid rgba(0,212,255,.2);background:rgba(0,212,255,.05)}
+.join-panel[data-who="agent"] .join-panel-badge{color:var(--g);border:1px solid rgba(0,255,65,.2);background:rgba(0,255,65,.05)}
+.join-code{padding:20px;font-size:12px;line-height:1.8;overflow-x:auto;min-height:280px}
+.join-step{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.join-step:last-child{border-bottom:none}
+.join-step-num{display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;font-size:10px;font-weight:700;margin-right:8px}
+.join-panel[data-who="human"] .join-step-num{background:rgba(0,212,255,.1);color:var(--c);border:1px solid rgba(0,212,255,.3)}
+.join-panel[data-who="agent"] .join-step-num{background:rgba(0,255,65,.1);color:var(--g);border:1px solid rgba(0,255,65,.3)}
+.join-cmd{color:var(--y);background:rgba(255,204,0,.04);padding:2px 8px;border-radius:2px;font-family:inherit}
+.join-install{display:flex;gap:12px;padding:14px 20px;border-top:1px solid var(--gbdr);flex-wrap:wrap;align-items:center}
+.join-install-btn{padding:8px 18px;font-size:11px;font-weight:700;letter-spacing:1.5px;font-family:inherit;transition:all .3s;cursor:pointer;border:none}
+.join-panel[data-who="human"] .join-install-btn{color:var(--bg);background:var(--c);box-shadow:0 0 15px rgba(0,212,255,.3)}
+.join-panel[data-who="human"] .join-install-btn:hover{box-shadow:0 0 30px rgba(0,212,255,.5)}
+.join-panel[data-who="agent"] .join-install-btn{color:var(--bg);background:var(--g);box-shadow:0 0 15px rgba(0,255,65,.3)}
+.join-panel[data-who="agent"] .join-install-btn:hover{box-shadow:0 0 30px rgba(0,255,65,.5)}
+.join-install-sub{font-size:10px;color:var(--dim);letter-spacing:1px}
+
+.live-agents{margin-top:24px;background:var(--glass);border:1px solid var(--gbdr);border-radius:6px;overflow:hidden}
+.live-agents-header{display:flex;align-items:center;gap:10px;padding:12px 20px;background:rgba(0,255,65,.03);border-bottom:1px solid var(--gbdr)}
+.live-agents-title{font-size:11px;letter-spacing:2px;color:var(--g);font-weight:700}
+.live-agents-count{margin-left:auto;font-size:11px;color:var(--c)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 6px var(--g);animation:pulse 2s infinite}
+.agent-feed{max-height:200px;overflow-y:auto;font-size:11px}
+.agent-feed-item{display:flex;align-items:center;gap:10px;padding:8px 20px;border-bottom:1px solid rgba(255,255,255,.02);animation:fadeIn .5s}
+.agent-feed-time{color:var(--dim);flex-shrink:0;width:60px}
+.agent-feed-icon{font-size:14px;flex-shrink:0}
+.agent-feed-msg{flex:1;color:var(--dimlt)}
+.agent-feed-type{flex-shrink:0;font-size:10px;padding:2px 8px;border-radius:2px;font-weight:600;letter-spacing:.5px}
+.agent-feed-type.sdk{color:var(--c);border:1px solid rgba(0,212,255,.2)}
+.agent-feed-type.mcp{color:var(--g);border:1px solid rgba(0,255,65,.2)}
+.agent-feed-type.api{color:var(--m);border:1px solid rgba(224,64,251,.2)}
+.agent-feed-type.pda{color:var(--p);border:1px solid rgba(168,85,247,.2)}
+@media(max-width:768px){.join-split{grid-template-columns:1fr}}
+
 /* ── PRICING ── */
 .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .price-card{background:var(--glass);backdrop-filter:blur(8px);border:1px solid var(--gbdr);padding:30px 24px;transition:all .3s;position:relative;overflow:hidden;border-radius:4px}
@@ -376,7 +422,7 @@ body{animation:flk 10s infinite}
 <a href="#sec-proof" class="nav-link">Live Proof</a>
 <a href="dashboard.html" class="nav-link">Dashboard</a>
 <a href="docs.html" class="nav-link">Docs</a>
-<a href="#sec-sdk" class="nav-link">SDK</a>
+<a href="#sec-sdk" class="nav-link">Join</a>
 <a href="https://api.agentwallet.fun/docs" class="nav-link" target="_blank">API</a>
 <a href="quest.html" class="nav-link nav-cta" style="background:var(--m);border-color:var(--m)">Quest</a>
 <div class="nav-status"><span class="status-dot"></span> Devnet</div>
@@ -511,13 +557,60 @@ body{animation:flk 10s infinite}
 </section>
 
 <section class="sec" id="sec-sdk">
-<div class="sec-title"><span class="sec-accent">06</span> SDK QUICK START</div>
-<div class="code-win"><div class="code-bar"><div class="code-tabs"><div class="code-tab active" data-panel="python">Python SDK</div><div class="code-tab" data-panel="mcp">MCP Tools</div><div class="code-tab" data-panel="rest">REST API</div></div></div>
-<div class="code-panel active" data-panel="python"><div class="code-body"><span class="ln">1</span><span class="kw">from</span> aw_sdk <span class="kw">import</span> <span class="fn">AgentWallet</span><br><span class="ln">2</span><br><span class="ln">3</span><span class="cm"># Initialize your agent's wallet</span><br><span class="ln">4</span>wallet <span class="op">=</span> <span class="fn">AgentWallet</span>(<span class="st">"your-api-key"</span>)<br><span class="ln">5</span><br><span class="ln">6</span><span class="cm"># Create agent with spending policy</span><br><span class="ln">7</span>agent <span class="op">=</span> wallet.<span class="fn">create_agent</span>(<span class="st">"trading-bot-01"</span>)<br><span class="ln">8</span>wallet.<span class="fn">set_policy</span>(agent, max_per_tx<span class="op">=</span><span class="nb">0.1</span>, daily_limit<span class="op">=</span><span class="nb">1.0</span>)<br><span class="ln">9</span><br><span class="ln">10</span><span class="cm"># Fund and transact autonomously</span><br><span class="ln">11</span>wallet.<span class="fn">fund</span>(agent, amount<span class="op">=</span><span class="nb">1.5</span>, token<span class="op">=</span><span class="st">"SOL"</span>)<br><span class="ln">12</span>wallet.<span class="fn">pay</span>(agent, to<span class="op">=</span><span class="st">"data-api.sol"</span>, amount<span class="op">=</span><span class="nb">0.005</span>)<br><span class="ln">13</span><span class="cm"># ✓ Confirmed in 400ms</span></div></div>
-<div class="code-panel" data-panel="mcp"><div class="code-body"><span class="ln">1</span><span class="cm"># Claude / GPT / Cursor native tools:</span><br><span class="ln">2</span><br><span class="ln">3</span><span class="fn">create_wallet</span>    <span class="cm">— Spin up a new agent wallet</span><br><span class="ln">4</span><span class="fn">get_balance</span>      <span class="cm">— Check SOL/token balance</span><br><span class="ln">5</span><span class="fn">transfer</span>         <span class="cm">— Send SOL to any address</span><br><span class="ln">6</span><span class="fn">create_escrow</span>    <span class="cm">— Lock funds in trustless escrow</span><br><span class="ln">7</span><span class="fn">release_escrow</span>   <span class="cm">— Release on task completion</span><br><span class="ln">8</span><span class="fn">set_policy</span>       <span class="cm">— Configure spending limits</span><br><span class="ln">9</span><span class="fn">get_analytics</span>    <span class="cm">— Real-time portfolio data</span><br><span class="ln">10</span><span class="fn">list_agents</span>      <span class="cm">— Browse agent marketplace</span><br><span class="ln">11</span><span class="fn">x402_pay</span>         <span class="cm">— HTTP micropayment</span><br><span class="ln">12</span><span class="cm"># ... 24 more tools (33 total)</span></div></div>
-<div class="code-panel" data-panel="rest"><div class="code-body"><span class="ln">1</span><span class="cm"># Create wallet via REST</span><br><span class="ln">2</span><span class="kw">curl</span> -X <span class="fn">POST</span> <span class="st">https://api.agentwallet.fun/v1/wallets</span> \<br><span class="ln">3</span>  -H <span class="st">"Authorization: Bearer $API_KEY"</span> \<br><span class="ln">4</span>  -d <span class="st">'{"name":"trading-bot","network":"solana-devnet"}'</span><br><span class="ln">5</span><br><span class="ln">6</span><span class="cm"># Response:</span><br><span class="ln">7</span>{<br><span class="ln">8</span>  <span class="kw">"wallet_id"</span>: <span class="st">"aw_7kR3mNwQ"</span>,<br><span class="ln">9</span>  <span class="kw">"address"</span>:   <span class="st">"CEQLGCWk..."</span>,<br><span class="ln">10</span>  <span class="kw">"network"</span>:   <span class="st">"solana-devnet"</span>,<br><span class="ln">11</span>  <span class="kw">"balance"</span>:   <span class="st">"0.00 SOL"</span><br><span class="ln">12</span>}</div></div>
-<div class="install-row"><span class="install-cmd">$ pip install aw-protocol-sdk</span><span class="install-cmd">$ pip install agentwallet-mcp</span><a href="https://github.com/YouthAIAgent/agentwallet" class="install-link" target="_blank">View on GitHub →</a></div>
+<div class="sec-title"><span class="sec-accent">06</span> JOIN THE PROTOCOL — <span style="color:var(--c)">HUMANS</span> & <span style="color:var(--g)">AI AGENTS</span></div>
+
+<div class="join-split">
+
+<!-- HUMAN PANEL -->
+<div class="join-panel" data-who="human">
+<div class="join-panel-header">
+<div class="join-panel-icon">👨‍💻</div>
+<div class="join-panel-title">FOR DEVELOPERS</div>
+<div class="join-panel-badge">PYTHON SDK</div>
 </div>
+<div class="join-code">
+<div class="join-step"><span class="join-step-num">1</span> <span style="color:var(--dim)">Install the SDK:</span><br><span class="join-cmd">$ pip install aw-protocol-sdk</span></div>
+<div class="join-step"><span class="join-step-num">2</span> <span style="color:var(--dim)">Register & get API key:</span><br><span style="color:var(--c)">from</span> aw_sdk <span style="color:var(--c)">import</span> <span style="color:var(--y)">AgentWallet</span><br>aw = <span style="color:var(--y)">AgentWallet</span>(<span style="color:var(--g)">"aw_live_xxx"</span>)</div>
+<div class="join-step"><span class="join-step-num">3</span> <span style="color:var(--dim)">Deploy your first agent:</span><br>agent = aw.<span style="color:var(--y)">create_agent</span>(<span style="color:var(--g)">"my-bot"</span>)<br>wallet = aw.<span style="color:var(--y)">create_wallet</span>(agent.id)</div>
+<div class="join-step"><span class="join-step-num">4</span> <span style="color:var(--dim)">Set spending policy:</span><br>aw.<span style="color:var(--y)">set_policy</span>(agent.id,<br>  max_per_tx=<span style="color:var(--m)">0.5</span>, daily_limit=<span style="color:var(--m)">5.0</span>)</div>
+<div class="join-step"><span class="join-step-num">5</span> <span style="color:var(--dim)">Send SOL autonomously:</span><br>aw.<span style="color:var(--y)">transfer</span>(wallet.id,<br>  to=<span style="color:var(--g)">"recipient.sol"</span>, amount=<span style="color:var(--m)">0.1</span>)<br><span style="color:var(--g)">✓ Confirmed in 400ms</span></div>
+</div>
+<div class="join-install">
+<a href="https://pypi.org/project/aw-protocol-sdk/" target="_blank" class="join-install-btn">[INSTALL SDK]</a>
+<span class="join-install-sub">PyPI · MIT License</span>
+</div>
+</div>
+
+<!-- AGENT PANEL -->
+<div class="join-panel" data-who="agent">
+<div class="join-panel-header">
+<div class="join-panel-icon">🤖</div>
+<div class="join-panel-title">FOR AI AGENTS</div>
+<div class="join-panel-badge">MCP SERVER</div>
+</div>
+<div class="join-code">
+<div class="join-step"><span class="join-step-num">1</span> <span style="color:var(--dim)">Install MCP server:</span><br><span class="join-cmd">$ pip install agentwallet-mcp</span></div>
+<div class="join-step"><span class="join-step-num">2</span> <span style="color:var(--dim)">Add to Claude / Cursor config:</span><br>{<br>  <span style="color:var(--c)">"mcpServers"</span>: {<br>    <span style="color:var(--g)">"agentwallet"</span>: {<br>      <span style="color:var(--y)">"command"</span>: <span style="color:var(--g)">"agentwallet-mcp"</span>,<br>      <span style="color:var(--y)">"env"</span>: { <span style="color:var(--m)">"AGENTWALLET_API_KEY"</span>: <span style="color:var(--g)">"aw_live_xxx"</span> }<br>    }<br>  }<br>}</div>
+<div class="join-step"><span class="join-step-num">3</span> <span style="color:var(--dim)">Now your AI agent can:</span><br><span style="color:var(--g)">▸</span> <span style="color:var(--y)">create_wallet</span> <span style="color:var(--dim)">— spin up wallets</span><br><span style="color:var(--g)">▸</span> <span style="color:var(--y)">transfer_sol</span> <span style="color:var(--dim)">— send SOL autonomously</span><br><span style="color:var(--g)">▸</span> <span style="color:var(--y)">create_escrow</span> <span style="color:var(--dim)">— lock funds trustlessly</span><br><span style="color:var(--g)">▸</span> <span style="color:var(--y)">create_pda_wallet</span> <span style="color:var(--dim)">— on-chain limits</span><br><span style="color:var(--dim)">... 33 tools total</span></div>
+</div>
+<div class="join-install">
+<a href="https://github.com/YouthAIAgent/agentwallet/tree/master/agentwallet/packages/mcp-server" target="_blank" class="join-install-btn">[INSTALL MCP]</a>
+<span class="join-install-sub">Claude · GPT · Cursor · Any MCP client</span>
+</div>
+</div>
+
+</div>
+
+<!-- LIVE AGENT FEED -->
+<div class="live-agents">
+<div class="live-agents-header">
+<span class="live-dot"></span>
+<span class="live-agents-title">AGENTS JOINING IN REAL-TIME</span>
+<span class="live-agents-count" id="live-agent-count">0 agents connected</span>
+</div>
+<div class="agent-feed" id="agent-feed"></div>
+</div>
+
 </section>
 
 <section class="sec" id="sec-dashboard">
@@ -743,6 +836,24 @@ setInterval(rGlitch,2500+Math.random()*3000);
 
 /* HOVER */
 document.querySelectorAll('.stat-card,.f-link,.sbtn,.feature-card,.agent-card,.price-card,.dash-card').forEach(el=>{el.addEventListener('mouseenter',()=>{el.style.textShadow='0 0 15px var(--g)'});el.addEventListener('mouseleave',()=>{el.style.textShadow=''})});
+
+/* LIVE AGENT FEED */
+const agentNames=['claude-3.5','gpt-4o','gemini-pro','cursor-ai','devin-agent','trading-bot-v2','data-crawler','nft-minter','defi-yield','sol-sniper','content-gen','code-reviewer','audit-bot','price-oracle','market-maker','research-agent','scheduler-ai','api-bridge','token-scanner','portfolio-mgr'];
+const agentActions=[
+{msg:'joined via MCP server',type:'mcp',icon:'🤖'},
+{msg:'installed aw-protocol-sdk',type:'sdk',icon:'📦'},
+{msg:'created first wallet',type:'api',icon:'💰'},
+{msg:'deployed PDA wallet on-chain',type:'pda',icon:'🔗'},
+{msg:'transferred 0.5 SOL',type:'api',icon:'⚡'},
+{msg:'set spending policy (1 SOL/day)',type:'sdk',icon:'🛡️'},
+{msg:'created escrow for task',type:'mcp',icon:'🔐'},
+{msg:'connected via REST API',type:'api',icon:'🌐'},
+{msg:'queried balance via MCP',type:'mcp',icon:'📊'},
+{msg:'registered as marketplace agent',type:'sdk',icon:'🏪'}
+];
+let agentCount=47;
+function addAgentFeedItem(){const feed=document.getElementById('agent-feed');if(!feed)return;const name=agentNames[Math.floor(Math.random()*agentNames.length)];const action=agentActions[Math.floor(Math.random()*agentActions.length)];const now=new Date().toTimeString().slice(0,5);const div=document.createElement('div');div.className='agent-feed-item';div.innerHTML='<span class="agent-feed-time">'+now+'</span><span class="agent-feed-icon">'+action.icon+'</span><span class="agent-feed-msg"><strong style="color:var(--g)">'+name+'</strong> '+action.msg+'</span><span class="agent-feed-type '+action.type+'">'+action.type.toUpperCase()+'</span>';feed.prepend(div);while(feed.children.length>12)feed.removeChild(feed.lastChild);agentCount++;const countEl=document.getElementById('live-agent-count');if(countEl)countEl.textContent=agentCount+' agents connected';}
+setTimeout(()=>{addAgentFeedItem();addAgentFeedItem();addAgentFeedItem();addAgentFeedItem();setInterval(addAgentFeedItem,4000+Math.random()*3000);},2000);
 
 /* NEURAL NETWORK */
 const nc=document.getElementById('neural'),nx=nc.getContext('2d');
