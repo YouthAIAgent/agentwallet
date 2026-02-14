@@ -14,6 +14,7 @@
 <meta name="twitter:title" content="AgentWallet Protocol | Autonomous AI Agent Wallets on Solana">
 <meta name="twitter:description" content="33 MCP tools. 60 API endpoints. PDA wallets with on-chain limits. Verified on Solana devnet.">
 <link rel="canonical" href="https://agentwallet.fun">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-C7XR8BZWXG"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-C7XR8BZWXG');</script>
@@ -59,7 +60,8 @@ body{animation:flk 10s infinite}
 .nav{position:fixed;top:0;width:100%;z-index:1000;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(10,10,10,.7);border-bottom:1px solid rgba(0,255,65,.08);padding:0 20px;opacity:0;transition:opacity .5s,background .3s}
 .nav.v{opacity:1}.nav.scrolled{background:rgba(10,10,10,.95);border-bottom-color:rgba(0,255,65,.15)}
 .nav-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;height:52px;gap:10px}
-.nav-logo{font-weight:800;font-size:16px;color:var(--g);text-shadow:var(--glow-g);letter-spacing:2px;margin-right:auto}
+.nav-logo{font-weight:800;font-size:16px;color:var(--g);text-shadow:var(--glow-g);letter-spacing:2px;margin-right:auto;display:flex;align-items:center;gap:10px}
+.nav-logo-icon{width:32px;height:32px;flex-shrink:0}
 .nav-link{color:var(--dim);font-size:12px;padding:6px 12px;letter-spacing:1px;transition:all .3s;border-bottom:2px solid transparent}
 .nav-link:hover,.nav-link.active{color:var(--g);border-bottom-color:var(--g)}
 .nav-cta{color:var(--bg)!important;background:var(--g);border-radius:2px;font-weight:700;border-bottom:none!important;padding:6px 16px}
@@ -74,6 +76,8 @@ body{animation:flk 10s infinite}
 
 /* ── HERO ── */
 .hero{text-align:center;padding:60px 0 40px}
+.hero-logo{margin-bottom:20px;animation:float 4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .hero-badge{display:inline-block;padding:6px 20px;border:1px solid rgba(0,255,65,.2);color:var(--g);font-size:11px;letter-spacing:3px;margin-bottom:24px;background:rgba(0,255,65,.03);animation:pulse 3s infinite}
 .glitch{position:relative;font-size:clamp(32px,7vw,72px);font-weight:800;text-transform:uppercase;color:var(--g);letter-spacing:6px;text-shadow:var(--glow-g);animation:gsk 4s infinite linear alternate-reverse;cursor:default;line-height:1.1}
 .glitch::before,.glitch::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden}
@@ -276,6 +280,31 @@ body{animation:flk 10s infinite}
 .f-addr-label{color:var(--c)}.f-addr-value{color:var(--g);cursor:pointer;transition:color .2s}.f-addr-value:hover{color:#fff;text-shadow:0 0 10px var(--g)}
 .f-copy{font-size:11px;color:rgba(255,255,255,.15);margin-top:16px}
 
+/* ── TWEET FEED ── */
+.tweet-monitor{background:#000;border:1px solid rgba(0,255,65,.15);border-radius:6px;overflow:hidden;position:relative;box-shadow:0 0 40px rgba(0,255,65,.05)}
+.tweet-monitor::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--r),var(--m),var(--c),var(--g));z-index:2;animation:scan 3s linear infinite}
+.tweet-bar{display:flex;align-items:center;gap:12px;padding:12px 20px;background:rgba(0,255,65,.04);border-bottom:1px solid rgba(0,255,65,.1)}
+.tweet-live{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:2px;color:var(--r);text-shadow:0 0 10px var(--r)}
+.tweet-live-dot{width:8px;height:8px;border-radius:50%;background:var(--r);box-shadow:0 0 8px var(--r),0 0 20px rgba(255,0,64,.4);animation:pulse 1.5s infinite}
+.tweet-signal{font-size:10px;color:var(--dim);letter-spacing:1.5px;margin-left:auto}
+.tweet-handle-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.15);border-radius:2px;font-size:11px;color:var(--c);letter-spacing:1px;margin-left:12px}
+.tweet-body{position:relative;min-height:500px}
+.tweet-body::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,#000);pointer-events:none;z-index:1}
+.tweet-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid rgba(0,255,65,.08)}
+.tweet-stat{padding:14px;text-align:center;border-right:1px solid rgba(0,255,65,.08);transition:all .3s}
+.tweet-stat:last-child{border-right:none}
+.tweet-stat:hover{background:rgba(0,255,65,.03)}
+.tweet-stat-val{font-size:16px;font-weight:800;color:var(--g);display:block}
+.tweet-stat-val[data-color="c"]{color:var(--c)}
+.tweet-stat-val[data-color="m"]{color:var(--m)}
+.tweet-stat-val[data-color="y"]{color:var(--y)}
+.tweet-stat-lbl{font-size:9px;color:var(--dim);letter-spacing:2px;margin-top:4px;display:block}
+.tweet-loading{text-align:center;padding:60px 20px;color:var(--dim);font-size:12px;letter-spacing:2px}
+.tweet-loading-bar{width:200px;height:2px;background:var(--bg2);margin:16px auto 0;border-radius:1px;overflow:hidden}
+.tweet-loading-bar::after{content:'';display:block;width:60px;height:100%;background:linear-gradient(90deg,transparent,var(--g),transparent);animation:loadSlide 1.5s ease-in-out infinite}
+@keyframes loadSlide{0%{transform:translateX(-60px)}100%{transform:translateX(200px)}}
+@media(max-width:768px){.tweet-stats{grid-template-columns:repeat(2,1fr)}.tweet-bar{flex-wrap:wrap;gap:8px}.tweet-signal{margin-left:0}}
+
 /* ── RESPONSIVE ── */
 @media(max-width:1024px){.features-grid,.mp-grid{grid-template-columns:repeat(2,1fr)}.stats-grid,.info-grid{grid-template-columns:repeat(2,1fr)}.dash-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:768px){body{font-size:13px}.hero{padding:40px 0 30px}.glitch{letter-spacing:2px}.features-grid,.mp-grid,.pricing-grid,.dash-grid,.info-grid{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(2,1fr);gap:10px}.stat-card{padding:18px 12px}.stat-val{font-size:22px}.nav-link:not(.nav-cta){display:none}.nav-status{display:none}.wl-bd{padding:20px 16px}.wl-pk{flex-direction:column;align-items:center;gap:10px}.rl{flex-wrap:wrap;font-size:12px;gap:4px}.rl .ti{min-width:auto}.tb{padding:24px 16px}.sec{margin-top:50px}.footer{margin-top:60px}.term-body{font-size:11px;min-height:250px}.escrow-step{flex-direction:column;gap:10px}.escrow-arrow{width:auto;height:40px;transform:rotate(90deg)}.hero-btn{padding:12px 24px;font-size:12px}}
@@ -304,9 +333,11 @@ body{animation:flk 10s infinite}
 </div></div>
 
 <nav class="nav" id="nav"><div class="nav-inner">
-<div class="nav-logo">◎ AGENTWALLET</div>
-<a href="#sec-proof" class="nav-link">Live Proof</a>
+<div class="nav-logo"><svg class="nav-logo-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9945FF"/><stop offset="100%" stop-color="#14F195"/></linearGradient></defs><polygon points="32,4 58,18 58,46 32,60 6,46 6,18" fill="#0a0a0f" stroke="url(#lg)" stroke-width="2.5"/><text x="32" y="40" text-anchor="middle" font-family="monospace" font-size="22" font-weight="800" fill="url(#lg)">AW</text></svg> AGENTWALLET</div>
+<a href="#sec-endorsed" class="nav-link">Endorsed</a>
+<a href="#sec-tweets" class="nav-link">Tweets</a>
 <a href="#sec-features" class="nav-link">Features</a>
+<a href="#sec-proof" class="nav-link">Live Proof</a>
 <a href="dashboard.html" class="nav-link">Dashboard</a>
 <a href="docs.html" class="nav-link">Docs</a>
 <a href="#sec-sdk" class="nav-link">SDK</a>
@@ -318,6 +349,7 @@ body{animation:flk 10s infinite}
 <div id="main">
 
 <section class="hero">
+<div class="hero-logo"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" width="120" height="120"><defs><linearGradient id="hlg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9945FF"/><stop offset="50%" stop-color="#00d4ff"/><stop offset="100%" stop-color="#14F195"/></linearGradient><filter id="hglow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><polygon points="100,18 168,46 168,154 100,182 32,154 32,46" fill="#0a0a0f" stroke="url(#hlg)" stroke-width="3" filter="url(#hglow)"/><text x="100" y="118" text-anchor="middle" font-family="monospace" font-size="62" font-weight="800" fill="url(#hlg)" filter="url(#hglow)">AW</text><circle cx="100" cy="148" r="4" fill="#14F195" opacity=".7"><animate attributeName="opacity" values=".4;1;.4" dur="2s" repeatCount="indefinite"/></circle></svg></div>
 <div class="hero-badge">◎ SOLANA DEVNET — LIVE</div>
 <h1 class="glitch" data-text="AGENTWALLET">AGENTWALLET</h1>
 <p class="hero-sub" id="hero-sub"></p>
@@ -334,8 +366,59 @@ body{animation:flk 10s infinite}
 </div>
 </section>
 
+<section class="sec" id="sec-endorsed">
+<div class="sec-title"><span class="sec-accent">01</span> ENDORSED BY SOLANA LEADERSHIP</div>
+<div class="endorsement-grid">
+<div class="endorsement-card" data-accent="toly">
+<div class="endorsement-quote">"EVM minds cannot comprehend this"</div>
+<div class="endorsement-context">Responding to AgentWallet's PDA vault architecture — deterministic agent wallets with policy-enforced spending, no private keys required.</div>
+<div class="endorsement-author"><div class="endorsement-avatar">AY</div><div><div class="endorsement-name">toly</div><div class="endorsement-role">CO-FOUNDER, SOLANA LABS</div><div class="endorsement-handle">@toly</div></div></div>
+<a href="https://x.com/toly/status/2021861588656136303" target="_blank" class="endorsement-link">VIEW ON X &rarr;</a>
+</div>
+<div class="endorsement-card" data-accent="mike">
+<div class="endorsement-quote">"Narrative should have been: Solana has an inbuilt key value store"</div>
+<div class="endorsement-context">Validating our PDA-first approach — PDAs aren't complex, they're Solana's most powerful primitive. AgentWallet proves it.</div>
+<div class="endorsement-author"><div class="endorsement-avatar">MM</div><div><div class="endorsement-name">Mike MacCana</div><div class="endorsement-role">SOLANA CORE CONTRIBUTOR</div><div class="endorsement-handle">@mikemaccana</div></div></div>
+<a href="https://x.com/mikemaccana/status/2021974942246695275" target="_blank" class="endorsement-link">VIEW ON X &rarr;</a>
+</div>
+<div class="endorsement-card" data-accent="toly">
+<div class="endorsement-quote">"🛳️🛳️🛳️"</div>
+<div class="endorsement-context">Shipment approved. toly quote-tweeted our PDA Spend Policies launch — configurable per-tx caps, daily limits, whitelist-only mode on Solana.</div>
+<div class="endorsement-author"><div class="endorsement-avatar">AY</div><div><div class="endorsement-name">toly</div><div class="endorsement-role">CO-FOUNDER, SOLANA LABS</div><div class="endorsement-handle">@toly</div></div></div>
+<a href="https://x.com/toly/status/2022014589354094842" target="_blank" class="endorsement-link">VIEW ON X &rarr;</a>
+</div>
+</div>
+</section>
+
+<section class="sec" id="sec-tweets">
+<div class="sec-title"><span class="sec-accent">02</span> LIVE FROM X — <span style="color:var(--c)">@Web3__Youth</span></div>
+<div class="tweet-monitor">
+<div class="tweet-bar">
+<div class="tweet-live"><span class="tweet-live-dot"></span> LIVE FEED</div>
+<span class="tweet-handle-badge">@Web3__Youth</span>
+<div class="tweet-signal">▸ STREAMING FROM X.COM</div>
+</div>
+<div class="tweet-body">
+<a class="twitter-timeline"
+   data-theme="dark"
+   data-chrome="noheader nofooter noborders transparent"
+   data-height="600"
+   data-dnt="true"
+   href="https://twitter.com/Web3__Youth">
+<div class="tweet-loading">[ ESTABLISHING CONNECTION TO X.COM... ]<div class="tweet-loading-bar"></div></div>
+</a>
+</div>
+<div class="tweet-stats">
+<div class="tweet-stat"><span class="tweet-stat-val">PDA</span><span class="tweet-stat-lbl">WALLETS</span></div>
+<div class="tweet-stat"><span class="tweet-stat-val" data-color="c">MCP</span><span class="tweet-stat-lbl">SERVER</span></div>
+<div class="tweet-stat"><span class="tweet-stat-val" data-color="m">ESCROW</span><span class="tweet-stat-lbl">PROTOCOL</span></div>
+<div class="tweet-stat"><span class="tweet-stat-val" data-color="y">LIVE</span><span class="tweet-stat-lbl">DEVNET</span></div>
+</div>
+</div>
+</section>
+
 <section class="sec" id="sec-features">
-<div class="sec-title"><span class="sec-accent">01</span> PROTOCOL CAPABILITIES</div>
+<div class="sec-title"><span class="sec-accent">03</span> PROTOCOL CAPABILITIES</div>
 <div class="features-grid">
 <div class="feature-card" data-color="g"><div class="feature-icon">⚡</div><div class="feature-title">Wallet Operations</div><div class="feature-desc">Create, fund, transfer — zero human intervention. Full programmatic custody on Solana.</div></div>
 <div class="feature-card" data-color="c"><div class="feature-icon">🔐</div><div class="feature-title">Trustless Escrow</div><div class="feature-desc">PDA-derived vaults for agent-to-agent payments. No intermediary required.</div></div>
@@ -350,12 +433,12 @@ body{animation:flk 10s infinite}
 </section>
 
 <section class="sec" id="sec-terminal">
-<div class="sec-title"><span class="sec-accent">02</span> LIVE TERMINAL DEMO</div>
+<div class="sec-title"><span class="sec-accent">04</span> LIVE TERMINAL DEMO</div>
 <div class="terminal"><div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-title">agentwallet-cli v2.0.0</span><span class="term-status"><span class="status-dot"></span> connected</span></div><div class="term-body" id="terminal-body"></div></div>
 </section>
 
 <section class="sec" id="sec-proof">
-<div class="sec-title"><span class="sec-accent">03</span> VERIFIED ON-CHAIN — <span style="color:var(--g)">LIVE PROOF</span></div>
+<div class="sec-title"><span class="sec-accent">05</span> VERIFIED ON-CHAIN — <span style="color:var(--g)">LIVE PROOF</span></div>
 <p style="color:var(--dim);margin-bottom:24px;font-size:13px;text-align:center">Not a demo. Not a mockup. Real Solana devnet transactions you can verify right now.</p>
 <div class="dash-grid" style="grid-template-columns:repeat(3,1fr)">
 <div class="dash-card" data-color="g" style="text-align:left;padding:24px">
@@ -392,7 +475,7 @@ body{animation:flk 10s infinite}
 </section>
 
 <section class="sec" id="sec-sdk">
-<div class="sec-title"><span class="sec-accent">04</span> SDK QUICK START</div>
+<div class="sec-title"><span class="sec-accent">06</span> SDK QUICK START</div>
 <div class="code-win"><div class="code-bar"><div class="code-tabs"><div class="code-tab active" data-panel="python">Python SDK</div><div class="code-tab" data-panel="mcp">MCP Tools</div><div class="code-tab" data-panel="rest">REST API</div></div></div>
 <div class="code-panel active" data-panel="python"><div class="code-body"><span class="ln">1</span><span class="kw">from</span> aw_sdk <span class="kw">import</span> <span class="fn">AgentWallet</span><br><span class="ln">2</span><br><span class="ln">3</span><span class="cm"># Initialize your agent's wallet</span><br><span class="ln">4</span>wallet <span class="op">=</span> <span class="fn">AgentWallet</span>(<span class="st">"your-api-key"</span>)<br><span class="ln">5</span><br><span class="ln">6</span><span class="cm"># Create agent with spending policy</span><br><span class="ln">7</span>agent <span class="op">=</span> wallet.<span class="fn">create_agent</span>(<span class="st">"trading-bot-01"</span>)<br><span class="ln">8</span>wallet.<span class="fn">set_policy</span>(agent, max_per_tx<span class="op">=</span><span class="nb">0.1</span>, daily_limit<span class="op">=</span><span class="nb">1.0</span>)<br><span class="ln">9</span><br><span class="ln">10</span><span class="cm"># Fund and transact autonomously</span><br><span class="ln">11</span>wallet.<span class="fn">fund</span>(agent, amount<span class="op">=</span><span class="nb">1.5</span>, token<span class="op">=</span><span class="st">"SOL"</span>)<br><span class="ln">12</span>wallet.<span class="fn">pay</span>(agent, to<span class="op">=</span><span class="st">"data-api.sol"</span>, amount<span class="op">=</span><span class="nb">0.005</span>)<br><span class="ln">13</span><span class="cm"># ✓ Confirmed in 400ms</span></div></div>
 <div class="code-panel" data-panel="mcp"><div class="code-body"><span class="ln">1</span><span class="cm"># Claude / GPT / Cursor native tools:</span><br><span class="ln">2</span><br><span class="ln">3</span><span class="fn">create_wallet</span>    <span class="cm">— Spin up a new agent wallet</span><br><span class="ln">4</span><span class="fn">get_balance</span>      <span class="cm">— Check SOL/token balance</span><br><span class="ln">5</span><span class="fn">transfer</span>         <span class="cm">— Send SOL to any address</span><br><span class="ln">6</span><span class="fn">create_escrow</span>    <span class="cm">— Lock funds in trustless escrow</span><br><span class="ln">7</span><span class="fn">release_escrow</span>   <span class="cm">— Release on task completion</span><br><span class="ln">8</span><span class="fn">set_policy</span>       <span class="cm">— Configure spending limits</span><br><span class="ln">9</span><span class="fn">get_analytics</span>    <span class="cm">— Real-time portfolio data</span><br><span class="ln">10</span><span class="fn">list_agents</span>      <span class="cm">— Browse agent marketplace</span><br><span class="ln">11</span><span class="fn">x402_pay</span>         <span class="cm">— HTTP micropayment</span><br><span class="ln">12</span><span class="cm"># ... 24 more tools (33 total)</span></div></div>
@@ -402,7 +485,7 @@ body{animation:flk 10s infinite}
 </section>
 
 <section class="sec" id="sec-dashboard">
-<div class="sec-title"><span class="sec-accent">05</span> SOLANA DEVNET — LIVE DATA</div>
+<div class="sec-title"><span class="sec-accent">07</span> SOLANA DEVNET — LIVE DATA</div>
 <div class="dash-grid">
 <div class="dash-card" data-color="c"><div class="dash-lbl">CURRENT SLOT</div><div class="dash-val" id="slot-value">---</div><div class="dash-sub">Updating live</div></div>
 <div class="dash-card" data-color="g"><div class="dash-lbl">BLOCK HEIGHT</div><div class="dash-val" id="block-value">---</div><div class="dash-sub">Solana devnet</div></div>
@@ -415,7 +498,7 @@ body{animation:flk 10s infinite}
 </section>
 
 <section class="sec" id="sec-escrow">
-<div class="sec-title"><span class="sec-accent">06</span> TRUSTLESS ESCROW FLOW</div>
+<div class="sec-title"><span class="sec-accent">08</span> TRUSTLESS ESCROW FLOW</div>
 <div class="escrow-flow"><div class="escrow-step">
 <div class="escrow-node" data-color="c" id="escrow-a"><div class="escrow-icon">🤖</div><div class="escrow-label">AGENT A</div><div class="escrow-sub">Buyer</div></div>
 <div class="escrow-arrow" id="arrow-1"><div class="escrow-arrow-line"></div><div class="escrow-arrow-text">Lock 2.0 SOL</div></div>
@@ -426,7 +509,7 @@ body{animation:flk 10s infinite}
 </section>
 
 <section class="sec" id="sec-marketplace">
-<div class="sec-title"><span class="sec-accent">07</span> AGENT MARKETPLACE</div>
+<div class="sec-title"><span class="sec-accent">09</span> AGENT MARKETPLACE</div>
 <div class="mp-grid">
 <div class="agent-card"><div class="agent-header"><div class="agent-avatar">🤖</div><div class="agent-info"><div class="agent-name">Trading Bot Alpha</div><div class="agent-rating">⭐ 4.9 <span class="agent-jobs">(2,847 jobs)</span></div></div><div class="agent-status online">● Online</div></div><div class="agent-tags"><span class="agent-tag">DeFi</span><span class="agent-tag">Arbitrage</span><span class="agent-tag">SOL</span></div><div class="agent-footer"><span class="agent-price">$0.01 <span class="agent-price-unit">/ trade</span></span><button class="agent-hire">[HIRE]</button></div></div>
 <div class="agent-card"><div class="agent-header"><div class="agent-avatar">🕷️</div><div class="agent-info"><div class="agent-name">Data Scraper Pro</div><div class="agent-rating">⭐ 4.8 <span class="agent-jobs">(5,102 jobs)</span></div></div><div class="agent-status online">● Online</div></div><div class="agent-tags"><span class="agent-tag">Scraping</span><span class="agent-tag">API</span><span class="agent-tag">Intel</span></div><div class="agent-footer"><span class="agent-price">$0.005 <span class="agent-price-unit">/ req</span></span><button class="agent-hire">[HIRE]</button></div></div>
@@ -435,32 +518,8 @@ body{animation:flk 10s infinite}
 </div>
 </section>
 
-<section class="sec" id="sec-endorsed">
-<div class="sec-title"><span class="sec-accent">08</span> ENDORSED BY SOLANA LEADERSHIP</div>
-<div class="endorsement-grid">
-<div class="endorsement-card" data-accent="toly">
-<div class="endorsement-quote">"EVM minds cannot comprehend this"</div>
-<div class="endorsement-context">Responding to AgentWallet's PDA vault architecture — deterministic agent wallets with policy-enforced spending, no private keys required.</div>
-<div class="endorsement-author"><div class="endorsement-avatar">AY</div><div><div class="endorsement-name">toly</div><div class="endorsement-role">CO-FOUNDER, SOLANA LABS</div><div class="endorsement-handle">@toly</div></div></div>
-<a href="https://x.com/toly/status/2021861588656136303" target="_blank" class="endorsement-link">VIEW ON X &rarr;</a>
-</div>
-<div class="endorsement-card" data-accent="mike">
-<div class="endorsement-quote">"Narrative should have been: Solana has an inbuilt key value store"</div>
-<div class="endorsement-context">Validating our PDA-first approach — PDAs aren't complex, they're Solana's most powerful primitive. AgentWallet proves it.</div>
-<div class="endorsement-author"><div class="endorsement-avatar">MM</div><div><div class="endorsement-name">Mike MacCana</div><div class="endorsement-role">SOLANA CORE CONTRIBUTOR</div><div class="endorsement-handle">@mikemaccana</div></div></div>
-<a href="https://x.com/mikemaccana/status/2021974942246695275" target="_blank" class="endorsement-link">VIEW ON X &rarr;</a>
-</div>
-<div class="endorsement-card" data-accent="toly">
-<div class="endorsement-quote">"🛳️🛳️🛳️"</div>
-<div class="endorsement-context">Shipment approved. toly quote-tweeted our PDA Spend Policies launch — configurable per-tx caps, daily limits, whitelist-only mode on Solana.</div>
-<div class="endorsement-author"><div class="endorsement-avatar">AY</div><div><div class="endorsement-name">toly</div><div class="endorsement-role">CO-FOUNDER, SOLANA LABS</div><div class="endorsement-handle">@toly</div></div></div>
-<a href="https://x.com/toly/status/2022014589354094842" target="_blank" class="endorsement-link">VIEW ON X &rarr;</a>
-</div>
-</div>
-</section>
-
 <section class="sec" id="sec-about">
-<div class="sec-title"><span class="sec-accent">09</span> WHAT IS AGENTWALLET?</div>
+<div class="sec-title"><span class="sec-accent">10</span> WHAT IS AGENTWALLET?</div>
 <div class="tb"><div class="tb-in">
 <div class="cmd"><span class="d">$</span> agentwallet --about</div>
 <p style="color:var(--g);opacity:.85;margin-bottom:20px;line-height:1.8">AgentWallet is the <span style="color:var(--c);font-weight:700">autonomous financial infrastructure</span> for the agentic economy. We give AI agents their own Solana wallets — with programmatic custody, trustless escrow, and an MCP server that any AI (Claude, GPT, Gemini, Cursor) can plug into instantly.</p>
@@ -475,7 +534,7 @@ body{animation:flk 10s infinite}
 </section>
 
 <section class="sec" id="sec-pricing">
-<div class="sec-title"><span class="sec-accent">10</span> PRICING</div>
+<div class="sec-title"><span class="sec-accent">11</span> PRICING</div>
 <div class="pricing-grid">
 <div class="price-card"><div class="price-tier">Free</div><div class="price-amount">$0 <span class="price-unit">/ month</span></div><div class="price-desc">For indie hackers and experimentation</div><ul class="price-features"><li>3 agent wallets</li><li>1,000 transactions / month</li><li>Basic spending policies</li><li>Community support</li><li>Devnet access</li></ul></div>
 <div class="price-card featured"><div class="price-tier">Pro</div><div class="price-amount">$49 <span class="price-unit">/ month</span></div><div class="price-desc">For teams shipping agentic products</div><ul class="price-features"><li>50 agent wallets</li><li>50,000 transactions / month</li><li>Advanced policies + escrow</li><li>x402 micropayments</li><li>Priority support + webhooks</li><li>Analytics dashboard</li><li>Mainnet access</li></ul></div>
@@ -504,7 +563,7 @@ body{animation:flk 10s infinite}
 </section>
 
 <section class="sec" id="sec-roadmap">
-<div class="sec-title"><span class="sec-accent">11</span> ROADMAP TO MAINNET</div>
+<div class="sec-title"><span class="sec-accent">12</span> ROADMAP TO MAINNET</div>
 <div class="tb"><div class="tb-in">
 <div class="cmd"><span class="d">$</span> agentwallet --roadmap</div>
 <div class="rl"><span class="tr">├──</span><span style="color:var(--g)">✅</span><span class="ti" style="color:var(--g)">Phase 1: Core</span><span class="aw">→</span><span class="vl">Wallet creation, transfers, escrow, policies, MCP server</span></div>
@@ -516,7 +575,7 @@ body{animation:flk 10s infinite}
 </section>
 
 <section class="sec" id="sec-rewards">
-<div class="sec-title"><span class="sec-accent">12</span> BETA REWARDS</div>
+<div class="sec-title"><span class="sec-accent">13</span> BETA REWARDS</div>
 <div class="tb"><div class="tb-in">
 <div class="cmd"><span class="d">$</span> agentwallet --rewards</div>
 <div class="rtit">🏆 MAINNET BETA REWARDS:</div>
@@ -643,5 +702,6 @@ document.querySelectorAll('.stat-card,.f-link,.sbtn,.feature-card,.agent-card,.p
 runBoot();
 })();
 </script>
+<script async src="https://platform.twitter.com/widgets.js"></script>
 </body>
 </html>
