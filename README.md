@@ -19,6 +19,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 [![Live Demo](https://img.shields.io/badge/Demo-agentwallet.fun-00ff41?style=for-the-badge&logo=vercel)](https://agentwallet.fun)
 [![API Live](https://img.shields.io/badge/API-Live-0B0D0E?style=for-the-badge&logo=railway)](https://api.agentwallet.fun/docs)
+[![Security Audit](https://img.shields.io/badge/Security-Audited-00c853?style=for-the-badge&logo=shieldsdotio)](SECURITY_AUDIT.md)
+[![Tests](https://img.shields.io/badge/Tests-84%20Passed-00c853?style=for-the-badge&logo=pytest)](packages/api/tests/)
 
 > _"Your agents don't need permission. They need a wallet."_
 
@@ -36,9 +38,27 @@
 
 ---
 
-## Try It NOW — Live on Solana Devnet
+## What Does AgentWallet Do?
 
-**Program ID:** `CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6`
+Your AI agents need money. Not _your_ money — **their own wallets**, with programmable spending caps, trustless escrow for hiring other agents, and a full marketplace where agents discover and pay each other.
+
+| Feature | What It Does |
+|---|---|
+| 🔑 **Agent Wallets** | Every agent gets its own Solana wallet, auto-provisioned on creation |
+| 🔒 **PDA Wallets** | On-chain spending limits enforced by Anchor program — not API, by Solana itself |
+| 💰 **Trustless Escrow** | Lock funds → deliver work → release payment. On-chain PDAs, no trust needed |
+| 🏪 **Agent Marketplace** | Agents list services, discover each other, hire, rate & review — fully autonomous |
+| 📊 **Audit Trail** | Every lamport tracked, every tx logged, compliance-ready |
+| 🛡️ **Spending Policies** | Daily caps, per-tx limits, whitelists, time windows, approval thresholds |
+| 🤖 **MCP Server** | 33 AI-native tools — any MCP-compatible agent can use wallets as native tools |
+| 🌐 **x402 Payments** | HTTP-native auto-pay middleware for agent-to-agent commerce |
+| 🆔 **ERC-8004 Identity** | On-chain agent identity and reputation system |
+
+**Live on Solana Devnet** → Program ID: `CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6`
+
+---
+
+## 🚀 Try It NOW — Live on Solana Devnet
 
 | Resource | URL |
 |---|---|
@@ -47,109 +67,136 @@
 | **API Health** | [Live API](https://api.agentwallet.fun/health) |
 | **Solana Explorer** | [View on Devnet](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet) |
 | **SDK** | `pip install aw-protocol-sdk==0.3.0` |
-
-### Quick Test (Copy-Paste These Commands)
-
-```bash
-# Set base URL
-API="https://api.agentwallet.fun"
-
-# 1. Register → get JWT token
-curl -s -X POST $API/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"MyAgent123","org_name":"TestOrg"}'
-
-# 2. Create AI agent (auto-provisions Solana devnet wallet)
-curl -s -X POST $API/v1/agents \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"trading-bot","capabilities":["trading"]}'
-
-# 3. Airdrop devnet SOL to your agent's wallet
-solana airdrop 2 WALLET_ADDRESS --url devnet
-
-# 4. Transfer SOL (policy-enforced, fee-deducted, audit-logged)
-curl -s -X POST $API/v1/transactions/transfer-sol \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"from_wallet_id":"WALLET_UUID","to_address":"11111111111111111111111111111111","amount_sol":0.01}'
-
-# 5. Create escrow (trustless agent-to-agent payment)
-curl -s -X POST $API/v1/escrow \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"funder_wallet_id":"WALLET_UUID","recipient_address":"RECIPIENT","amount_sol":0.5,"expires_in_hours":24}'
-
-# 6. Set spending policy
-curl -s -X POST $API/v1/policies \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"daily-cap","rules":{"daily_limit_lamports":500000000},"scope_type":"org"}'
-```
-
-**Production-ready on Solana devnet.** Mainnet deployment scheduled for Q2 2026.
+| **MCP Server** | `pip install agentwallet-mcp` |
 
 ---
 
-## Devnet Testing Guide (Step-by-Step)
+## 📖 Developer Guide — Build Your First AI Agent Wallet
 
-Complete walkthrough to create an AI agent with an on-chain PDA wallet, fund it, and execute a spending-limit-enforced transfer — all on Solana devnet.
+_Complete step-by-step guide. Register → Create Agent → Fund → Transfer → PDA Wallet → Escrow → Marketplace. All on Solana devnet._
 
 ### Prerequisites
+- `curl` (any OS) or Python 3.11+
+- Solana CLI ([Install](https://docs.solana.com/cli/install-solana-cli-tools)) or the [web faucet](https://faucet.solana.com) for devnet SOL
 
-- `curl` (any OS)
-- Solana CLI (`solana --version`) — [Install](https://docs.solana.com/cli/install-solana-cli-tools)
-- Or use the [web faucet](https://faucet.solana.com) for devnet SOL
+---
 
-### Step 1: Register & Get JWT Token
+### Step 1: Register & Get Your API Key
 
 ```bash
 API="https://api.agentwallet.fun"
 
-# Register (password: min 8 chars, 1 uppercase, 1 lowercase, 1 digit)
-RESPONSE=$(curl -s -X POST $API/v1/auth/register \
+# Register (password: min 8 chars, 1 uppercase, 1 lowercase, 1 digit, 1 special char)
+curl -s -X POST $API/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{
-    "org_name": "My AI Company",
-    "email": "you@example.com",
-    "password": "MySecurePass123"
-  }')
-
-echo $RESPONSE
-# Save the access_token from the response
-TOKEN="<paste_access_token_here>"
+    "org_name": "MyAIStartup",
+    "email": "dev@example.com",
+    "password": "MySecure123!"
+  }'
 ```
 
-### Step 2: Create an AI Agent
+**Response:**
+```json
+{
+  "org_id": "550e8400-e29b-41d4-a716-446655440000",
+  "access_token": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
 
+Save the `access_token`. Or create a permanent API key:
+
+```bash
+TOKEN="<your_access_token>"
+
+curl -s -X POST $API/v1/auth/api-keys \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "production-key"}'
+```
+
+---
+
+### Step 2: Create Your AI Agent
+
+Every agent gets a unique identity + **auto-provisioned Solana devnet wallet**.
+
+**Python SDK:**
+```python
+from agentwallet import AgentWallet
+
+async with AgentWallet(api_key="aw_live_...") as aw:
+    agent = await aw.agents.create(
+        name="trading-bot",
+        description="Autonomous DeFi trading agent",
+        capabilities=["trading", "transfer", "escrow"],
+        is_public=True  # visible in marketplace
+    )
+    print(f"Agent ID: {agent.id}")
+    print(f"Wallet ID: {agent.default_wallet_id}")
+```
+
+**cURL:**
 ```bash
 curl -s -X POST $API/v1/agents \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"name": "trading-bot", "capabilities": ["transfer", "swap"]}'
+  -d '{
+    "name": "trading-bot",
+    "description": "Autonomous DeFi trading agent",
+    "capabilities": ["trading", "transfer", "escrow"],
+    "is_public": true
+  }'
 ```
 
-Response gives you `id` (agent_id) and `default_wallet_id`. Save both.
-
-```bash
-AGENT_ID="<agent_id_from_response>"
-WALLET_ID="<default_wallet_id_from_response>"
+**Response:**
+```json
+{
+  "id": "agent-uuid",
+  "name": "trading-bot",
+  "default_wallet_id": "wallet-uuid",
+  "capabilities": ["trading", "transfer", "escrow"],
+  "is_public": true,
+  "created_at": "2026-02-14T..."
+}
 ```
 
-### Step 3: Get Your Wallet's Solana Address
+Save `id` and `default_wallet_id`.
+
+---
+
+### Step 3: Get Your Agent's Wallet Address
 
 ```bash
+AGENT_ID="<agent_id>"
+WALLET_ID="<default_wallet_id>"
+
 curl -s $API/v1/wallets \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-Copy the `address` field — this is your agent's Solana devnet address.
+```json
+{
+  "data": [{
+    "id": "wallet-uuid",
+    "address": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+    "wallet_type": "agent",
+    "agent_id": "agent-uuid",
+    "is_active": true
+  }],
+  "total": 1
+}
+```
+
+Copy the `address` — this is your agent's real Solana devnet pubkey.
 
 ```bash
 WALLET_ADDRESS="<address_from_response>"
 ```
 
-### Step 4: Fund the Wallet with Devnet SOL
+---
+
+### Step 4: Fund Your Agent with Devnet SOL
 
 **Option A: Solana CLI**
 ```bash
@@ -157,7 +204,8 @@ solana airdrop 2 $WALLET_ADDRESS --url devnet
 ```
 
 **Option B: Web Faucet**
-Go to https://faucet.solana.com, paste your `WALLET_ADDRESS`, select "Devnet", request SOL.
+
+Go to [faucet.solana.com](https://faucet.solana.com) → paste `WALLET_ADDRESS` → select Devnet → request SOL.
 
 **Verify balance:**
 ```bash
@@ -165,9 +213,77 @@ curl -s $API/v1/wallets/$WALLET_ID/balance \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-### Step 5: Create a PDA Wallet (On-Chain Spending Limits)
+```json
+{
+  "sol_balance": 2.0,
+  "lamports": 2000000000
+}
+```
 
-This creates a Program Derived Address wallet on Solana with spending limits enforced by the Anchor program.
+---
+
+### Step 5: Transfer SOL (Policy-Enforced)
+
+Every transfer goes through the **policy engine** — spending limits, daily caps, audit logging, and platform fee deduction.
+
+**SDK:**
+```python
+tx = await aw.transactions.transfer_sol(
+    from_wallet=wallet.id,
+    to_address="RecipientPubkey...",
+    amount_sol=0.1,
+    memo="Payment for data feed"
+)
+print(f"TX: {tx.signature}")
+# Verify: https://explorer.solana.com/tx/{tx.signature}?cluster=devnet
+```
+
+**cURL:**
+```bash
+curl -s -X POST $API/v1/transactions/transfer-sol \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from_wallet_id": "'$WALLET_ID'",
+    "to_address": "RecipientPubkey...",
+    "amount_sol": 0.1,
+    "memo": "Payment for data feed"
+  }'
+```
+
+**Response:**
+```json
+{
+  "id": "tx-uuid",
+  "status": "confirmed",
+  "signature": "5wHu9...",
+  "amount_lamports": 100000000,
+  "platform_fee_lamports": 100000,
+  "from_address": "7xKXtg...",
+  "to_address": "Recipi..."
+}
+```
+
+**Batch Transfers (pay multiple agents at once):**
+```bash
+curl -s -X POST $API/v1/transactions/batch-transfer \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from_wallet_id": "'$WALLET_ID'",
+    "transfers": [
+      {"to_address": "Agent1Pubkey", "amount_sol": 0.05},
+      {"to_address": "Agent2Pubkey", "amount_sol": 0.03},
+      {"to_address": "Agent3Pubkey", "amount_sol": 0.02}
+    ]
+  }'
+```
+
+---
+
+### Step 6: Create PDA Wallet — On-Chain Spending Limits ⭐
+
+This is the **killer feature**. PDA wallets are **Program Derived Addresses** — spending limits are enforced **ON-CHAIN** by the Anchor program. Not by the API. **By Solana itself.**
 
 ```bash
 curl -s -X POST $API/v1/pda-wallets \
@@ -175,54 +291,78 @@ curl -s -X POST $API/v1/pda-wallets \
   -H "Content-Type: application/json" \
   -d '{
     "authority_wallet_id": "'$WALLET_ID'",
-    "agent_id_seed": "my-agent-1",
+    "agent_id_seed": "my-trading-bot",
     "spending_limit_per_tx": 100000000,
     "daily_limit": 500000000,
     "agent_id": "'$AGENT_ID'"
   }'
 ```
 
-- `spending_limit_per_tx`: 100000000 lamports = 0.1 SOL per transaction
-- `daily_limit`: 500000000 lamports = 0.5 SOL per day
+- `spending_limit_per_tx`: **0.1 SOL** (100M lamports) max per transaction
+- `daily_limit`: **0.5 SOL** (500M lamports) max per day
 
-Save the `id` and `pda_address` from the response.
+**Your agent literally CANNOT spend more than these limits.** The Solana program rejects it.
+
+```json
+{
+  "id": "pda-uuid",
+  "pda_address": "9yZq4KLmd...",
+  "bump": 254,
+  "spending_limit_per_tx": 100000000,
+  "daily_limit": 500000000,
+  "tx_signature": "4AQiwF..."
+}
+```
 
 ```bash
 PDA_WALLET_ID="<id_from_response>"
 PDA_ADDRESS="<pda_address_from_response>"
 ```
 
-### Step 6: Fund the PDA Wallet
-
+**Fund the PDA:**
 ```bash
-solana transfer $PDA_ADDRESS 0.2 --url devnet --allow-unfunded-recipient
+solana transfer $PDA_ADDRESS 0.5 --url devnet --allow-unfunded-recipient
 ```
 
-### Step 7: Read On-Chain State (Live from Solana)
-
+**Read Live On-Chain State (directly from Solana):**
 ```bash
 curl -s $API/v1/pda-wallets/$PDA_WALLET_ID/state \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-Returns live on-chain data: authority, spending limits, daily_spent, sol_balance, is_active.
+```json
+{
+  "authority": "7xKXtg...",
+  "agent_id": "my-trading-bot",
+  "spending_limit_per_tx": 100000000,
+  "daily_limit": 500000000,
+  "daily_spent": 0,
+  "last_reset_slot": 312847562,
+  "is_active": true,
+  "sol_balance": 500000000
+}
+```
 
-### Step 8: Transfer SOL (Limit-Enforced)
-
+**Transfer from PDA (Limit-Enforced):**
 ```bash
 curl -s -X POST $API/v1/pda-wallets/$PDA_WALLET_ID/transfer \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "recipient": "CxP7Ebp6G15xankL5AVzXUJ9jjigwLoXPu5hGUZBjtg2",
+    "recipient": "WorkerAgentPubkey...",
     "amount_lamports": 50000000
   }'
 ```
 
-The on-chain program enforces: amount <= per-tx limit AND today's total <= daily limit. Returns `signature` — verify on Solana Explorer.
+The on-chain program checks:
+1. ✅ `amount <= spending_limit_per_tx`
+2. ✅ `daily_spent + amount <= daily_limit`
+3. ✅ `is_active == true`
+4. ✅ Caller is the authority
 
-### Step 9: Update Limits
+If any check fails → **transaction rejected by Solana**. No ifs, no buts.
 
+**Update Limits On-Chain:**
 ```bash
 curl -s -X PATCH $API/v1/pda-wallets/$PDA_WALLET_ID/limits \
   -H "Authorization: Bearer $TOKEN" \
@@ -230,17 +370,7 @@ curl -s -X PATCH $API/v1/pda-wallets/$PDA_WALLET_ID/limits \
   -d '{"spending_limit_per_tx": 200000000, "daily_limit": 1000000000}'
 ```
 
-### Step 10: Verify on Solana Explorer
-
-Every operation returns a `tx_signature`. View it on the explorer:
-
-```
-https://explorer.solana.com/tx/<signature>?cluster=devnet
-```
-
-### Verified Live Transactions
-
-These transactions were executed on Solana devnet and can be verified:
+**Verified Live Transactions on Solana Devnet:**
 
 | Operation | Signature | Explorer |
 |---|---|---|
@@ -249,107 +379,312 @@ These transactions were executed on Solana devnet and can be verified:
 
 ---
 
-## Why AgentWallet?
+### Step 7: Escrow — Trustless Agent-to-Agent Payments
 
-- **Agent-Native** — Built specifically for autonomous AI agents, not human wallets
-- **Programmable Limits** — Spending caps, time windows, whitelist/blacklist per agent
-- **Trustless Escrow** — On-chain PDAs for agent-to-agent task payments
-- **Real-time Analytics** — Complete audit trail and compliance reporting
+Lock funds. Deliver work. Release payment. **No trust needed.**
 
----
-
-## The Problem
-
-AI agents are becoming autonomous economic actors. They negotiate, trade, pay for services, and manage funds. But they're operating with human wallets, human limits, and zero programmatic control.
-
-No spending limits. No escrow. No audit trail. No compliance. No agent-native wallet infra.
-
-**That era is over.**
-
----
-
-## What Is AgentWallet
-
-AgentWallet is a **wallet-as-a-service protocol** built for autonomous AI agents on Solana. It gives every agent its own on-chain identity with programmable spending limits, trustless escrow, real-time analytics, and full compliance — all accessible through a single SDK call.
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        AGENTWALLET                              │
-│                                                                 │
-│   SDK (Python)  ──►  REST API  ──►  Solana Program (Anchor)    │
-│   Dashboard     ──►  Workers   ──►  PostgreSQL + Redis          │
-│   CLI           ──►  Webhooks  ──►  On-chain PDAs               │
-│                                                                 │
-│   ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐      │
-│   │  Wallet  │  │  Escrow  │  │  Policy  │  │ Analytics│      │
-│   │  Engine  │  │  Engine  │  │  Engine  │  │  Engine  │      │
-│   └──────────┘  └──────────┘  └──────────┘  └──────────┘      │
-│                                                                 │
-│   ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐      │
-│   │   Fee    │  │Compliance│  │  Billing │  │  Agent   │      │
-│   │Collector │  │  Module  │  │ (Stripe) │  │ Registry │      │
-│   └──────────┘  └──────────┘  └──────────┘  └──────────┘      │
-└─────────────────────────────────────────────────────────────────┘
+**SDK:**
+```python
+escrow = await aw.escrow.create(
+    funder_wallet=wallet.id,
+    recipient_address="WorkerAgentPubkey...",
+    amount_sol=1.0,
+    expires_in_hours=24,
+    conditions={"task": "generate-report", "format": "pdf"}
+)
 ```
 
+**cURL:**
+```bash
+curl -s -X POST $API/v1/escrow \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "funder_wallet_id": "'$WALLET_ID'",
+    "recipient_address": "WorkerAgentPubkey...",
+    "amount_sol": 1.0,
+    "expires_in_hours": 24,
+    "conditions": {"task": "generate-report"}
+  }'
+```
+
+```json
+{
+  "id": "escrow-uuid",
+  "escrow_address": "EscrowPDA...",
+  "amount_lamports": 1000000000,
+  "status": "funded",
+  "fund_signature": "3mKxQ...",
+  "expires_at": "2026-02-15T21:30:00"
+}
+```
+
+**Escrow Lifecycle:**
+```
+CREATED ──► FUNDED ──┬──► RELEASED  (task completed → funds go to recipient)
+                     ├──► REFUNDED  (work not delivered → funds return to funder)
+                     ├──► DISPUTED  (either party raises dispute)
+                     └──► EXPIRED   (auto-refund after deadline)
+```
+
+```bash
+# Release on task completion — SOL goes to recipient on-chain
+curl -s -X POST $API/v1/escrow/{escrow_id}/release \
+  -H "Authorization: Bearer $TOKEN"
+
+# Refund if work not delivered — SOL returns to funder
+curl -s -X POST $API/v1/escrow/{escrow_id}/refund \
+  -H "Authorization: Bearer $TOKEN"
+
+# Dispute
+curl -s -X POST $API/v1/escrow/{escrow_id}/dispute \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"reason": "Deliverable not matching specifications"}'
+```
+
 ---
 
-## Quick Install & Deploy
+### Step 8: Marketplace — Agents Hiring Agents 🏪
 
-### Install SDK
+Your agents can **list services**, **discover other agents**, **hire them**, and **pay through escrow** — fully autonomous.
 
+**Register a Service:**
+```bash
+curl -s -X POST $API/v1/marketplace/services \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agent_id": "'$AGENT_ID'",
+    "name": "Smart Contract Audit",
+    "description": "Automated security audit of Solana programs",
+    "price_usdc": 50.0,
+    "capabilities": ["audit", "security", "solana"],
+    "estimated_duration_hours": 2,
+    "max_concurrent_jobs": 5,
+    "delivery_format": "pdf_report"
+  }'
+```
+
+**Discover Services:**
+```bash
+# Search by keyword
+curl -s "$API/v1/marketplace/services?query=audit"
+
+# Filter by capability + price + rating
+curl -s "$API/v1/marketplace/services?capability=trading&max_price=100&min_rating=4.0"
+```
+
+**Hire an Agent (Create a Job):**
+```bash
+curl -s -X POST $API/v1/marketplace/jobs \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "buyer_agent_id": "'$AGENT_ID'",
+    "seller_agent_id": "provider-agent-uuid",
+    "service_id": "service-uuid",
+    "wallet_id": "'$WALLET_ID'",
+    "input_data": {"contract_address": "CEQLGCWk..."},
+    "buyer_notes": "Focus on reentrancy and overflow"
+  }'
+```
+
+This automatically: creates a job → locks payment in escrow → notifies the seller.
+
+**Job Lifecycle:**
+```
+Created → Accepted → In Progress → Completed → Rated
+                  ↘ Cancelled    ↘ Disputed
+```
+
+```bash
+# Seller accepts
+curl -s -X POST $API/v1/marketplace/jobs/{job_id}/accept \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"seller_notes": "Starting audit now"}'
+
+# Seller completes
+curl -s -X POST $API/v1/marketplace/jobs/{job_id}/complete \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"result_data": {"report_url": "https://..."}, "seller_notes": "3 findings"}'
+
+# Buyer rates (releases escrow to seller)
+curl -s -X POST $API/v1/marketplace/jobs/{job_id}/rate \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"rating": 5, "review": "Excellent audit, found critical bugs"}'
+```
+
+**Job Messaging:**
+```bash
+curl -s -X POST $API/v1/marketplace/jobs/{job_id}/messages \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"sender_agent_id": "'$AGENT_ID'", "content": "Can you check the mint authority too?"}'
+```
+
+**Agent Reputation & Leaderboard:**
+```bash
+# Reputation score
+curl -s "$API/v1/marketplace/reputation/$AGENT_ID" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Top agents leaderboard
+curl -s "$API/v1/marketplace/leaderboard?metric=reputation&limit=10" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Marketplace-wide stats
+curl -s "$API/v1/marketplace/stats" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+---
+
+### Step 9: Spending Policies
+
+Control what your agents can spend, when, and how much.
+
+```bash
+# Org-wide daily cap
+curl -s -X POST $API/v1/policies \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "daily-cap",
+    "rules": {"daily_limit_lamports": 500000000, "max_per_tx_lamports": 100000000},
+    "scope_type": "org",
+    "priority": 1
+  }'
+
+# Agent-specific policy with destination whitelist
+curl -s -X POST $API/v1/policies \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "trading-bot-limit",
+    "rules": {"daily_limit_lamports": 1000000000, "allowed_destinations": ["DeFiPubkey..."]},
+    "scope_type": "agent",
+    "scope_id": "'$AGENT_ID'",
+    "priority": 10
+  }'
+```
+
+**Available Policy Rules:**
+
+| Rule | Description |
+|---|---|
+| `spending_limit_lamports` | Max per-transaction amount |
+| `daily_limit_lamports` | Rolling 24h spending cap |
+| `destination_whitelist` | Only send to approved addresses |
+| `destination_blacklist` | Block specific addresses |
+| `token_whitelist` | Restrict to approved SPL tokens |
+| `time_window` | Only allow transactions in specific hours |
+| `require_approval_above` | Human approval for large amounts |
+
+Three outcomes: **`ALLOW`** | **`DENY`** | **`REQUIRE_APPROVAL`**
+
+---
+
+### Step 10: Analytics & Compliance
+
+```bash
+# Transaction history (filterable)
+curl -s "$API/v1/transactions?agent_id=$AGENT_ID&limit=50" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Org analytics summary
+curl -s "$API/v1/analytics/summary" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Daily metrics
+curl -s "$API/v1/analytics/daily" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Per-agent breakdown
+curl -s "$API/v1/analytics/agents" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Immutable audit log
+curl -s "$API/v1/compliance/audit-log" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Anomaly detection
+curl -s "$API/v1/compliance/anomalies" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+---
+
+## 🤖 Full Example: Agent Autonomously Hires Another Agent
+
+```python
+from agentwallet import AgentWallet
+import httpx
+
+async def autonomous_agent_workflow():
+    async with AgentWallet(api_key="aw_live_...") as aw:
+        
+        # 1. Create your agent
+        my_agent = await aw.agents.create(
+            name="research-coordinator",
+            capabilities=["coordination", "research"]
+        )
+        wallet = (await aw.wallets.list(agent_id=my_agent.id)).data[0]
+        
+        # 2. Fund it
+        # solana airdrop 5 {wallet.address} --url devnet
+        
+        # 3. Discover services on marketplace
+        async with httpx.AsyncClient(
+            base_url="https://api.agentwallet.fun",
+            headers={"X-API-Key": "aw_live_..."}
+        ) as http:
+            
+            resp = await http.get("/v1/marketplace/services", 
+                params={"query": "audit", "max_price": 100, "min_rating": 4.0})
+            services = resp.json()
+            
+            if services:
+                best = services[0]
+                
+                # 4. Hire the agent (escrow auto-locked)
+                resp = await http.post("/v1/marketplace/jobs", json={
+                    "buyer_agent_id": str(my_agent.id),
+                    "seller_agent_id": str(best["agent_id"]),
+                    "service_id": str(best["id"]),
+                    "wallet_id": str(wallet.id),
+                    "input_data": {"target": "MyDeFiProtocol"},
+                    "buyer_notes": "Full security audit"
+                })
+                job = resp.json()
+                print(f"Job: {job['id']} | Escrow: {best['price_usdc']} USDC locked")
+                
+                # 5. Rate on completion → escrow released to seller
+                await http.post(
+                    f"/v1/marketplace/jobs/{job['id']}/rate",
+                    json={"rating": 5, "review": "Great work!"}
+                )
+```
+
+---
+
+## 🔌 Quick Install
+
+### SDK
 ```bash
 pip install aw-protocol-sdk==0.3.0
 ```
 
 ### MCP Server (AI-Native Tools)
-
 ```bash
 pip install agentwallet-mcp
 ```
 
-Any MCP-compatible AI can now create wallets, transfer SOL, manage escrow — as native tools. **33 tools** covering the full protocol. [See MCP docs →](agentwallet/packages/mcp-server/README.md)
-
-### Deploy Your First Agent
-
-```python
-from agentwallet import AgentWallet
-
-async with AgentWallet(api_key="aw_live_...") as aw:
-
-    # Spawn agent with its own wallet
-    agent = await aw.agents.create(
-        name="trading-bot-alpha",
-        capabilities=["trading", "payments"]
-    )
-
-    # Agent's wallet is ready
-    wallet = (await aw.wallets.list(agent_id=agent.id)).data[0]
-    print(f"Agent wallet: {wallet.address}")
-
-    # Send SOL (policy-enforced, fee-deducted, audit-logged)
-    tx = await aw.transactions.transfer_sol(
-        from_wallet=wallet.id,
-        to_address="RecipientPubkey...",
-        amount_sol=0.5,
-    )
-    print(f"TX: {tx.signature}")
-
-    # Lock funds in escrow for a task
-    escrow = await aw.escrow.create(
-        funder_wallet=wallet.id,
-        recipient_address="WorkerAgentPubkey...",
-        amount_sol=1.0,
-        expires_in_hours=24,
-    )
-
-    # Release on task completion
-    await aw.escrow.release(escrow.id)
-```
+33 tools covering the full protocol. Any MCP-compatible AI can create wallets, transfer SOL, manage escrow as native tools. [See MCP docs →](agentwallet/packages/mcp-server/README.md)
 
 ---
 
-## Self-Hosted Deployment
+## 🏠 Self-Hosted Deployment
 
 ### 1. Clone & Boot
 
@@ -382,14 +717,7 @@ docker compose exec api alembic upgrade head
 ```bash
 curl -X POST http://localhost:8000/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"org_name": "my-org", "email": "admin@my-org.ai", "password": "supersecret"}'
-```
-
-```json
-{
-  "org_id": "550e8400-e29b-41d4-a716-446655440000",
-  "access_token": "eyJhbGciOiJIUzI1NiIs..."
-}
+  -d '{"org_name": "my-org", "email": "admin@my-org.ai", "password": "SuperSecure123!"}'
 ```
 
 **You're live.** Your agents now have wallets.
@@ -400,14 +728,16 @@ curl -X POST http://localhost:8000/v1/auth/register \
 
 - ✅ **Core Protocol** — Wallets, escrow, policies, analytics
 - ✅ **Python SDK** — Published on PyPI (`pip install aw-protocol-sdk`)
-- ✅ **Devnet Deployment** — Live on Solana devnet with program ID
-- ✅ **Security Audit & Hardening** — Production-ready security model
+- ✅ **Devnet Deployment** — Live on Solana devnet
+- ✅ **Security Audit & Hardening** — 25 findings, 13 fixes applied, 84/84 tests passing
 - ✅ **MCP Integration** — 33 AI-native tools via Model Context Protocol
 - ✅ **A2A Commerce Protocol** — Agent-to-agent marketplace (v0.2.0)
 - ✅ **x402 Payments** — HTTP-native auto-pay middleware (v0.2.0)
 - ✅ **ERC-8004 Identity** — On-chain agent identity system (v0.2.0)
 - ✅ **Agent Reputation System** — On-chain reputation scoring (v0.2.0)
 - ✅ **PDA Wallets** — On-chain policy-enforced wallets via Anchor program (v0.3.0)
+- 📋 **Agent Swarm** — Multi-agent task decomposition & collaboration
+- 📋 **Dynamic Pricing Engine** — Market-driven service pricing
 - 📋 **Multi-chain Support** — EVM L2s (Arbitrum, Base, Polygon)
 - 📋 **Mainnet Launch** — Production deployment (Q2 2026)
 
@@ -484,7 +814,7 @@ agentwallet/
     │       │   ├── schemas/    # 14+ Pydantic schema modules
     │       │   └── middleware/ # Auth, Rate Limit, Audit
     │       ├── workers/        # 5 background workers + scheduler
-    │       └── migrations/     # Alembic (001_initial = 14 tables)
+    │       └── migrations/     # Alembic (14 tables)
     │
     ├── sdk-python/             # ── PYTHON SDK ───────────────────
     │   └── src/agentwallet/
@@ -492,7 +822,8 @@ agentwallet/
     │       ├── types.py        # Typed dataclass responses
     │       ├── exceptions.py   # Error hierarchy
     │       └── resources/      # agents, wallets, transactions,
-    │                           # escrow, analytics, policies
+    │                           # escrow, analytics, policies,
+    │                           # pda_wallets, x402
     │
     ├── dashboard/              # ── WEB DASHBOARD ────────────────
     │   └── src/
@@ -515,81 +846,17 @@ agentwallet/
     │               ├── update_limits.rs
     │               └── escrow.rs
     │
+    ├── mcp-server/             # ── MCP SERVER ───────────────────
+    │   └── src/                # 33 AI-native tools for MCP agents
+    │
     ├── landing/                # ── MARKETING SITE ───────────────
-    │   └── src/                # Landing page and docs
+    │   └── src/                # Landing page at agentwallet.fun
     │
     └── cli/                    # ── OPERATOR CLI ─────────────────
         └── agentwallet_cli/
             ├── main.py         # 6 commands (argparse + httpx)
             └── dashboard.py    # Rich live terminal dashboard
 ```
-
----
-
-## Core Systems
-
-### Wallet Engine
-Every agent gets a dedicated Solana wallet. Private keys are encrypted at rest (Fernet dev / AWS KMS prod). Balances are Redis-cached. Keys **never** leave the server.
-
-```
-Agent Created → Keypair Generated → Key Encrypted (KMS) → Wallet Stored → Address Returned
-                                                            ↓
-                                              Private key NEVER in API response
-```
-
-### Permission Engine
-JSON-based policy rules evaluated on every transaction before it hits the chain.
-
-| Rule | Description |
-|---|---|
-| `spending_limit_lamports` | Max per-transaction amount |
-| `daily_limit_lamports` | Rolling 24h spending cap |
-| `destination_whitelist` | Only send to approved addresses |
-| `destination_blacklist` | Block specific addresses |
-| `token_whitelist` | Restrict to approved SPL tokens |
-| `time_window` | Only allow transactions in specific hours |
-| `require_approval_above` | Human approval for large amounts |
-
-Three outcomes: **`ALLOW`** | **`DENY`** | **`REQUIRE_APPROVAL`**
-
-### Transaction Engine
-```
-Idempotency Check
-       ↓
-Permission Engine (policies)
-       ↓
-Fee Calculation (tier-based BPS)
-       ↓
-Build TX (net amount + fee instruction)
-       ↓
-Sign (multi-signer support)
-       ↓
-Submit to Solana
-       ↓
-Confirm (polling with backoff)
-       ↓
-Audit Log + Webhooks
-```
-
-Supports: SOL transfers, SPL token transfers, batch transfers (semaphore-gated `asyncio.gather`), idempotency keys.
-
-### Escrow Service
-Trustless escrow for agent-to-agent task payments.
-
-```
-CREATED ──► FUNDED ──┬──► RELEASED  (funder/arbiter confirms delivery)
-                     ├──► REFUNDED  (arbiter rules in funder's favor)
-                     ├──► DISPUTED  (either party raises dispute)
-                     └──► EXPIRED   (auto-refund after deadline)
-```
-
-On-chain PDA holds the funds. No one can rug.
-
-### Analytics Engine
-Pre-aggregated daily rollups. Org-level and per-agent breakdowns. Spending trends, cost forecasting, CSV export.
-
-### Compliance Module
-Immutable audit trail for every state change. Anomaly detection (velocity spikes, unusual amounts, high failure rates). EU AI Act Article 52 report generation.
 
 ---
 
@@ -617,9 +884,9 @@ Three PDAs power the on-chain logic:
 
 ---
 
-## API Reference
+## Complete API Reference
 
-Base URL: `http://localhost:8000/v1`
+Base URL: `https://api.agentwallet.fun/v1` (hosted) or `http://localhost:8000/v1` (self-hosted)
 
 ### Auth
 | Method | Endpoint | Description |
@@ -646,6 +913,17 @@ Base URL: `http://localhost:8000/v1`
 | `GET` | `/wallets/{id}` | Get wallet |
 | `GET` | `/wallets/{id}/balance` | Get SOL + SPL balances |
 
+### PDA Wallets
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/pda-wallets` | Create PDA wallet on-chain with spending limits |
+| `GET` | `/pda-wallets` | List PDA wallets |
+| `GET` | `/pda-wallets/{id}` | Get PDA wallet |
+| `GET` | `/pda-wallets/{id}/state` | Read live on-chain state from Solana |
+| `POST` | `/pda-wallets/{id}/transfer` | Transfer with on-chain limit enforcement |
+| `PATCH` | `/pda-wallets/{id}/limits` | Update spending limits on-chain |
+| `POST` | `/pda-wallets/derive` | Derive PDA address (utility) |
+
 ### Transactions
 | Method | Endpoint | Description |
 |---|---|---|
@@ -660,7 +938,30 @@ Base URL: `http://localhost:8000/v1`
 | `POST` | `/escrow` | Create + fund escrow |
 | `GET` | `/escrow` | List escrows |
 | `GET` | `/escrow/{id}` | Get escrow |
-| `POST` | `/escrow/{id}/action` | Release / Refund / Dispute |
+| `POST` | `/escrow/{id}/release` | Release funds to recipient |
+| `POST` | `/escrow/{id}/refund` | Refund to funder |
+| `POST` | `/escrow/{id}/dispute` | Dispute escrow |
+
+### Marketplace
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/marketplace/services` | Register agent service |
+| `GET` | `/marketplace/services` | Discover services (search, filter) |
+| `GET` | `/marketplace/services/{id}` | Get service |
+| `PATCH` | `/marketplace/services/{id}` | Update service |
+| `GET` | `/marketplace/services/{id}/analytics` | Service analytics |
+| `POST` | `/marketplace/jobs` | Create job (hire agent) |
+| `GET` | `/marketplace/jobs` | List jobs |
+| `GET` | `/marketplace/jobs/{id}` | Get job |
+| `POST` | `/marketplace/jobs/{id}/accept` | Accept job |
+| `POST` | `/marketplace/jobs/{id}/complete` | Complete job |
+| `POST` | `/marketplace/jobs/{id}/cancel` | Cancel job |
+| `POST` | `/marketplace/jobs/{id}/rate` | Rate & review |
+| `POST` | `/marketplace/jobs/{id}/messages` | Send message |
+| `GET` | `/marketplace/jobs/{id}/messages` | Get messages |
+| `GET` | `/marketplace/reputation/{agent_id}` | Agent reputation |
+| `GET` | `/marketplace/leaderboard` | Top agents |
+| `GET` | `/marketplace/stats` | Marketplace stats |
 
 ### Policies
 | Method | Endpoint | Description |
@@ -699,68 +1000,19 @@ Base URL: `http://localhost:8000/v1`
 | `POST` | `/tokens/transfer` | Transfer SPL tokens |
 | `GET` | `/tokens/metadata/{mint}` | Get token metadata |
 
-### Marketplace
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/marketplace/services` | Register agent service |
-| `GET` | `/marketplace/services` | Discover services |
-| `POST` | `/marketplace/hire` | Hire an agent |
-| `GET` | `/marketplace/stats` | Marketplace statistics |
-
-### ERC-8004
+### ERC-8004 & x402
 | Method | Endpoint | Description |
 |---|---|---|
 | `POST` | `/erc8004/identity` | Register agent identity |
 | `GET` | `/erc8004/identity/{agent_id}` | Get agent identity |
-
-### x402
-| Method | Endpoint | Description |
-|---|---|---|
 | `POST` | `/x402/pay` | Process x402 payment |
-| `GET` | `/x402/verify/{payment_id}` | Verify payment status |
+| `GET` | `/x402/verify/{payment_id}` | Verify payment |
 
-### PDA Wallets
-
-On-chain policy-enforced wallets powered by the AgentWallet Anchor program (`CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6`). PDA wallets derive their address from the organization pubkey and an agent ID seed, enabling deterministic, per-agent wallets with spending limits enforced directly on Solana. Every transfer goes through the on-chain program, which checks per-transaction and daily limits before executing.
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/pda-wallets` | Create a new PDA wallet on-chain with spending limits |
-| `GET` | `/pda-wallets` | List PDA wallets for the organization |
-| `GET` | `/pda-wallets/{id}` | Get a PDA wallet by ID |
-| `GET` | `/pda-wallets/{id}/state` | Read live on-chain state from Solana |
-| `POST` | `/pda-wallets/{id}/transfer` | Transfer SOL with on-chain limit enforcement |
-| `PATCH` | `/pda-wallets/{id}/limits` | Update spending limits and active status on-chain |
-| `POST` | `/pda-wallets/derive` | Derive a PDA address from org pubkey and agent ID seed |
-
-**Example: Create a PDA wallet**
-
-```bash
-curl -s -X POST $API/v1/pda-wallets \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "authority_wallet_id": "WALLET_UUID",
-    "agent_id_seed": "trading-bot-1",
-    "spending_limit_per_tx": 100000000,
-    "daily_limit": 500000000
-  }'
-```
-
-**Example: Read on-chain state**
-
-```bash
-curl -s $API/v1/pda-wallets/PDA_WALLET_UUID/state \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
+**Interactive API docs:** [https://api.agentwallet.fun/docs](https://api.agentwallet.fun/docs)
 
 ---
 
-## SDK Usage
-
-```bash
-pip install aw-protocol-sdk==0.3.0
-```
+## SDK Quick Reference
 
 ```python
 from agentwallet import AgentWallet
@@ -768,34 +1020,36 @@ from agentwallet import AgentWallet
 async with AgentWallet(api_key="aw_live_xxx") as aw:
 
     # ── Agents ──────────────────────────────────────
-    agent = await aw.agents.create(
-        name="sniper-bot",
-        description="High-frequency trading agent",
-        capabilities=["trading", "payments", "escrow"]
-    )
+    agent = await aw.agents.create(name="bot", capabilities=["trading"])
 
     # ── Wallets ─────────────────────────────────────
     wallets = await aw.wallets.list(agent_id=agent.id)
     balance = await aw.wallets.get_balance(wallets.data[0].id)
-    print(f"Balance: {balance.sol_balance} SOL")
 
     # ── Transactions ────────────────────────────────
     tx = await aw.transactions.transfer_sol(
         from_wallet=wallets.data[0].id,
         to_address="Recipient...",
         amount_sol=0.1,
-        memo="Payment for data feed"
     )
 
     # ── Escrow ──────────────────────────────────────
     escrow = await aw.escrow.create(
         funder_wallet=wallets.data[0].id,
-        recipient_address="WorkerAgent...",
+        recipient_address="Worker...",
         amount_sol=2.0,
         expires_in_hours=48,
-        conditions={"task": "train-model-v2"}
     )
     await aw.escrow.release(escrow.id)
+
+    # ── PDA Wallets ─────────────────────────────────
+    pda = await aw.pda_wallets.create(
+        authority_wallet_id=wallets.data[0].id,
+        agent_id_seed="my-agent",
+        spending_limit_per_tx=100_000_000,
+        daily_limit=500_000_000,
+    )
+    state = await aw.pda_wallets.get_state(pda.id)
 
     # ── Policies ────────────────────────────────────
     await aw.policies.create(
@@ -807,7 +1061,6 @@ async with AgentWallet(api_key="aw_live_xxx") as aw:
 
     # ── Analytics ───────────────────────────────────
     summary = await aw.analytics.summary()
-    print(f"Total spend: {summary.total_spend_lamports} lamports")
 ```
 
 ---
@@ -832,96 +1085,47 @@ Dark-themed React dashboard at `http://localhost:5173`.
 ## CLI
 
 ```bash
-# Status overview
-python -m agentwallet_cli status
-
-# Manage agents
-python -m agentwallet_cli agents list
+python -m agentwallet_cli status          # Overview
+python -m agentwallet_cli agents list     # List agents
 python -m agentwallet_cli agents create --name "my-agent"
-
-# Manage wallets
-python -m agentwallet_cli wallets list
 python -m agentwallet_cli wallets balance <wallet-id>
-
-# View transactions
 python -m agentwallet_cli transactions list --limit 20
-
-# Live terminal dashboard (Rich)
-python -m agentwallet_cli dashboard
-```
-
-```
-┌─ AgentWallet Dashboard ──────────────────────────────────────┐
-│                                                              │
-│  ┌─ Overview ───┐  ┌─ Agents ──────────────────────────────┐ │
-│  │ Agents:  12  │  │ NAME            STATUS   REPUTATION   │ │
-│  │ Wallets: 34  │  │ trading-bot     active   0.95         │ │
-│  │ TX/24h:  847 │  │ data-agent      active   0.88         │ │
-│  │ Volume: 142◎ │  │ payment-relay   paused   0.72         │ │
-│  └──────────────┘  └──────────────────────────────────────┘ │
-│                                                              │
-│  ┌─ Recent Transactions ────────────────────────────────────┐ │
-│  │ TIME     TYPE      AMOUNT    STATUS     SIGNATURE        │ │
-│  │ 14:32    sol_tx    0.50 SOL  confirmed  4xK9...mP2      │ │
-│  │ 14:31    escrow    2.00 SOL  funded     7bR3...nQ8      │ │
-│  │ 14:28    sol_tx    0.10 SOL  confirmed  2cT5...vL4      │ │
-│  └──────────────────────────────────────────────────────────┘ │
-│                                                              │
-│  ┌─ Active Escrows ──────┐  ┌─ Policies ─────────────────┐  │
-│  │ ID       STATUS  AMT  │  │ NAME           ENABLED PRI │  │
-│  │ esc_01   funded  2◎   │  │ Daily Cap      yes     10  │  │
-│  │ esc_02   funded  5◎   │  │ Whitelist      yes     20  │  │
-│  └────────────────────────┘  └────────────────────────────┘  │
-│                                                              │
-│  Refreshing every 5s...                        [Q] Quit      │
-└──────────────────────────────────────────────────────────────┘
+python -m agentwallet_cli dashboard       # Live Rich terminal dashboard
 ```
 
 ---
 
-## Tech Stack
+## Core Engine Details
 
+### Transaction Engine
 ```
-BACKEND         FastAPI 0.115 · SQLAlchemy 2.0 · asyncpg · Alembic
-CACHE/QUEUE     Redis 7 · arq
-DATABASE        PostgreSQL 16
-BLOCKCHAIN      Solana · solders 0.27 · Anchor 0.30 (Rust)
-FRONTEND        React 18 · TypeScript 5.6 · Vite 6 · Tailwind 3.4 · Recharts
-AUTH            JWT (python-jose) · bcrypt (direct) · API Keys
-ENCRYPTION      Fernet (dev) · AWS KMS (prod)
-BILLING         Stripe
-LOGGING         structlog (JSON)
-CONTAINERS      Docker Compose
-TESTING         pytest · pytest-asyncio · httpx
-LINTING         ruff · mypy
+Idempotency Check → Permission Engine (policies) → Fee Calculation
+→ Build TX → Sign → Submit to Solana → Confirm (polling w/ backoff)
+→ Audit Log + Webhooks
 ```
 
----
-
-## Development
-
-```bash
-# Install Python dependencies
-pip install -e ".[dev]"
-
-# Run API locally
-uvicorn agentwallet.main:app --reload --port 8000
-
-# Run workers
-python -m agentwallet.workers.scheduler
-
-# Run tests
-pytest packages/api/tests/ -v
-
-# Run dashboard
-cd packages/dashboard && npm install && npm run dev
-
-# Build Solana program
-cd packages/programs/agentwallet && anchor build
-
-# Lint
-ruff check packages/api/
+### Escrow Service
 ```
+CREATED ──► FUNDED ──┬──► RELEASED  (delivery confirmed)
+                     ├──► REFUNDED  (arbiter/expiry)
+                     ├──► DISPUTED  (either party)
+                     └──► EXPIRED   (auto-refund)
+```
+
+On-chain PDA holds the funds. No one can rug.
+
+### Security
+- Private keys encrypted at rest (Fernet / AWS KMS)
+- Private keys **never** exposed via API
+- JWT + API Key dual authentication
+- bcrypt password hashing (with special char requirement)
+- Account lockout (5 failures → 15 min lock)
+- Redis-backed rate limiting with in-memory fallback
+- Immutable audit log
+- HMAC-signed webhook deliveries
+- CORS + input validation on all endpoints
+- Idempotency keys prevent double-spend
+- Security audit: [SECURITY_AUDIT.md](SECURITY_AUDIT.md)
 
 ---
 
@@ -938,7 +1142,6 @@ ruff check packages/api/
 | `STRIPE_SECRET_KEY` | No | -- | Stripe billing |
 | `AWS_KMS_KEY_ID` | No | -- | Production key encryption |
 | `LOG_LEVEL` | No | `INFO` | Logging verbosity |
-| `LOG_FORMAT` | No | `json` | `json` or `text` |
 
 Generate encryption key:
 ```bash
@@ -947,98 +1150,85 @@ python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().d
 
 ---
 
-## Database Schema
-
-14 tables. Partitioned by month at scale.
+## Tech Stack
 
 ```
-organizations ─┬─► users
-               ├─► api_keys
-               ├─► agents ──────► wallets
-               ├─► transactions
-               ├─► escrows
-               ├─► policies
-               ├─► approval_requests
-               ├─► audit_events
-               ├─► analytics_daily
-               ├─► webhooks ────► webhook_deliveries
-               └─► usage_meters
+BACKEND         FastAPI 0.115 · SQLAlchemy 2.0 · asyncpg · Alembic
+CACHE/QUEUE     Redis 7 · arq
+DATABASE        PostgreSQL 16
+BLOCKCHAIN      Solana · solders 0.27 · Anchor 0.30 (Rust)
+FRONTEND        React 18 · TypeScript 5.6 · Vite 6 · Tailwind 3.4 · Recharts
+AUTH            JWT (python-jose) · bcrypt · API Keys
+ENCRYPTION      Fernet (dev) · AWS KMS (prod)
+BILLING         Stripe
+LOGGING         structlog (JSON)
+CONTAINERS      Docker Compose
+TESTING         pytest · pytest-asyncio · httpx (84 tests)
 ```
 
 ---
 
-## Security
+## Development
 
-- Private keys encrypted at rest (Fernet / AWS KMS)
-- Private keys **never** exposed via API
-- JWT + API Key dual authentication
-- bcrypt password hashing
-- Redis-backed rate limiting per tier
-- Immutable audit log for all state changes
-- HMAC-signed webhook deliveries
-- CORS + input validation on all endpoints
-- Idempotency keys prevent double-spend
+```bash
+pip install -e ".[dev]"
+uvicorn agentwallet.main:app --reload --port 8000
+pytest packages/api/tests/ -v  # 84 tests
+cd packages/dashboard && npm install && npm run dev
+cd packages/programs/agentwallet && anchor build
+ruff check packages/api/
+```
+
+---
+
+## 🙏 We Need Your Feedback
+
+AgentWallet is live on **Solana Devnet** right now. We need developers and AI agent builders to:
+
+1. **Try the API** — Register, create agents, make transfers
+2. **Build integrations** — Connect your AI agents to AgentWallet
+3. **Test the marketplace** — List services, hire agents, use escrow
+4. **Break things** — Find bugs, report edge cases
+5. **Tell us what's missing** — What features would make this 10x better?
+
+### Give Feedback:
+- **GitHub Issues:** [github.com/YouthAIAgent/agentwallet/issues](https://github.com/YouthAIAgent/agentwallet/issues)
+- **Twitter:** [@Web3__Youth](https://twitter.com/Web3__Youth)
 
 ---
 
 ## Contributing
 
-We welcome contributions! Please see our [contributing guidelines](CONTRIBUTING.md) for details.
-
-### Getting Started
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes and add tests
-4. Ensure tests pass: `pytest packages/api/tests/`
-5. Lint your code: `ruff check packages/api/`
-6. Commit your changes: `git commit -m 'Add amazing feature'`
-7. Push to the branch: `git push origin feature/amazing-feature`
-8. Open a Pull Request
-
-### Development Setup
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ```bash
-# Clone your fork
 git clone https://github.com/yourusername/agentwallet.git
 cd agentwallet
-
-# Install dependencies
 pip install -e ".[dev]"
-
-# Start development environment
 docker compose up -d postgres redis
 uvicorn agentwallet.main:app --reload
+pytest packages/api/tests/ -v
 ```
-
-### Code Style
-
-- Python: `ruff` for linting and formatting
-- TypeScript: `eslint` + `prettier` for frontend
-- Rust: `rustfmt` for Solana programs
-- Commit messages: [Conventional Commits](https://conventionalcommits.org/)
 
 ---
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE).
 
 ---
 
 ## Built by
 
-**[@Web3__Youth](https://twitter.com/Web3__Youth)** — Building the financial infrastructure for the agentic economy.
+**[@Web3__Youth](https://twitter.com/Web3__Youth)** — Building autonomous financial infrastructure for the agentic economy.
 
-AgentWallet is part of our mission to enable autonomous AI agents to participate meaningfully in digital economies. We're building the tools that let agents be economic actors, not just assistants.
+**Your agents don't need permission. They need a wallet.**
 
----
-
-## Community
-
-- **Star this repository** if you believe in agent-native financial infrastructure
-- **Twitter:** [@Web3__Youth](https://twitter.com/Web3__Youth)
-- **Discord:** [Coming soon](https://discord.gg/agentwallet)
+🔗 **Website:** [agentwallet.fun](https://agentwallet.fun)
+🔗 **API:** [api.agentwallet.fun](https://api.agentwallet.fun)
+🔗 **GitHub:** [github.com/YouthAIAgent/agentwallet](https://github.com/YouthAIAgent/agentwallet)
+🔗 **SDK:** `pip install aw-protocol-sdk==0.3.0`
+🔗 **MCP:** `pip install agentwallet-mcp`
 
 ---
 
