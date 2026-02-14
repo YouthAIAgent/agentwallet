@@ -3,7 +3,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -20,8 +20,8 @@ class PDAWallet(Base):
     authority_wallet_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("wallets.id"), nullable=False)
     org_pubkey: Mapped[str] = mapped_column(String(64), nullable=False)
     agent_id_seed: Mapped[str] = mapped_column(String(64), nullable=False)
-    spending_limit_per_tx: Mapped[int] = mapped_column(Integer, nullable=False)
-    daily_limit: Mapped[int] = mapped_column(Integer, nullable=False)
+    spending_limit_per_tx: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    daily_limit: Mapped[int] = mapped_column(BigInteger, nullable=False)
     bump: Mapped[int] = mapped_column(Integer, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     tx_signature: Mapped[str | None] = mapped_column(String(128))

@@ -46,7 +46,7 @@ Add to your OpenClaw config:
 }
 ```
 
-## Available Tools (26 tools)
+## Available Tools (33 tools)
 
 ### Agents
 | Tool | Description |
@@ -89,6 +89,17 @@ Add to your OpenClaw config:
 | `list_policies` | List all policies |
 | `update_policy` | Modify policy rules |
 | `delete_policy` | Remove a policy |
+
+### PDA Wallets
+| Tool | Description |
+|---|---|
+| `create_pda_wallet` | Create on-chain PDA wallet with Anchor-enforced spending limits |
+| `list_pda_wallets` | List all PDA wallets for the org |
+| `get_pda_wallet` | Get PDA wallet details by ID |
+| `get_pda_wallet_state` | Read live on-chain state (limits, balance, active status) |
+| `transfer_from_pda` | Transfer SOL through PDA with on-chain limit enforcement |
+| `update_pda_limits` | Update spending limits or active status on-chain |
+| `derive_pda_address` | Derive PDA address from org pubkey + agent seed |
 
 ### Analytics & Compliance
 | Tool | Description |
