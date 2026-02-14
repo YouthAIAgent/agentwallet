@@ -91,6 +91,164 @@ curl -s -X POST $API/v1/policies \
 
 ---
 
+## Devnet Testing Guide (Step-by-Step)
+
+Complete walkthrough to create an AI agent with an on-chain PDA wallet, fund it, and execute a spending-limit-enforced transfer — all on Solana devnet.
+
+### Prerequisites
+
+- `curl` (any OS)
+- Solana CLI (`solana --version`) — [Install](https://docs.solana.com/cli/install-solana-cli-tools)
+- Or use the [web faucet](https://faucet.solana.com) for devnet SOL
+
+### Step 1: Register & Get JWT Token
+
+```bash
+API="https://api.agentwallet.fun"
+
+# Register (password: min 8 chars, 1 uppercase, 1 lowercase, 1 digit)
+RESPONSE=$(curl -s -X POST $API/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "org_name": "My AI Company",
+    "email": "you@example.com",
+    "password": "MySecurePass123"
+  }')
+
+echo $RESPONSE
+# Save the access_token from the response
+TOKEN="<paste_access_token_here>"
+```
+
+### Step 2: Create an AI Agent
+
+```bash
+curl -s -X POST $API/v1/agents \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "trading-bot", "capabilities": ["transfer", "swap"]}'
+```
+
+Response gives you `id` (agent_id) and `default_wallet_id`. Save both.
+
+```bash
+AGENT_ID="<agent_id_from_response>"
+WALLET_ID="<default_wallet_id_from_response>"
+```
+
+### Step 3: Get Your Wallet's Solana Address
+
+```bash
+curl -s $API/v1/wallets \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Copy the `address` field — this is your agent's Solana devnet address.
+
+```bash
+WALLET_ADDRESS="<address_from_response>"
+```
+
+### Step 4: Fund the Wallet with Devnet SOL
+
+**Option A: Solana CLI**
+```bash
+solana airdrop 2 $WALLET_ADDRESS --url devnet
+```
+
+**Option B: Web Faucet**
+Go to https://faucet.solana.com, paste your `WALLET_ADDRESS`, select "Devnet", request SOL.
+
+**Verify balance:**
+```bash
+curl -s $API/v1/wallets/$WALLET_ID/balance \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Step 5: Create a PDA Wallet (On-Chain Spending Limits)
+
+This creates a Program Derived Address wallet on Solana with spending limits enforced by the Anchor program.
+
+```bash
+curl -s -X POST $API/v1/pda-wallets \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "authority_wallet_id": "'$WALLET_ID'",
+    "agent_id_seed": "my-agent-1",
+    "spending_limit_per_tx": 100000000,
+    "daily_limit": 500000000,
+    "agent_id": "'$AGENT_ID'"
+  }'
+```
+
+- `spending_limit_per_tx`: 100000000 lamports = 0.1 SOL per transaction
+- `daily_limit`: 500000000 lamports = 0.5 SOL per day
+
+Save the `id` and `pda_address` from the response.
+
+```bash
+PDA_WALLET_ID="<id_from_response>"
+PDA_ADDRESS="<pda_address_from_response>"
+```
+
+### Step 6: Fund the PDA Wallet
+
+```bash
+solana transfer $PDA_ADDRESS 0.2 --url devnet --allow-unfunded-recipient
+```
+
+### Step 7: Read On-Chain State (Live from Solana)
+
+```bash
+curl -s $API/v1/pda-wallets/$PDA_WALLET_ID/state \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Returns live on-chain data: authority, spending limits, daily_spent, sol_balance, is_active.
+
+### Step 8: Transfer SOL (Limit-Enforced)
+
+```bash
+curl -s -X POST $API/v1/pda-wallets/$PDA_WALLET_ID/transfer \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "recipient": "CxP7Ebp6G15xankL5AVzXUJ9jjigwLoXPu5hGUZBjtg2",
+    "amount_lamports": 50000000
+  }'
+```
+
+The on-chain program enforces: amount <= per-tx limit AND today's total <= daily limit. Returns `signature` — verify on Solana Explorer.
+
+### Step 9: Update Limits
+
+```bash
+curl -s -X PATCH $API/v1/pda-wallets/$PDA_WALLET_ID/limits \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"spending_limit_per_tx": 200000000, "daily_limit": 1000000000}'
+```
+
+### Step 10: Verify on Solana Explorer
+
+Every operation returns a `tx_signature`. View it on the explorer:
+
+```
+https://explorer.solana.com/tx/<signature>?cluster=devnet
+```
+
+### Verified Live Transactions
+
+These transactions were executed on Solana devnet and can be verified:
+
+| Operation | Signature | Explorer |
+|---|---|---|
+| PDA Wallet Created | `4AQiwF...do2Cw` | [View](https://explorer.solana.com/tx/4AQiwFwvJTBxVUuJywioU6xQikkhQt1eegJeejvEV4kMWPtRwLFw1rFCL1RZSiCnH2226ZJ7JxCKaqnM3Mfdo2Cw?cluster=devnet) |
+| PDA Transfer (0.05 SOL) | `32tcgX...Gzq8` | [View](https://explorer.solana.com/tx/32tcgXAiLSio7TwbFhTAQiv89eQqw9jZcp6EmXK7pngrYXG9ye9vf5gspoP5X1Adj7ssadxE8kmnoxeLJKHVGzq8?cluster=devnet) |
+
+---
+
 ## Why AgentWallet?
 
 - **Agent-Native** — Built specifically for autonomous AI agents, not human wallets
