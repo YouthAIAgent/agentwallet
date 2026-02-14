@@ -20,6 +20,8 @@ from .resources.pda_wallets import PDAWalletsResource
 from .resources.policies import PoliciesResource
 from .resources.transactions import TransactionsResource
 from .resources.wallets import WalletsResource
+from .resources.acp import AcpResource
+from .resources.swarms import SwarmsResource
 from .resources.x402 import X402Resource
 
 DEFAULT_BASE_URL = "http://localhost:8000/v1"
@@ -65,6 +67,8 @@ class AgentWallet:
         self.policies = PoliciesResource(self)
         self.pda_wallets = PDAWalletsResource(self)
         self.x402 = X402Resource(self)
+        self.acp = AcpResource(self)
+        self.swarms = SwarmsResource(self)
 
     async def __aenter__(self):
         return self

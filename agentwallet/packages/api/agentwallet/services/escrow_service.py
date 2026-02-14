@@ -101,14 +101,37 @@ class EscrowService:
         return escrow
 
     async def release_escrow(self, escrow_id: uuid.UUID, org_id: uuid.UUID) -> Escrow:
-        """Release escrow funds to the recipient."""
+        """Release escrow funds to the recipient on-chain, then update status."""
         escrow = await self._get_escrow(escrow_id, org_id)
         self._validate_transition(escrow.status, "released")
 
-        # In production, this would call the on-chain program
-        # For MVP, record the release
-        escrow.status = "released"
-        escrow.completed_at = datetime.now(timezone.utc)
+        # Transfer escrowed funds to the recipient on-chain
+        try:
+            wallet = await self.wallet_mgr.get_wallet(escrow.funder_wallet_id, org_id)
+            keypair = self.wallet_mgr._decrypt_keypair(wallet)
+            async with httpx.AsyncClient(timeout=15) as client:
+                sig = await transfer_sol(
+                    client=client,
+                    from_keypair=keypair,
+                    to_address=escrow.recipient_address,
+                    lamports=escrow.amount_lamports,
+                )
+                confirmed = await confirm_transaction(client, sig)
+
+            escrow.status = "released"
+            escrow.release_signature = sig
+            escrow.completed_at = datetime.now(timezone.utc)
+
+            if not confirmed:
+                logger.warning(
+                    "escrow_release_unconfirmed",
+                    escrow_id=str(escrow_id),
+                    signature=sig[:24],
+                )
+        except Exception as e:
+            logger.error("escrow_release_failed", escrow_id=str(escrow_id), error=str(e))
+            raise EscrowStateError(f"Failed to transfer funds on-chain: {e}")
+
         await self.db.flush()
 
         # Check if both agents have ERC-8004 identities for feedback eligibility
@@ -130,14 +153,39 @@ class EscrowService:
         )
 
     async def refund_escrow(self, escrow_id: uuid.UUID, org_id: uuid.UUID) -> Escrow:
-        """Refund escrow funds to the funder."""
+        """Refund escrow funds to the funder's wallet on-chain, then update status."""
         escrow = await self._get_escrow(escrow_id, org_id)
         self._validate_transition(escrow.status, "refunded")
 
-        escrow.status = "refunded"
-        escrow.completed_at = datetime.now(timezone.utc)
-        await self.db.flush()
+        # Transfer escrowed funds back to the funder wallet on-chain
+        try:
+            wallet = await self.wallet_mgr.get_wallet(escrow.funder_wallet_id, org_id)
+            keypair = self.wallet_mgr._decrypt_keypair(wallet)
+            # Refund goes back to the funder's own wallet address
+            async with httpx.AsyncClient(timeout=15) as client:
+                sig = await transfer_sol(
+                    client=client,
+                    from_keypair=keypair,
+                    to_address=wallet.address,
+                    lamports=escrow.amount_lamports,
+                )
+                confirmed = await confirm_transaction(client, sig)
 
+            escrow.status = "refunded"
+            escrow.refund_signature = sig
+            escrow.completed_at = datetime.now(timezone.utc)
+
+            if not confirmed:
+                logger.warning(
+                    "escrow_refund_unconfirmed",
+                    escrow_id=str(escrow_id),
+                    signature=sig[:24],
+                )
+        except Exception as e:
+            logger.error("escrow_refund_failed", escrow_id=str(escrow_id), error=str(e))
+            raise EscrowStateError(f"Failed to refund funds on-chain: {e}")
+
+        await self.db.flush()
         logger.info("escrow_refunded", escrow_id=str(escrow_id))
         return escrow
 

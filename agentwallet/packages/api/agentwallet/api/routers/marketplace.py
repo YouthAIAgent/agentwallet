@@ -187,13 +187,20 @@ async def update_service(
 ):
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     from sqlalchemy import select
+    from sqlalchemy.orm import joinedload
 
     from ...models.marketplace import Service
 
-    result = await db.execute(select(Service).where(Service.id == service_id))
+    result = await db.execute(
+        select(Service).options(joinedload(Service.agent)).where(Service.id == service_id)
+    )
     service = result.scalar_one_or_none()
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
+
+    # Ownership check: service's agent must belong to the caller's org
+    if service.agent and service.agent.org_id != auth.org_id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this service")
 
     update_data = req.model_dump(exclude_unset=True)
     if "price_usdc" in update_data:
@@ -329,9 +336,16 @@ async def complete_job(
     db: AsyncSession = Depends(get_db),
 ):
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
+
+    # Verify agent belongs to caller's org
+    from ...models.agent import Agent
+    agent = await db.get(Agent, req.agent_id)
+    if not agent or agent.org_id != auth.org_id:
+        raise HTTPException(status_code=403, detail="Agent does not belong to your organization")
+
     svc = MarketplaceService(db)
     try:
-        job = await svc.complete_job(job_id, auth.agent_id, req.result_data, req.completion_notes)
+        job = await svc.complete_job(job_id, req.agent_id, req.result_data, req.completion_notes)
     except NotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except ValidationError as e:
@@ -348,9 +362,16 @@ async def cancel_job(
     db: AsyncSession = Depends(get_db),
 ):
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
+
+    # Verify agent belongs to caller's org
+    from ...models.agent import Agent
+    agent = await db.get(Agent, req.agent_id)
+    if not agent or agent.org_id != auth.org_id:
+        raise HTTPException(status_code=403, detail="Agent does not belong to your organization")
+
     svc = MarketplaceService(db)
     try:
-        job = await svc.cancel_job(job_id, auth.agent_id, req.reason)
+        job = await svc.cancel_job(job_id, req.agent_id, req.reason)
     except NotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except ValidationError as e:

@@ -92,7 +92,7 @@ async def test_user(db_session: AsyncSession, test_org):
     user = User(
         org_id=test_org.id,
         email=f"user-{uuid.uuid4().hex[:8]}@example.com",
-        password_hash=hash_password("testpassword123"),
+        password_hash=hash_password("TestPassword123!"),
         role="admin",
         is_active=True,
     )

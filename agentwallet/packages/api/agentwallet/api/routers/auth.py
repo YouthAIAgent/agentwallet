@@ -3,18 +3,24 @@
 SECURITY NOTE: The /register and /login endpoints MUST have aggressive rate
 limiting applied to prevent credential stuffing and brute-force attacks.
 The check_rate_limit() dependency from middleware.rate_limit is applied to
-these routes below. If Redis is unavailable, rate limiting will fail-open —
-consider adding an in-process fallback for production deployments.
+these routes below. An in-process fallback rate limiter is now active when
+Redis is unavailable.
+
+Account lockout: After MAX_FAILED_LOGINS failures within LOCKOUT_WINDOW_SECONDS,
+the account is locked for LOCKOUT_DURATION_SECONDS.
 """
 
 import secrets
+import time
 import uuid
+from collections import defaultdict
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.database import get_db
+from ...core.logging import get_logger
 from ...models.api_key import ApiKey
 from ...models.organization import Organization
 from ...models.user import User
@@ -36,7 +42,62 @@ from ..schemas.auth import (
     TokenResponse,
 )
 
+logger = get_logger(__name__)
+
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+# ── Account lockout (in-process, works without Redis) ─────────────────────
+MAX_FAILED_LOGINS = 5
+LOCKOUT_WINDOW_SECONDS = 300  # 5 minute window for counting failures
+LOCKOUT_DURATION_SECONDS = 900  # 15 minute lockout
+
+# Key: email → list of failure timestamps
+_login_failures: dict[str, list[float]] = defaultdict(list)
+# Key: email → lockout expiry timestamp
+_account_locks: dict[str, float] = {}
+
+
+def _check_account_lockout(email: str) -> None:
+    """Raise 429 if account is locked due to too many failed logins."""
+    now = time.monotonic()
+
+    # Check if locked
+    lock_until = _account_locks.get(email, 0)
+    if lock_until > now:
+        remaining = int(lock_until - now)
+        raise HTTPException(
+            status_code=429,
+            detail=f"Account temporarily locked due to too many failed login attempts. "
+                   f"Try again in {remaining} seconds.",
+            headers={"Retry-After": str(remaining)},
+        )
+    elif lock_until > 0:
+        # Lock expired, clear it
+        del _account_locks[email]
+        _login_failures.pop(email, None)
+
+
+def _record_login_failure(email: str) -> None:
+    """Record a failed login attempt. Lock account if threshold reached."""
+    now = time.monotonic()
+    failures = _login_failures[email]
+
+    # Remove old failures outside the window
+    cutoff = now - LOCKOUT_WINDOW_SECONDS
+    while failures and failures[0] < cutoff:
+        failures.pop(0)
+
+    failures.append(now)
+
+    if len(failures) >= MAX_FAILED_LOGINS:
+        _account_locks[email] = now + LOCKOUT_DURATION_SECONDS
+        logger.warning("account_locked", email=email, failures=len(failures))
+
+
+def _clear_login_failures(email: str) -> None:
+    """Clear failure counter on successful login."""
+    _login_failures.pop(email, None)
+    _account_locks.pop(email, None)
 
 
 @router.post("/register", response_model=TokenResponse)
@@ -70,11 +131,19 @@ async def login(request: Request, req: LoginRequest, db: AsyncSession = Depends(
     """Login with email/password, receive JWT."""
     # Rate limit: stricter limit for auth endpoints to prevent brute-force.
     await check_rate_limit(request, org_id="anon:login", tier="free")
+
+    # Account lockout check
+    _check_account_lockout(req.email)
+
     user = await db.scalar(select(User).where(User.email == req.email))
     if not user or not verify_password(req.password, user.password_hash):
+        _record_login_failure(req.email)
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Account disabled")
+
+    # Successful login — clear any failure counters
+    _clear_login_failures(req.email)
 
     token = create_access_token(user.id, user.org_id)
     return TokenResponse(access_token=token, org_id=user.org_id)

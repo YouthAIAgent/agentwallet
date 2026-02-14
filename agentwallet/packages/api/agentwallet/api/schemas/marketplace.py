@@ -115,11 +115,13 @@ class JobAccept(BaseModel):
 
 
 class JobComplete(BaseModel):
+    agent_id: uuid.UUID = Field(..., description="Agent completing the job (must be seller)")
     result_data: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Job results")
     completion_notes: Optional[str] = Field(None, max_length=1000, description="Completion notes")
 
 
 class JobCancel(BaseModel):
+    agent_id: uuid.UUID = Field(..., description="Agent cancelling the job (must be buyer or seller)")
     reason: str = Field(..., min_length=1, max_length=500, description="Cancellation reason")
 
 

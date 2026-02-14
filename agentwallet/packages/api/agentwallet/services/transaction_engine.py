@@ -147,10 +147,11 @@ class TransactionEngine:
         org_id: uuid.UUID,
         org_tier: str,
         transfers: list[dict],
-    ) -> list[Transaction]:
+    ) -> list[dict]:
         """Execute multiple SOL transfers with semaphore-gated concurrency.
 
-        Pattern from moltfarm farm.py batch command.
+        Returns a list of dicts: {"transaction": Transaction, "error": str|None}
+        for each transfer, so callers know which succeeded and which failed.
         """
         results = []
 
@@ -170,11 +171,12 @@ class TransactionEngine:
         tasks = [_single(t) for t in transfers]
         completed = await asyncio.gather(*tasks, return_exceptions=True)
 
-        for item in completed:
+        for i, item in enumerate(completed):
             if isinstance(item, Transaction):
-                results.append(item)
+                results.append({"transaction": item, "error": None})
             else:
-                logger.error("batch_transfer_error", error=str(item))
+                logger.error("batch_transfer_error", index=i, error=str(item))
+                results.append({"transaction": None, "error": str(item)})
 
         return results
 

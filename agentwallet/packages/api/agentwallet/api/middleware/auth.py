@@ -62,18 +62,42 @@ class AuthContext:
         org_id: uuid.UUID,
         user_id: uuid.UUID | None = None,
         api_key_id: uuid.UUID | None = None,
+        agent_id: uuid.UUID | None = None,
         org_tier: str = "free",
         actor_type: str = "user",
     ):
         self.org_id = org_id
         self.user_id = user_id
         self.api_key_id = api_key_id
+        self.agent_id = agent_id
         self.org_tier = org_tier
         self.actor_type = actor_type
 
     @property
     def actor_id(self) -> str:
         return str(self.user_id or self.api_key_id or "unknown")
+
+
+def _resolve_agent_id(request: Request) -> uuid.UUID | None:
+    """Extract optional agent_id from X-Agent-Id header."""
+    agent_id_header = request.headers.get("X-Agent-Id")
+    if agent_id_header:
+        try:
+            return uuid.UUID(agent_id_header)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid X-Agent-Id header (must be a valid UUID)")
+    return None
+
+
+async def _verify_agent_belongs_to_org(
+    db: AsyncSession, agent_id: uuid.UUID, org_id: uuid.UUID
+) -> None:
+    """Verify that an agent belongs to the given organization."""
+    from ...models.agent import Agent
+
+    agent = await db.get(Agent, agent_id)
+    if not agent or agent.org_id != org_id:
+        raise HTTPException(status_code=403, detail="Agent does not belong to your organization")
 
 
 async def get_auth_context(
@@ -83,6 +107,7 @@ async def get_auth_context(
 ) -> AuthContext:
     """Resolve auth from either JWT bearer token or API key header."""
     settings = get_settings()
+    agent_id = _resolve_agent_id(request)
 
     # Check for API key in header (SDK auth)
     api_key_header = request.headers.get("X-API-Key")
@@ -96,9 +121,15 @@ async def get_auth_context(
         api_key.last_used_at = datetime.now(timezone.utc)
 
         org = await db.get(Organization, api_key.org_id)
+
+        # Verify agent belongs to this org if specified
+        if agent_id:
+            await _verify_agent_belongs_to_org(db, agent_id, api_key.org_id)
+
         return AuthContext(
             org_id=api_key.org_id,
             api_key_id=api_key.id,
+            agent_id=agent_id,
             org_tier=org.tier if org else "free",
             actor_type="api_key",
         )
@@ -118,9 +149,14 @@ async def get_auth_context(
             if not org or not org.is_active:
                 raise HTTPException(status_code=401, detail="Organization inactive")
 
+            # Verify agent belongs to this org if specified
+            if agent_id:
+                await _verify_agent_belongs_to_org(db, agent_id, org_id)
+
             return AuthContext(
                 org_id=org_id,
                 user_id=user_id,
+                agent_id=agent_id,
                 org_tier=org.tier,
                 actor_type="user",
             )
