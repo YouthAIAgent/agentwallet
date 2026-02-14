@@ -517,6 +517,95 @@ TOOLS: list[Tool] = [
             "properties": {},
         },
     ),
+
+    # ── PDA Wallets ───────────────────────────────────────────
+    Tool(
+        name="create_pda_wallet",
+        description="Create an on-chain PDA wallet with spending limits enforced by the Anchor program. The PDA is a policy account — the authority wallet holds funds, the PDA enforces per-tx and daily spending limits.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "authority_wallet_id": {"type": "string", "description": "Authority wallet UUID that holds funds"},
+                "agent_id_seed": {"type": "string", "description": "Seed string used to derive the PDA address"},
+                "spending_limit_per_tx": {"type": "integer", "description": "Max lamports per transaction"},
+                "daily_limit": {"type": "integer", "description": "Max lamports per day"},
+                "agent_id": {"type": "string", "description": "Optional agent UUID to link to this PDA wallet"},
+            },
+            "required": ["authority_wallet_id", "agent_id_seed", "spending_limit_per_tx", "daily_limit"],
+        },
+    ),
+    Tool(
+        name="list_pda_wallets",
+        description="List all PDA wallets for the organization.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "limit": {"type": "integer", "description": "Max results (default 50)", "default": 50},
+                "offset": {"type": "integer", "description": "Pagination offset", "default": 0},
+            },
+        },
+    ),
+    Tool(
+        name="get_pda_wallet",
+        description="Get PDA wallet details by ID.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "pda_wallet_id": {"type": "string", "description": "PDA wallet UUID"},
+            },
+            "required": ["pda_wallet_id"],
+        },
+    ),
+    Tool(
+        name="get_pda_wallet_state",
+        description="Read live on-chain state of a PDA wallet from Solana. Returns authority, spending limits, daily spent, active status, and SOL balance.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "pda_wallet_id": {"type": "string", "description": "PDA wallet UUID"},
+            },
+            "required": ["pda_wallet_id"],
+        },
+    ),
+    Tool(
+        name="transfer_from_pda",
+        description="Transfer SOL through a PDA wallet with on-chain spending limit enforcement. The Anchor program validates the amount against per-tx and daily limits.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "pda_wallet_id": {"type": "string", "description": "PDA wallet UUID"},
+                "recipient": {"type": "string", "description": "Destination Solana address (base58)"},
+                "amount_lamports": {"type": "integer", "description": "Amount in lamports to transfer"},
+            },
+            "required": ["pda_wallet_id", "recipient", "amount_lamports"],
+        },
+    ),
+    Tool(
+        name="update_pda_limits",
+        description="Update spending limits or active status of a PDA wallet on-chain. Only the authority can modify limits.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "pda_wallet_id": {"type": "string", "description": "PDA wallet UUID"},
+                "spending_limit_per_tx": {"type": "integer", "description": "New max lamports per transaction"},
+                "daily_limit": {"type": "integer", "description": "New max lamports per day"},
+                "is_active": {"type": "boolean", "description": "Enable or disable the PDA wallet"},
+            },
+            "required": ["pda_wallet_id"],
+        },
+    ),
+    Tool(
+        name="derive_pda_address",
+        description="Derive a PDA wallet address from an org pubkey and agent ID seed. Pure computation — no on-chain transaction.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "org_pubkey": {"type": "string", "description": "Organization Solana public key (base58)"},
+                "agent_id_seed": {"type": "string", "description": "Agent ID seed string for PDA derivation"},
+            },
+            "required": ["org_pubkey", "agent_id_seed"],
+        },
+    ),
 ]
 
 
@@ -753,6 +842,56 @@ async def handle_tool(client: AgentWalletClient, name: str, args: dict) -> list[
 
             case "get_anomalies":
                 data = await client.get("/compliance/anomalies")
+                return _ok(data)
+
+            # PDA Wallets
+            case "create_pda_wallet":
+                data = await client.post("/pda-wallets", json=_strip_none({
+                    "authority_wallet_id": args["authority_wallet_id"],
+                    "agent_id_seed": args["agent_id_seed"],
+                    "spending_limit_per_tx": args["spending_limit_per_tx"],
+                    "daily_limit": args["daily_limit"],
+                    "agent_id": args.get("agent_id"),
+                }))
+                return _ok(data)
+
+            case "list_pda_wallets":
+                params = {
+                    "limit": args.get("limit", 50),
+                    "offset": args.get("offset", 0),
+                }
+                data = await client.get("/pda-wallets", params=params)
+                return _ok(data)
+
+            case "get_pda_wallet":
+                data = await client.get(f"/pda-wallets/{args['pda_wallet_id']}")
+                return _ok(data)
+
+            case "get_pda_wallet_state":
+                data = await client.get(f"/pda-wallets/{args['pda_wallet_id']}/state")
+                return _ok(data)
+
+            case "transfer_from_pda":
+                data = await client.post(f"/pda-wallets/{args['pda_wallet_id']}/transfer", json={
+                    "recipient": args["recipient"],
+                    "amount_lamports": args["amount_lamports"],
+                })
+                return _ok(data)
+
+            case "update_pda_limits":
+                pid = args["pda_wallet_id"]
+                data = await client.patch(f"/pda-wallets/{pid}/limits", json=_strip_none({
+                    "spending_limit_per_tx": args.get("spending_limit_per_tx"),
+                    "daily_limit": args.get("daily_limit"),
+                    "is_active": args.get("is_active"),
+                }))
+                return _ok(data)
+
+            case "derive_pda_address":
+                data = await client.post("/pda-wallets/derive", json={
+                    "org_pubkey": args["org_pubkey"],
+                    "agent_id_seed": args["agent_id_seed"],
+                })
                 return _ok(data)
 
             case _:
