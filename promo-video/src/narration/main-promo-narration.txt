@@ -1,9 +1,0 @@
-AgentWallet Protocol.
-
-Autonomous wallet infrastructure for AI agents on Solana.
-
-27 MCP tools. Trustless escrow. Agent-to-agent marketplace.
-
-One SDK. Zero friction.
-
-Join the beta at agentwallet.fun
