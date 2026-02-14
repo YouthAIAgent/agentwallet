@@ -95,3 +95,5 @@ orange-card-output.png
 
 # Claude Code
 .claude/
+
+.env

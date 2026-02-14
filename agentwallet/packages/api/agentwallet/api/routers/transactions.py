@@ -85,14 +85,18 @@ async def transfer_sol(
     return _tx_to_response(tx)
 
 
-@router.post("/batch-transfer", response_model=list[TransactionResponse])
+@router.post("/batch-transfer")
 async def batch_transfer(
     req: BatchTransferRequest,
     request: Request,
     auth: AuthContext = Depends(get_auth_context),
     db: AsyncSession = Depends(get_db),
 ):
-    """Execute multiple SOL transfers in parallel (semaphore-gated)."""
+    """Execute multiple SOL transfers in parallel (semaphore-gated).
+
+    Returns a list of results where each item has a 'transaction' (or null)
+    and an 'error' (or null), so callers know which succeeded and which failed.
+    """
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
 
     engine = TransactionEngine(db)
@@ -111,7 +115,13 @@ async def batch_transfer(
         org_tier=auth.org_tier,
         transfers=transfers,
     )
-    return [_tx_to_response(tx) for tx in results]
+    return [
+        {
+            "transaction": _tx_to_response(r["transaction"]) if r["transaction"] else None,
+            "error": r["error"],
+        }
+        for r in results
+    ]
 
 
 @router.get("", response_model=TransactionListResponse)

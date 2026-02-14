@@ -11,7 +11,7 @@ async def test_register(unauthed_client):
         json={
             "org_name": "Auth Test Org",
             "email": "authtest@example.com",
-            "password": "SecurePass123",
+            "password": "SecurePass123!",
         },
     )
     assert resp.status_code == 200
@@ -26,7 +26,7 @@ async def test_register_duplicate_email(unauthed_client):
     payload = {
         "org_name": "Dup Org",
         "email": "duptest@example.com",
-        "password": "SecurePass123",
+        "password": "SecurePass123!",
     }
     resp = await unauthed_client.post("/v1/auth/register", json=payload)
     assert resp.status_code == 200
@@ -36,7 +36,7 @@ async def test_register_duplicate_email(unauthed_client):
         json={
             "org_name": "Dup Org 2",
             "email": "duptest@example.com",
-            "password": "OtherPass123",
+            "password": "OtherPass123!",
         },
     )
     assert resp.status_code == 409
@@ -51,7 +51,7 @@ async def test_login(unauthed_client):
         json={
             "org_name": "Login Test Org",
             "email": "logintest@example.com",
-            "password": "TestPass123",
+            "password": "TestPass123!",
         },
     )
 
@@ -60,7 +60,7 @@ async def test_login(unauthed_client):
         "/v1/auth/login",
         json={
             "email": "logintest@example.com",
-            "password": "TestPass123",
+            "password": "TestPass123!",
         },
     )
     assert resp.status_code == 200
@@ -75,7 +75,7 @@ async def test_login_invalid_credentials(unauthed_client):
         "/v1/auth/login",
         json={
             "email": "nonexistent@example.com",
-            "password": "wrongpass",
+            "password": "wrongpass1A!",
         },
     )
     assert resp.status_code in (401, 404)

@@ -29,7 +29,7 @@ async def test_register_and_login(client):
         json={
             "org_name": "Test Org",
             "email": "test@example.com",
-            "password": "TestPass123",
+            "password": "TestPass123!",
         },
     )
     assert resp.status_code == 200
@@ -43,7 +43,7 @@ async def test_register_and_login(client):
         "/v1/auth/login",
         json={
             "email": "test@example.com",
-            "password": "TestPass123",
+            "password": "TestPass123!",
         },
     )
     assert resp.status_code == 200
@@ -56,7 +56,7 @@ async def test_register_and_login(client):
         json={
             "org_name": "Test Org 2",
             "email": "test@example.com",
-            "password": "TestPass456",
+            "password": "TestPass456!",
         },
     )
     assert resp.status_code == 409
@@ -76,7 +76,7 @@ async def test_agents_crud(client):
         json={
             "org_name": "Agent Test Org",
             "email": "agents@example.com",
-            "password": "TestPass123",
+            "password": "TestPass123!",
         },
     )
     token = resp.json()["access_token"]
@@ -129,7 +129,7 @@ async def test_wallets(client):
         json={
             "org_name": "Wallet Test Org",
             "email": "wallets@example.com",
-            "password": "TestPass123",
+            "password": "TestPass123!",
         },
     )
     token = resp.json()["access_token"]
@@ -163,7 +163,7 @@ async def test_policies_crud(client):
         json={
             "org_name": "Policy Test Org",
             "email": "policies@example.com",
-            "password": "TestPass123",
+            "password": "TestPass123!",
         },
     )
     token = resp.json()["access_token"]

@@ -8,7 +8,18 @@ from .exceptions import (
     RateLimitError,
     ValidationError,
 )
-from .types import PDADeriveResult, PDATransferResult, PDAWallet, PDAWalletState
+from .types import (
+    AcpJob,
+    AcpMemo,
+    PDADeriveResult,
+    PDATransferResult,
+    PDAWallet,
+    PDAWalletState,
+    ResourceOffering,
+    Swarm,
+    SwarmMember,
+    SwarmTask,
+)
 from .x402_middleware import X402AutoPay, X402Budget
 from .x402_types import (
     X402PaymentInfo,
@@ -29,6 +40,14 @@ __all__ = [
     "PDAWalletState",
     "PDATransferResult",
     "PDADeriveResult",
+    # ACP types
+    "AcpJob",
+    "AcpMemo",
+    "ResourceOffering",
+    # Swarm types
+    "Swarm",
+    "SwarmMember",
+    "SwarmTask",
     # x402 HTTP-native payments
     "X402AutoPay",
     "X402Budget",
@@ -38,4 +57,4 @@ __all__ = [
     "X402Response",
 ]
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"

@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 
+use crate::errors::AgentWalletError;
 use crate::state::AgentWallet;
 
 /// Event emitted when a new agent wallet is created.
@@ -44,6 +45,10 @@ pub fn handler(
     spending_limit_per_tx: u64,
     daily_limit: u64,
 ) -> Result<()> {
+    // Validate agent_id length (max 64 bytes as declared in state)
+    require!(!agent_id.is_empty(), AgentWalletError::InvalidAmount);
+    require!(agent_id.len() <= 64, AgentWalletError::InvalidAmount);
+
     let wallet = &mut ctx.accounts.agent_wallet;
     let clock = Clock::get()?;
 

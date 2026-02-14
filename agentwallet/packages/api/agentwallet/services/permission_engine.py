@@ -111,11 +111,18 @@ class PermissionEngine:
             # Check time window
             time_window = rules.get("time_window")
             if time_window:
-                now = datetime.now(timezone.utc)
+                from zoneinfo import ZoneInfo
+
                 tz_name = time_window.get("timezone", "UTC")
+                try:
+                    tz = ZoneInfo(tz_name)
+                except (KeyError, Exception):
+                    tz = timezone.utc
+
+                now_local = datetime.now(tz)
                 start_h, start_m = map(int, time_window.get("start", "00:00").split(":"))
                 end_h, end_m = map(int, time_window.get("end", "23:59").split(":"))
-                current_minutes = now.hour * 60 + now.minute
+                current_minutes = now_local.hour * 60 + now_local.minute
                 start_minutes = start_h * 60 + start_m
                 end_minutes = end_h * 60 + end_m
                 if not (start_minutes <= current_minutes <= end_minutes):
