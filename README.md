@@ -18,7 +18,7 @@
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 [![Live Demo](https://img.shields.io/badge/Demo-agentwallet.fun-00ff41?style=for-the-badge&logo=vercel)](https://agentwallet.fun)
-[![API Live](https://img.shields.io/badge/API-Live%20on%20Railway-0B0D0E?style=for-the-badge&logo=railway)](https://trustworthy-celebration-production-6a3e.up.railway.app/docs)
+[![API Live](https://img.shields.io/badge/API-Live-0B0D0E?style=for-the-badge&logo=railway)](https://api.agentwallet.fun/docs)
 
 > _"Your agents don't need permission. They need a wallet."_
 
@@ -43,8 +43,8 @@
 | Resource | URL |
 |---|---|
 | **Website** | [agentwallet.fun](https://agentwallet.fun) |
-| **API Docs** | [Swagger UI](https://trustworthy-celebration-production-6a3e.up.railway.app/docs) |
-| **API Health** | [Live API](https://trustworthy-celebration-production-6a3e.up.railway.app/health) |
+| **API Docs** | [Swagger UI](https://api.agentwallet.fun/docs) |
+| **API Health** | [Live API](https://api.agentwallet.fun/health) |
 | **Solana Explorer** | [View on Devnet](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet) |
 | **SDK** | `pip install aw-protocol-sdk==0.3.0` |
 
@@ -52,7 +52,7 @@
 
 ```bash
 # Set base URL
-API="https://trustworthy-celebration-production-6a3e.up.railway.app"
+API="https://api.agentwallet.fun"
 
 # 1. Register → get JWT token
 curl -s -X POST $API/v1/auth/register \

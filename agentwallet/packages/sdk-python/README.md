@@ -25,4 +25,4 @@ async with AgentWallet(api_key="aw_live_...") as aw:
 ## Links
 
 - [GitHub](https://github.com/YouthAIAgent/agentwallet)
-- [API Docs](https://trustworthy-celebration-production-6a3e.up.railway.app/docs)
+- [API Docs](https://api.agentwallet.fun/docs)

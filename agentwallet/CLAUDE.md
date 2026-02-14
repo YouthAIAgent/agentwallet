@@ -4,7 +4,7 @@
 AI agent wallet infrastructure SaaS on Solana. Wallet-as-a-service for autonomous AI agents with spending limits, escrow, analytics, and compliance.
 
 ## Live Deployment
-- **Railway API**: https://trustworthy-celebration-production-6a3e.up.railway.app
+- **Railway API**: https://api.agentwallet.fun (Railway: trustworthy-celebration-production-6a3e.up.railway.app)
 - **Railway Project ID**: 1e142b95-97f5-49b4-aa54-38c76b369742
 - **Railway Service**: trustworthy-celebration
 - **Railway Account**: YouthAIAgent (web3youth@gmail.com)
