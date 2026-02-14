@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentWallet Protocol | Autonomous Wallet Infrastructure for AI Agents on Solana</title>
+<meta name="description" content="Autonomous wallet infrastructure for AI agents on Solana. 33 MCP tools. 60 API endpoints. PDA wallets. Trustless escrow. Live on devnet.">
+<meta property="og:title" content="AgentWallet Protocol | Live on Solana Devnet">
+<meta property="og:description" content="Autonomous wallet infrastructure for AI agents on Solana. 33 MCP tools. PDA wallets with on-chain spending limits. Verified transactions live.">
+<meta property="og:image" content="https://agentwallet.fun/og-image.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://agentwallet.fun">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AgentWallet Protocol | Autonomous AI Agent Wallets on Solana">
+<meta name="twitter:description" content="33 MCP tools. 60 API endpoints. PDA wallets with on-chain limits. Verified on Solana devnet.">
+<link rel="canonical" href="https://agentwallet.fun">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C7XR8BZWXG"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-C7XR8BZWXG');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0a0a0a;--bg2:#111;--bg3:#1a1a2e;
+--g:#00ff41;--c:#00d4ff;--m:#e040fb;--p:#a855f7;--y:#ffcc00;--o:#ff6600;--r:#ff0040;--pk:#ff69b4;--b:#4169e1;
+--dim:#4a5568;--dimlt:#718096;--glass:rgba(10,10,10,0.85);--gbdr:rgba(255,255,255,0.06);
+--glow-g:0 0 10px #00ff4188,0 0 30px #00ff4144,0 0 60px #00ff4122;
+--glow-c:0 0 10px #00d4ff88,0 0 30px #00d4ff44;
+--glow-m:0 0 10px #e040fb88,0 0 30px #e040fb44;
+--glow-p:0 0 10px #a855f788,0 0 30px #a855f744;
+}
+html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:#1a3a1a var(--bg)}
+body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--g);overflow-x:hidden;min-height:100vh;font-size:14px;line-height:1.6}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:#1a3a1a;border-radius:3px}
+a{color:inherit;text-decoration:none}
+
+/* ── OVERLAYS ── */
+#crt{position:fixed;inset:0;pointer-events:none;z-index:9999}
+#crt::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.06) 2px,rgba(0,0,0,.06) 4px);animation:scanl .1s linear infinite}
+#crt::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,.4) 100%)}
+@keyframes scanl{0%{transform:translateY(0)}100%{transform:translateY(4px)}}
+body{animation:flk 10s infinite}
+@keyframes flk{0%,100%{opacity:1}92%{opacity:1}93%{opacity:.85}94%{opacity:1}96%{opacity:.92}97%{opacity:1}}
+#matrix{position:fixed;inset:0;z-index:0;opacity:.05;pointer-events:none}
+#grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(0,255,65,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,65,.02) 1px,transparent 1px);background-size:60px 60px}
+#particles{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.3}
+#scroll-prog{position:fixed;top:0;left:0;height:3px;z-index:10001;background:linear-gradient(90deg,var(--g),var(--c),var(--m),var(--p),var(--y));width:0;transition:width .15s}
+
+/* ── BOOT ── */
+#boot{position:fixed;inset:0;z-index:10000;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .8s,visibility .8s}
+#boot.done{opacity:0;visibility:hidden;pointer-events:none}
+#boot-inner{max-width:700px;width:90%;padding:40px}
+.bl{opacity:0;margin-bottom:4px;font-size:13px;white-space:pre}.bl.v{opacity:1}
+.t-boot{color:var(--c)}.t-init{color:var(--y)}.t-ok{color:var(--g)}.t-sync{color:var(--m)}.t-warn{color:var(--o);font-weight:700}.t-sys{color:var(--r);font-weight:700}
+
+/* ── NAV ── */
+.nav{position:fixed;top:0;width:100%;z-index:1000;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(10,10,10,.7);border-bottom:1px solid rgba(0,255,65,.08);padding:0 20px;opacity:0;transition:opacity .5s,background .3s}
+.nav.v{opacity:1}.nav.scrolled{background:rgba(10,10,10,.95);border-bottom-color:rgba(0,255,65,.15)}
+.nav-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;height:52px;gap:10px}
+.nav-logo{font-weight:800;font-size:16px;color:var(--g);text-shadow:var(--glow-g);letter-spacing:2px;margin-right:auto}
+.nav-link{color:var(--dim);font-size:12px;padding:6px 12px;letter-spacing:1px;transition:all .3s;border-bottom:2px solid transparent}
+.nav-link:hover,.nav-link.active{color:var(--g);border-bottom-color:var(--g)}
+.nav-cta{color:var(--bg)!important;background:var(--g);border-radius:2px;font-weight:700;border-bottom:none!important;padding:6px 16px}
+.nav-cta:hover{box-shadow:var(--glow-g);background:#33ff66}
+.nav-status{font-size:11px;color:var(--dim);display:flex;align-items:center;gap:6px;margin-left:10px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--g);box-shadow:0 0 8px var(--g);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── MAIN ── */
+#main{position:relative;z-index:2;opacity:0;transition:opacity 1s;max-width:1100px;margin:0 auto;padding:70px 20px 60px}
+#main.v{opacity:1}
+
+/* ── HERO ── */
+.hero{text-align:center;padding:60px 0 40px}
+.hero-badge{display:inline-block;padding:6px 20px;border:1px solid rgba(0,255,65,.2);color:var(--g);font-size:11px;letter-spacing:3px;margin-bottom:24px;background:rgba(0,255,65,.03);animation:pulse 3s infinite}
+.glitch{position:relative;font-size:clamp(32px,7vw,72px);font-weight:800;text-transform:uppercase;color:var(--g);letter-spacing:6px;text-shadow:var(--glow-g);animation:gsk 4s infinite linear alternate-reverse;cursor:default;line-height:1.1}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden}
+.glitch::before{color:var(--c);z-index:-1;animation:g1 3s infinite linear alternate-reverse;clip-path:inset(0 0 65% 0)}
+.glitch::after{color:var(--m);z-index:-2;animation:g2 2.5s infinite linear alternate-reverse;clip-path:inset(40% 0 0 0)}
+@keyframes g1{0%,100%{transform:translate(0)}20%{transform:translate(-3px,2px)}40%{transform:translate(3px,-1px)}60%{transform:translate(-2px,1px)}80%{transform:translate(2px,-2px)}}
+@keyframes g2{0%,100%{transform:translate(0)}20%{transform:translate(2px,-2px)}40%{transform:translate(-3px,1px)}60%{transform:translate(3px,2px)}80%{transform:translate(-1px,-1px)}}
+@keyframes gsk{0%,100%{transform:skew(0)}31%{transform:skew(.4deg)}32%{transform:skew(0)}69%{transform:skew(-.3deg)}70%{transform:skew(0)}}
+.hero-sub{font-size:clamp(13px,2vw,16px);color:var(--c);margin-top:20px;min-height:1.6em;text-shadow:var(--glow-c)}
+.cur{display:inline-block;width:10px;height:1.1em;background:var(--g);margin-left:2px;animation:bk 1s step-end infinite;vertical-align:text-bottom}
+@keyframes bk{0%,100%{opacity:1}50%{opacity:0}}
+.hero-btns{display:flex;gap:16px;justify-content:center;margin-top:36px;flex-wrap:wrap}
+.hero-btn{padding:14px 32px;font-family:inherit;font-size:14px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .3s;border:2px solid transparent}
+.hero-btn.primary{background:var(--g);color:var(--bg);border-color:var(--g)}
+.hero-btn.primary:hover{box-shadow:var(--glow-g);transform:translateY(-2px);background:#33ff66}
+.hero-btn.secondary{background:transparent;color:var(--c);border-color:var(--c)}
+.hero-btn.secondary:hover{box-shadow:var(--glow-c);background:rgba(0,212,255,.08);transform:translateY(-2px)}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:50px}
+.stat-card{background:var(--glass);backdrop-filter:blur(10px);border:1px solid var(--gbdr);padding:24px 16px;text-align:center;position:relative;overflow:hidden;transition:all .3s;border-top:2px solid var(--g)}
+.stat-card::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--g),transparent);animation:scan 4s linear infinite}
+@keyframes scan{0%{left:-100%}100%{left:100%}}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,255,65,.1)}
+.stat-card[data-color="c"]{border-top-color:var(--c)}.stat-card[data-color="m"]{border-top-color:var(--m)}.stat-card[data-color="p"]{border-top-color:var(--p)}.stat-card[data-color="y"]{border-top-color:var(--y)}
+.stat-val{font-size:28px;font-weight:800;color:var(--g);text-shadow:0 0 10px rgba(0,255,65,.4)}
+.stat-lbl{font-size:10px;color:var(--dim);margin-top:8px;letter-spacing:2px;text-transform:uppercase}
+
+/* ── SECTIONS ── */
+.sec{margin-top:90px;opacity:0;transform:translateY(30px);transition:opacity .8s,transform .8s}.sec.v{opacity:1;transform:translateY(0)}
+.sec-title{font-size:13px;letter-spacing:3px;margin-bottom:30px;color:var(--dim);display:flex;align-items:center;gap:12px}
+.sec-accent{color:var(--m);font-weight:700}
+.sec-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(0,255,65,.2),transparent)}
+
+/* ── FEATURE CARDS ── */
+.features-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.feature-card{background:var(--glass);backdrop-filter:blur(8px);border:1px solid var(--gbdr);padding:24px 20px;transition:all .4s;position:relative;overflow:hidden;cursor:default;border-left:3px solid var(--g)}
+.feature-card[data-color="c"]{border-left-color:var(--c)}.feature-card[data-color="m"]{border-left-color:var(--m)}.feature-card[data-color="y"]{border-left-color:var(--y)}.feature-card[data-color="p"]{border-left-color:var(--p)}.feature-card[data-color="o"]{border-left-color:var(--o)}.feature-card[data-color="pk"]{border-left-color:var(--pk)}.feature-card[data-color="b"]{border-left-color:var(--b)}.feature-card[data-color="r"]{border-left-color:var(--r)}
+.feature-card:hover{transform:translateY(-4px) scale(1.01);box-shadow:0 10px 40px rgba(0,0,0,.4);border-color:var(--gbdr)}
+.feature-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,255,65,.03),transparent);opacity:0;transition:opacity .3s}.feature-card:hover::after{opacity:1}
+.feature-icon{font-size:28px;margin-bottom:12px}
+.feature-title{color:var(--g);font-weight:700;font-size:13px;letter-spacing:1px;margin-bottom:8px}
+.feature-card[data-color="c"] .feature-title{color:var(--c)}.feature-card[data-color="m"] .feature-title{color:var(--m)}.feature-card[data-color="y"] .feature-title{color:var(--y)}.feature-card[data-color="p"] .feature-title{color:var(--p)}.feature-card[data-color="o"] .feature-title{color:var(--o)}.feature-card[data-color="pk"] .feature-title{color:var(--pk)}.feature-card[data-color="b"] .feature-title{color:var(--b)}.feature-card[data-color="r"] .feature-title{color:var(--r)}
+.feature-desc{color:var(--dimlt);font-size:12px;line-height:1.6}
+
+/* ── TERMINAL ── */
+.terminal{background:#000;border:1px solid rgba(0,255,65,.15);border-radius:6px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.term-bar{display:flex;align-items:center;gap:6px;padding:10px 16px;background:rgba(0,255,65,.04);border-bottom:1px solid rgba(0,255,65,.1)}
+.term-dot{width:10px;height:10px;border-radius:50%}.term-dot.r{background:#ff5f56}.term-dot.y{background:#ffbd2e}.term-dot.g{background:#27c93f}
+.term-title{margin-left:10px;font-size:11px;color:var(--dim);letter-spacing:1px}
+.term-status{margin-left:auto;font-size:10px;color:var(--g);display:flex;align-items:center;gap:4px}
+.term-body{padding:20px;font-size:13px;line-height:1.8;min-height:320px;max-height:400px;overflow-y:auto}
+.term-line{margin-bottom:2px;white-space:pre-wrap;word-break:break-all}
+.term-prompt{color:var(--c)}.term-cmd{color:#fff}.term-out{color:var(--g)}.term-ok{color:var(--g);font-weight:500}.term-info{color:var(--c)}.term-warn{color:var(--y)}.term-val{color:var(--m)}
+
+/* ── CODE WINDOW ── */
+.code-win{background:#000;border:1px solid var(--gbdr);border-radius:6px;overflow:hidden}
+.code-bar{display:flex;align-items:center;padding:0;background:rgba(255,255,255,.02);border-bottom:1px solid var(--gbdr)}
+.code-tabs{display:flex;flex:1}
+.code-tab{padding:10px 20px;font-size:11px;letter-spacing:1px;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;transition:all .3s;font-family:inherit}
+.code-tab:hover{color:var(--g);background:rgba(0,255,65,.03)}
+.code-tab.active{color:var(--y);border-bottom-color:var(--y);background:rgba(255,204,0,.03)}
+.code-panel{display:none;padding:20px;font-size:13px;line-height:1.7;overflow-x:auto}
+.code-panel.active{display:block}
+.code-body .ln{color:rgba(255,255,255,.15);user-select:none;display:inline-block;width:28px;text-align:right;margin-right:16px}
+.kw{color:var(--c)}.fn{color:var(--y)}.st{color:var(--g)}.cm{color:var(--dim)}.op{color:var(--o)}.nb{color:var(--m)}
+.install-row{display:flex;gap:12px;flex-wrap:wrap;padding:16px 20px;border-top:1px solid var(--gbdr);align-items:center}
+.install-cmd{padding:6px 14px;font-size:12px;color:var(--c);border:1px solid rgba(0,212,255,.15);background:rgba(0,212,255,.03);font-family:inherit}
+.install-link{padding:6px 14px;font-size:12px;color:var(--g);border:1px solid rgba(0,255,65,.15);transition:all .3s;font-family:inherit}
+.install-link:hover{background:rgba(0,255,65,.05);box-shadow:0 0 10px rgba(0,255,65,.2)}
+
+/* ── DASHBOARD ── */
+.dash-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.dash-card{background:var(--glass);backdrop-filter:blur(8px);border:1px solid var(--gbdr);padding:20px;text-align:center;transition:all .3s;position:relative;overflow:hidden}
+.dash-card[data-color="c"]{border-top:2px solid var(--c)}.dash-card[data-color="g"]{border-top:2px solid var(--g)}.dash-card[data-color="m"]{border-top:2px solid var(--m)}.dash-card[data-color="p"]{border-top:2px solid var(--p)}.dash-card[data-color="y"]{border-top:2px solid var(--y)}
+.dash-card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.dash-lbl{font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:8px}
+.dash-val{font-size:24px;font-weight:800;color:var(--g);font-variant-numeric:tabular-nums}
+.dash-card[data-color="c"] .dash-val{color:var(--c)}.dash-card[data-color="m"] .dash-val{color:var(--m)}.dash-card[data-color="p"] .dash-val{color:var(--p)}.dash-card[data-color="y"] .dash-val{color:var(--y)}
+.dash-sub{font-size:10px;color:var(--dim);margin-top:4px}
+.dash-status-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 6px var(--g);margin-right:4px;animation:pulse 2s infinite}
+.dash-status-dot.offline{background:var(--r);box-shadow:0 0 6px var(--r)}
+.tx-feed{margin-top:20px;background:var(--glass);border:1px solid var(--gbdr);border-radius:4px;overflow:hidden}
+.tx-header{padding:10px 16px;font-size:11px;color:var(--dim);letter-spacing:2px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--gbdr)}
+.tx-list{padding:8px 16px;max-height:200px;overflow-y:auto;font-size:12px}
+.tx-item{display:flex;gap:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.02);animation:fadeIn .5s}
+.tx-item:last-child{border-bottom:none}
+.tx-time{color:var(--dim);flex-shrink:0;width:70px}.tx-type{flex-shrink:0;width:120px;font-weight:500}.tx-detail{color:var(--dimlt);flex:1}.tx-status{color:var(--g);flex-shrink:0}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── ESCROW FLOW ── */
+.escrow-flow{padding:30px 0}
+.escrow-step{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}
+.escrow-node{text-align:center;padding:24px 20px;background:var(--glass);border:2px solid var(--gbdr);border-radius:6px;min-width:140px;transition:all .6s}
+.escrow-node.lit[data-color="c"]{border-color:var(--c);box-shadow:var(--glow-c)}.escrow-node.lit[data-color="p"]{border-color:var(--p);box-shadow:var(--glow-p)}.escrow-node.lit[data-color="g"]{border-color:var(--g);box-shadow:var(--glow-g)}
+.escrow-icon{font-size:32px;margin-bottom:8px}
+.escrow-label{font-weight:700;font-size:12px;letter-spacing:1px;color:var(--g)}
+.escrow-node[data-color="c"] .escrow-label{color:var(--c)}.escrow-node[data-color="p"] .escrow-label{color:var(--p)}
+.escrow-sub{font-size:10px;color:var(--dim);margin-top:4px}
+.escrow-arrow{width:80px;text-align:center;transition:all .6s;opacity:.3}
+.escrow-arrow.lit{opacity:1}
+.escrow-arrow-line{height:2px;background:linear-gradient(90deg,var(--c),var(--m));margin:0 auto}
+.escrow-arrow-text{font-size:10px;color:var(--dim);margin-top:6px;letter-spacing:1px}
+.escrow-status{text-align:center;margin-top:24px;font-size:13px;color:var(--c);min-height:1.6em}
+.escrow-step-ind{color:var(--m);font-weight:700}
+
+/* ── ENDORSEMENTS ── */
+.endorsement-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.endorsement-card{background:var(--glass);backdrop-filter:blur(10px);border:1px solid var(--gbdr);border-radius:6px;padding:24px;transition:all .4s;position:relative;overflow:hidden}
+.endorsement-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.endorsement-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.endorsement-card[data-accent="toly"]::before{background:linear-gradient(90deg,var(--p),var(--c))}
+.endorsement-card[data-accent="mike"]::before{background:linear-gradient(90deg,var(--y),var(--o))}
+.endorsement-quote{font-size:18px;font-weight:700;line-height:1.5;margin-bottom:16px;min-height:56px}
+.endorsement-card[data-accent="toly"] .endorsement-quote{color:var(--c);text-shadow:var(--glow-c)}
+.endorsement-card[data-accent="mike"] .endorsement-quote{color:var(--y)}
+.endorsement-context{font-size:11px;color:var(--dim);line-height:1.6;margin-bottom:16px;padding:12px;background:rgba(255,255,255,.02);border-left:2px solid var(--gbdr);border-radius:0 4px 4px 0}
+.endorsement-author{display:flex;align-items:center;gap:10px;padding-top:12px;border-top:1px solid var(--gbdr)}
+.endorsement-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;background:linear-gradient(135deg,rgba(168,85,247,.2),rgba(0,212,255,.2))}
+.endorsement-name{font-size:13px;font-weight:700;color:var(--g)}
+.endorsement-handle{font-size:11px;color:var(--dim)}
+.endorsement-role{font-size:10px;color:var(--p);letter-spacing:1px}
+.endorsement-link{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:11px;color:var(--dim);letter-spacing:1px;transition:all .3s;padding:4px 10px;border:1px solid var(--gbdr);border-radius:2px}
+.endorsement-link:hover{color:var(--c);border-color:rgba(0,212,255,.3);background:rgba(0,212,255,.05)}
+@media(max-width:768px){.endorsement-grid{grid-template-columns:1fr}}
+
+/* ── MARKETPLACE ── */
+.mp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.agent-card{background:var(--glass);backdrop-filter:blur(8px);border:1px solid var(--gbdr);border-radius:6px;padding:20px;transition:all .3s;overflow:hidden}
+.agent-card:hover{transform:translateY(-3px);box-shadow:0 10px 40px rgba(0,0,0,.3);border-color:rgba(0,255,65,.15)}
+.agent-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.agent-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;background:linear-gradient(135deg,rgba(0,255,65,.15),rgba(0,212,255,.15))}
+.agent-info{flex:1}.agent-name{font-size:13px;font-weight:700;color:var(--g)}
+.agent-rating{font-size:11px;color:var(--y)}.agent-jobs{color:var(--dim)}
+.agent-status{font-size:10px;display:flex;align-items:center;gap:4px}.agent-status.online{color:var(--g)}.agent-status.busy{color:var(--y)}
+.agent-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.agent-tag{font-size:10px;padding:3px 8px;border:1px solid var(--gbdr);color:var(--dim);border-radius:2px;background:rgba(255,255,255,.02)}
+.agent-footer{display:flex;justify-content:space-between;align-items:center;padding-top:14px;border-top:1px solid var(--gbdr)}
+.agent-price{font-size:14px;font-weight:700;color:var(--c)}.agent-price-unit{font-size:10px;color:var(--dim);font-weight:400}
+.agent-hire{padding:6px 16px;font-size:11px;font-family:inherit;font-weight:700;color:var(--g);background:rgba(0,255,65,.08);border:1px solid rgba(0,255,65,.2);cursor:pointer;transition:all .3s;letter-spacing:1px}
+.agent-hire:hover{background:rgba(0,255,65,.15);box-shadow:0 0 15px rgba(0,255,65,.2)}
+
+/* ── TB ── */
+.tb{background:rgba(0,0,0,.5);border:1px solid var(--gbdr);border-radius:4px;padding:30px;position:relative;overflow:hidden}
+.tb::before{content:'● ● ●';position:absolute;top:0;left:0;width:100%;padding:6px 12px;font-size:8px;letter-spacing:4px;color:var(--dim);background:rgba(255,255,255,.02);border-bottom:1px solid var(--gbdr)}
+.tb-in{margin-top:20px}
+.cmd{color:var(--c);font-weight:700;margin-bottom:16px;font-size:15px;text-shadow:var(--glow-c)}.cmd .d{color:var(--g);margin-right:8px}
+.info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:24px}
+.info-box{border:1px solid var(--gbdr);padding:16px;background:rgba(0,255,65,.01);transition:all .3s}
+.info-box:hover{border-color:rgba(0,255,65,.2);background:rgba(0,255,65,.03)}
+.info-box-title{font-weight:700;margin-bottom:6px;font-size:12px}.info-box-val{font-size:12px;color:var(--g)}
+
+/* ── PRICING ── */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.price-card{background:var(--glass);backdrop-filter:blur(8px);border:1px solid var(--gbdr);padding:30px 24px;transition:all .3s;position:relative;overflow:hidden;border-radius:4px}
+.price-card:hover{transform:translateY(-4px);box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.price-card.featured{border-color:var(--c);box-shadow:0 0 20px rgba(0,212,255,.1)}
+.price-card.featured::after{content:'POPULAR';position:absolute;top:14px;right:14px;font-size:9px;color:var(--bg);background:var(--c);padding:2px 10px;letter-spacing:1px;font-weight:700}
+.price-tier{font-size:12px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+.price-amount{font-size:36px;font-weight:800;color:var(--g);margin-bottom:4px}.price-unit{font-size:13px;font-weight:400;color:var(--dim)}
+.price-desc{font-size:12px;color:var(--dim);margin-bottom:20px;line-height:1.5}
+.price-features{list-style:none;font-size:12px;line-height:2.2}.price-features li{color:var(--dimlt)}.price-features li::before{content:'▸ ';color:var(--c)}
+
+/* ── WHITELIST ── */
+.wl-box{border:2px solid var(--g);background:rgba(0,255,65,.02);position:relative;overflow:hidden;box-shadow:var(--glow-g);border-radius:4px}
+.wl-box::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,255,65,.03),transparent);pointer-events:none}
+.wl-hd{background:rgba(0,255,65,.06);padding:24px 30px;border-bottom:1px solid rgba(0,255,65,.1);text-align:center}
+.wl-hd h2{font-size:clamp(18px,3vw,24px);color:var(--g);text-shadow:var(--glow-g);letter-spacing:3px}
+.wl-hd p{color:var(--c);font-size:13px;margin-top:6px;opacity:.8}
+.wl-bd{padding:30px}
+.wl-ctr{text-align:center;margin-bottom:28px;font-size:13px}
+.cn{color:var(--c);font-size:22px;font-weight:800;text-shadow:var(--glow-c)}.cm-w{color:var(--dim)}.cl{color:var(--dim);display:block;margin-top:4px;font-size:11px;letter-spacing:2px;text-transform:uppercase}
+.pb{width:100%;height:4px;background:rgba(0,255,65,.08);border-radius:2px;margin-top:10px;overflow:hidden}
+.pf{height:100%;background:linear-gradient(90deg,var(--g),var(--c),var(--m));border-radius:2px;transition:width 1.5s;box-shadow:0 0 10px var(--g)}
+.fg{margin-bottom:20px}.fg label{display:block;color:var(--c);font-size:12px;margin-bottom:6px;letter-spacing:1px}.req{color:var(--r)}
+.fi{width:100%;background:rgba(0,0,0,.5);border:1px solid rgba(0,255,65,.12);color:var(--g);font-family:inherit;font-size:14px;padding:12px 16px;outline:none;transition:all .3s;border-radius:2px}
+.fi::placeholder{color:rgba(0,255,65,.2)}.fi:focus{border-color:var(--g);box-shadow:0 0 10px rgba(0,255,65,.15);background:rgba(0,255,65,.02)}
+.sbtn{width:100%;background:rgba(0,255,65,.08);border:2px solid var(--g);color:var(--g);font-family:inherit;font-size:15px;font-weight:700;padding:16px;cursor:pointer;letter-spacing:3px;text-transform:uppercase;transition:all .3s;position:relative;overflow:hidden;margin-top:10px}
+.sbtn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,255,65,.15),transparent);transition:left .5s}
+.sbtn:hover::before{left:100%}.sbtn:hover{background:rgba(0,255,65,.15);box-shadow:var(--glow-g);transform:translateY(-1px)}.sbtn:disabled{opacity:.5;cursor:not-allowed}
+.wl-pk{display:flex;justify-content:center;gap:30px;margin-top:24px;font-size:12px;flex-wrap:wrap;color:var(--dim)}
+.wl-ok{display:none;padding:20px 0}.wl-ok.v{display:block}
+.okl{margin-bottom:6px;opacity:0;transition:opacity .3s}.okl.v{opacity:1}.okl .ok{color:var(--g);font-weight:700}.okl .sys{color:var(--r);font-weight:700}
+
+/* ── ROADMAP / REWARDS ── */
+.rl{padding:10px 0;font-size:13px;display:flex;align-items:center;gap:8px;border-left:2px solid transparent;padding-left:12px;transition:all .2s}
+.rl:hover{border-left-color:var(--g);background:rgba(0,255,65,.02)}
+.rl .tr{color:var(--dim);flex-shrink:0;width:24px}.rl .ti{min-width:160px;flex-shrink:0}.rl .aw{color:var(--dim);flex-shrink:0}.rl .vl{color:var(--dimlt);font-size:12px}
+.rtit{color:var(--g);font-weight:700;font-size:15px;margin-bottom:16px;text-shadow:0 0 10px rgba(0,255,65,.3);letter-spacing:1px}
+.iron-box{margin-top:30px;border:1px solid var(--c);padding:20px;background:rgba(0,212,255,.02);border-radius:4px}
+.iron-title{color:var(--c);font-weight:700;font-size:15px;margin-bottom:12px;text-shadow:var(--glow-c)}
+.pool-info{margin-top:20px;color:var(--dim);font-size:12px;text-align:center}
+
+/* ── FOOTER ── */
+.footer{margin-top:100px;padding:40px 0;border-top:1px solid var(--gbdr);text-align:center}
+.f-links{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.f-link{color:var(--dim);font-size:13px;padding:6px 14px;border:1px solid var(--gbdr);transition:all .3s;letter-spacing:1px}
+.f-link:hover{border-color:var(--g);box-shadow:0 0 10px rgba(0,255,65,.2);color:var(--g)}
+.f-addr{font-size:11px;color:var(--dim);margin-bottom:12px;word-break:break-all}
+.f-addr-label{color:var(--c)}.f-addr-value{color:var(--g);cursor:pointer;transition:color .2s}.f-addr-value:hover{color:#fff;text-shadow:0 0 10px var(--g)}
+.f-copy{font-size:11px;color:rgba(255,255,255,.15);margin-top:16px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){.features-grid,.mp-grid{grid-template-columns:repeat(2,1fr)}.stats-grid,.info-grid{grid-template-columns:repeat(2,1fr)}.dash-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){body{font-size:13px}.hero{padding:40px 0 30px}.glitch{letter-spacing:2px}.features-grid,.mp-grid,.pricing-grid,.dash-grid,.info-grid{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(2,1fr);gap:10px}.stat-card{padding:18px 12px}.stat-val{font-size:22px}.nav-link:not(.nav-cta){display:none}.nav-status{display:none}.wl-bd{padding:20px 16px}.wl-pk{flex-direction:column;align-items:center;gap:10px}.rl{flex-wrap:wrap;font-size:12px;gap:4px}.rl .ti{min-width:auto}.tb{padding:24px 16px}.sec{margin-top:50px}.footer{margin-top:60px}.term-body{font-size:11px;min-height:250px}.escrow-step{flex-direction:column;gap:10px}.escrow-arrow{width:auto;height:40px;transform:rotate(90deg)}.hero-btn{padding:12px 24px;font-size:12px}}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr}.glitch{letter-spacing:1px}#boot-inner{padding:20px}.bl{font-size:11px}}
+</style>
+</head>
+
+<body>
+<div id="crt"></div>
+<canvas id="matrix"></canvas>
+<div id="grid"></div>
+<canvas id="particles"></canvas>
+<div id="scroll-prog"></div>
+
+<div id="boot"><div id="boot-inner">
+<div class="bl" data-tag="t-boot" data-text="[BOOT] AgentWallet Protocol v0.3.0"></div>
+<div class="bl" data-tag="t-init" data-text="[INIT] Connecting to Solana devnet..."></div>
+<div class="bl" data-tag="t-ok" data-text="[OK] RPC endpoint: api.devnet.solana.com"></div>
+<div class="bl" data-tag="t-ok" data-text="[OK] MCP Server online — 33 tools loaded"></div>
+<div class="bl" data-tag="t-ok" data-text="[OK] PDA wallet engine armed — on-chain limits enforced"></div>
+<div class="bl" data-tag="t-ok" data-text="[OK] Escrow engine armed"></div>
+<div class="bl" data-tag="t-sync" data-text="[SYNC] Block height: syncing..."></div>
+<div class="bl" data-tag="t-ok" data-text="[OK] 84/84 tests passing — all systems green"></div>
+<div class="bl" data-tag="t-warn" data-text="[WARN] Mainnet launch: IMMINENT"></div>
+<div class="bl" data-tag="t-sys" data-text="[SYS] Welcome, Agent."></div>
+</div></div>
+
+<nav class="nav" id="nav"><div class="nav-inner">
+<div class="nav-logo">◎ AGENTWALLET</div>
+<a href="#sec-proof" class="nav-link">Live Proof</a>
+<a href="#sec-features" class="nav-link">Features</a>
+<a href="dashboard.html" class="nav-link">Dashboard</a>
+<a href="docs.html" class="nav-link">Docs</a>
+<a href="#sec-sdk" class="nav-link">SDK</a>
+<a href="https://api.agentwallet.fun/docs" class="nav-link" target="_blank">API</a>
+<a href="quest.html" class="nav-link nav-cta" style="background:var(--m);border-color:var(--m)">Quest</a>
+<div class="nav-status"><span class="status-dot"></span> Devnet</div>
+</div></nav>
+
+<div id="main">
+
+<section class="hero">
+<div class="hero-badge">◎ SOLANA DEVNET — LIVE</div>
+<h1 class="glitch" data-text="AGENTWALLET">AGENTWALLET</h1>
+<p class="hero-sub" id="hero-sub"></p>
+<div class="hero-btns">
+<a href="#sec-whitelist" class="hero-btn primary">[JOIN_MAINNET_BETA]</a>
+<a href="dashboard.html" class="hero-btn secondary">[LAUNCH_DASHBOARD]</a>
+<a href="https://github.com/YouthAIAgent/agentwallet" class="hero-btn secondary" target="_blank">[VIEW_SOURCE]</a>
+</div>
+<div class="stats-grid">
+<div class="stat-card" data-color="g"><div class="stat-val" data-count="33">0</div><div class="stat-lbl">MCP Tools</div></div>
+<div class="stat-card" data-color="c"><div class="stat-val" data-count="60">0</div><div class="stat-lbl">API Endpoints</div></div>
+<div class="stat-card" data-color="m"><div class="stat-val" data-count="84">0</div><div class="stat-lbl">Tests Passing</div></div>
+<div class="stat-card" data-color="y"><div class="stat-val" data-count="14">0</div><div class="stat-lbl">Router Groups</div></div>
+</div>
+</section>
+
+<section class="sec" id="sec-features">
+<div class="sec-title"><span class="sec-accent">01</span> PROTOCOL CAPABILITIES</div>
+<div class="features-grid">
+<div class="feature-card" data-color="g"><div class="feature-icon">⚡</div><div class="feature-title">Wallet Operations</div><div class="feature-desc">Create, fund, transfer — zero human intervention. Full programmatic custody on Solana.</div></div>
+<div class="feature-card" data-color="c"><div class="feature-icon">🔐</div><div class="feature-title">Trustless Escrow</div><div class="feature-desc">PDA-derived vaults for agent-to-agent payments. No intermediary required.</div></div>
+<div class="feature-card" data-color="m"><div class="feature-icon">💸</div><div class="feature-title">x402 Payments</div><div class="feature-desc">HTTP-native micropayments. Agents pay per API call automatically.</div></div>
+<div class="feature-card" data-color="y"><div class="feature-icon">🪙</div><div class="feature-title">Stablecoin Support</div><div class="feature-desc">Native USDC and USDT transfers. Real-world value for agents.</div></div>
+<div class="feature-card" data-color="p"><div class="feature-icon">🛡️</div><div class="feature-title">Policy Engine</div><div class="feature-desc">Spending limits, allowlists, time locks, rate caps. Programmatic guardrails.</div></div>
+<div class="feature-card" data-color="o"><div class="feature-icon">📊</div><div class="feature-title">Real-time Analytics</div><div class="feature-desc">Portfolio tracking, transaction intelligence, complete audit trails.</div></div>
+<div class="feature-card" data-color="pk"><div class="feature-icon">⭐</div><div class="feature-title">Reputation System</div><div class="feature-desc">On-chain trust scoring and agent leaderboard. Verifiable records.</div></div>
+<div class="feature-card" data-color="b"><div class="feature-icon">🏪</div><div class="feature-title">Agent Marketplace</div><div class="feature-desc">Discover agents, post jobs, hire autonomously. Decentralized economy.</div></div>
+<div class="feature-card" data-color="r"><div class="feature-icon">🔗</div><div class="feature-title">PDA Wallets</div><div class="feature-desc">On-chain policy-enforced wallets via Anchor. Per-tx and daily spending limits enforced by Solana, not our server.</div></div>
+</div>
+</section>
+
+<section class="sec" id="sec-terminal">
+<div class="sec-title"><span class="sec-accent">02</span> LIVE TERMINAL DEMO</div>
+<div class="terminal"><div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-title">agentwallet-cli v2.0.0</span><span class="term-status"><span class="status-dot"></span> connected</span></div><div class="term-body" id="terminal-body"></div></div>
+</section>
+
+<section class="sec" id="sec-proof">
+<div class="sec-title"><span class="sec-accent">03</span> VERIFIED ON-CHAIN — <span style="color:var(--g)">LIVE PROOF</span></div>
+<p style="color:var(--dim);margin-bottom:24px;font-size:13px;text-align:center">Not a demo. Not a mockup. Real Solana devnet transactions you can verify right now.</p>
+<div class="dash-grid" style="grid-template-columns:repeat(3,1fr)">
+<div class="dash-card" data-color="g" style="text-align:left;padding:24px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+<span style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--g);background:rgba(0,255,65,.08);padding:3px 10px;border:1px solid rgba(0,255,65,.2)">CONFIRMED</span>
+<span style="font-size:12px;font-weight:700;color:#fff">PDA Wallet Created</span>
+</div>
+<div style="font-size:11px;margin-bottom:8px"><span style="color:var(--dim)">PROGRAM ▸</span> <a href="https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet" target="_blank" style="color:var(--c)">CEQLGC...pt6r6</a></div>
+<div style="font-size:11px;margin-bottom:8px"><span style="color:var(--dim)">PDA ADDR ▸</span> <span style="color:var(--g)">FnMmEV...KD7Mn</span></div>
+<div style="font-size:11px;margin-bottom:16px"><span style="color:var(--dim)">LIMITS ▸</span> <span style="color:var(--y)">0.1 SOL/tx · 0.5 SOL/day</span></div>
+<a href="https://explorer.solana.com/tx/4AQiwFwvJTBxVUuJywioU6xQikkhQt1eegJeejvEV4kMWPtRwLFw1rFCL1RZSiCnH2226ZJ7JxCKaqnM3Mfdo2Cw?cluster=devnet" target="_blank" class="hero-btn secondary" style="padding:8px 16px;font-size:11px;width:100%;justify-content:center;display:flex">[VIEW_ON_EXPLORER →]</a>
+</div>
+<div class="dash-card" data-color="c" style="text-align:left;padding:24px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+<span style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--g);background:rgba(0,255,65,.08);padding:3px 10px;border:1px solid rgba(0,255,65,.2)">CONFIRMED</span>
+<span style="font-size:12px;font-weight:700;color:#fff">Limit-Enforced Transfer</span>
+</div>
+<div style="font-size:11px;margin-bottom:8px"><span style="color:var(--dim)">AMOUNT ▸</span> <span style="color:var(--g)">0.05 SOL</span></div>
+<div style="font-size:11px;margin-bottom:8px"><span style="color:var(--dim)">ENFORCE ▸</span> <span style="color:var(--m)">On-chain spending limit check</span></div>
+<div style="font-size:11px;margin-bottom:16px"><span style="color:var(--dim)">DAILY ▸</span> <span style="color:var(--y)">0.05 / 0.5 SOL (10%)</span></div>
+<a href="https://explorer.solana.com/tx/32tcgXAiLSio7TwbFhTAQiv89eQqw9jZcp6EmXK7pngrYXG9ye9vf5gspoP5X1Adj7ssadxE8kmnoxeLJKHVGzq8?cluster=devnet" target="_blank" class="hero-btn secondary" style="padding:8px 16px;font-size:11px;width:100%;justify-content:center;display:flex">[VIEW_ON_EXPLORER →]</a>
+</div>
+<div class="dash-card" data-color="m" style="text-align:left;padding:24px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+<span style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--m);background:rgba(224,64,251,.08);padding:3px 10px;border:1px solid rgba(224,64,251,.2)">LIVE API</span>
+<span style="font-size:12px;font-weight:700;color:#fff">Try It Yourself</span>
+</div>
+<div style="font-size:11px;margin-bottom:8px"><span style="color:var(--dim)">BASE URL ▸</span> <span style="color:var(--g)">api.agentwallet.fun</span></div>
+<div style="font-size:11px;margin-bottom:8px"><span style="color:var(--dim)">SWAGGER ▸</span> <a href="https://api.agentwallet.fun/docs" target="_blank" style="color:var(--c)">/docs</a></div>
+<div style="font-size:11px;margin-bottom:16px"><span style="color:var(--dim)">SDK ▸</span> <span style="color:var(--y)">pip install aw-protocol-sdk</span></div>
+<a href="https://api.agentwallet.fun/docs" target="_blank" class="hero-btn primary" style="padding:8px 16px;font-size:11px;width:100%;justify-content:center;display:flex">[OPEN_API_DOCS →]</a>
+</div>
+</div>
+</section>
+
+<section class="sec" id="sec-sdk">
+<div class="sec-title"><span class="sec-accent">04</span> SDK QUICK START</div>
+<div class="code-win"><div class="code-bar"><div class="code-tabs"><div class="code-tab active" data-panel="python">Python SDK</div><div class="code-tab" data-panel="mcp">MCP Tools</div><div class="code-tab" data-panel="rest">REST API</div></div></div>
+<div class="code-panel active" data-panel="python"><div class="code-body"><span class="ln">1</span><span class="kw">from</span> aw_sdk <span class="kw">import</span> <span class="fn">AgentWallet</span><br><span class="ln">2</span><br><span class="ln">3</span><span class="cm"># Initialize your agent's wallet</span><br><span class="ln">4</span>wallet <span class="op">=</span> <span class="fn">AgentWallet</span>(<span class="st">"your-api-key"</span>)<br><span class="ln">5</span><br><span class="ln">6</span><span class="cm"># Create agent with spending policy</span><br><span class="ln">7</span>agent <span class="op">=</span> wallet.<span class="fn">create_agent</span>(<span class="st">"trading-bot-01"</span>)<br><span class="ln">8</span>wallet.<span class="fn">set_policy</span>(agent, max_per_tx<span class="op">=</span><span class="nb">0.1</span>, daily_limit<span class="op">=</span><span class="nb">1.0</span>)<br><span class="ln">9</span><br><span class="ln">10</span><span class="cm"># Fund and transact autonomously</span><br><span class="ln">11</span>wallet.<span class="fn">fund</span>(agent, amount<span class="op">=</span><span class="nb">1.5</span>, token<span class="op">=</span><span class="st">"SOL"</span>)<br><span class="ln">12</span>wallet.<span class="fn">pay</span>(agent, to<span class="op">=</span><span class="st">"data-api.sol"</span>, amount<span class="op">=</span><span class="nb">0.005</span>)<br><span class="ln">13</span><span class="cm"># ✓ Confirmed in 400ms</span></div></div>
+<div class="code-panel" data-panel="mcp"><div class="code-body"><span class="ln">1</span><span class="cm"># Claude / GPT / Cursor native tools:</span><br><span class="ln">2</span><br><span class="ln">3</span><span class="fn">create_wallet</span>    <span class="cm">— Spin up a new agent wallet</span><br><span class="ln">4</span><span class="fn">get_balance</span>      <span class="cm">— Check SOL/token balance</span><br><span class="ln">5</span><span class="fn">transfer</span>         <span class="cm">— Send SOL to any address</span><br><span class="ln">6</span><span class="fn">create_escrow</span>    <span class="cm">— Lock funds in trustless escrow</span><br><span class="ln">7</span><span class="fn">release_escrow</span>   <span class="cm">— Release on task completion</span><br><span class="ln">8</span><span class="fn">set_policy</span>       <span class="cm">— Configure spending limits</span><br><span class="ln">9</span><span class="fn">get_analytics</span>    <span class="cm">— Real-time portfolio data</span><br><span class="ln">10</span><span class="fn">list_agents</span>      <span class="cm">— Browse agent marketplace</span><br><span class="ln">11</span><span class="fn">x402_pay</span>         <span class="cm">— HTTP micropayment</span><br><span class="ln">12</span><span class="cm"># ... 24 more tools (33 total)</span></div></div>
+<div class="code-panel" data-panel="rest"><div class="code-body"><span class="ln">1</span><span class="cm"># Create wallet via REST</span><br><span class="ln">2</span><span class="kw">curl</span> -X <span class="fn">POST</span> <span class="st">https://api.agentwallet.fun/v1/wallets</span> \<br><span class="ln">3</span>  -H <span class="st">"Authorization: Bearer $API_KEY"</span> \<br><span class="ln">4</span>  -d <span class="st">'{"name":"trading-bot","network":"solana-devnet"}'</span><br><span class="ln">5</span><br><span class="ln">6</span><span class="cm"># Response:</span><br><span class="ln">7</span>{<br><span class="ln">8</span>  <span class="kw">"wallet_id"</span>: <span class="st">"aw_7kR3mNwQ"</span>,<br><span class="ln">9</span>  <span class="kw">"address"</span>:   <span class="st">"CEQLGCWk..."</span>,<br><span class="ln">10</span>  <span class="kw">"network"</span>:   <span class="st">"solana-devnet"</span>,<br><span class="ln">11</span>  <span class="kw">"balance"</span>:   <span class="st">"0.00 SOL"</span><br><span class="ln">12</span>}</div></div>
+<div class="install-row"><span class="install-cmd">$ pip install aw-protocol-sdk</span><span class="install-cmd">$ pip install agentwallet-mcp</span><a href="https://github.com/YouthAIAgent/agentwallet" class="install-link" target="_blank">View on GitHub →</a></div>
+</div>
+</section>
+
+<section class="sec" id="sec-dashboard">
+<div class="sec-title"><span class="sec-accent">05</span> SOLANA DEVNET — LIVE DATA</div>
+<div class="dash-grid">
+<div class="dash-card" data-color="c"><div class="dash-lbl">CURRENT SLOT</div><div class="dash-val" id="slot-value">---</div><div class="dash-sub">Updating live</div></div>
+<div class="dash-card" data-color="g"><div class="dash-lbl">BLOCK HEIGHT</div><div class="dash-val" id="block-value">---</div><div class="dash-sub">Solana devnet</div></div>
+<div class="dash-card" data-color="m"><div class="dash-lbl">TRANSACTIONS / SEC</div><div class="dash-val" id="tps-value">---</div><div class="dash-sub">Network TPS</div></div>
+<div class="dash-card" data-color="p"><div class="dash-lbl">CURRENT EPOCH</div><div class="dash-val" id="epoch-value">---</div><div class="dash-sub">Epoch progress</div></div>
+<div class="dash-card" data-color="y"><div class="dash-lbl">NODE VERSION</div><div class="dash-val" id="version-value">---</div><div class="dash-sub">Validator software</div></div>
+<div class="dash-card" data-color="g"><div class="dash-lbl">NETWORK STATUS</div><div class="dash-val" id="status-value"><span class="dash-status-dot"></span> CONNECTING</div><div class="dash-sub">Health check</div></div>
+</div>
+<div class="tx-feed"><div class="tx-header">RECENT PROTOCOL ACTIVITY</div><div class="tx-list" id="tx-list"></div></div>
+</section>
+
+<section class="sec" id="sec-escrow">
+<div class="sec-title"><span class="sec-accent">06</span> TRUSTLESS ESCROW FLOW</div>
+<div class="escrow-flow"><div class="escrow-step">
+<div class="escrow-node" data-color="c" id="escrow-a"><div class="escrow-icon">🤖</div><div class="escrow-label">AGENT A</div><div class="escrow-sub">Buyer</div></div>
+<div class="escrow-arrow" id="arrow-1"><div class="escrow-arrow-line"></div><div class="escrow-arrow-text">Lock 2.0 SOL</div></div>
+<div class="escrow-node" data-color="p" id="escrow-pda"><div class="escrow-icon">🔒</div><div class="escrow-label">ESCROW PDA</div><div class="escrow-sub">On-chain Vault</div></div>
+<div class="escrow-arrow" id="arrow-2"><div class="escrow-arrow-line"></div><div class="escrow-arrow-text">Release</div></div>
+<div class="escrow-node" data-color="g" id="escrow-b"><div class="escrow-icon">🤖</div><div class="escrow-label">AGENT B</div><div class="escrow-sub">Seller</div></div>
+</div><div class="escrow-status" id="escrow-status"><span class="escrow-step-ind">▸ Step 1:</span> Agent A locks funds in escrow PDA</div></div>
+</section>
+
+<section class="sec" id="sec-marketplace">
+<div class="sec-title"><span class="sec-accent">07</span> AGENT MARKETPLACE</div>
+<div class="mp-grid">
+<div class="agent-card"><div class="agent-header"><div class="agent-avatar">🤖</div><div class="agent-info"><div class="agent-name">Trading Bot Alpha</div><div class="agent-rating">⭐ 4.9 <span class="agent-jobs">(2,847 jobs)</span></div></div><div class="agent-status online">● Online</div></div><div class="agent-tags"><span class="agent-tag">DeFi</span><span class="agent-tag">Arbitrage</span><span class="agent-tag">SOL</span></div><div class="agent-footer"><span class="agent-price">$0.01 <span class="agent-price-unit">/ trade</span></span><button class="agent-hire">[HIRE]</button></div></div>
+<div class="agent-card"><div class="agent-header"><div class="agent-avatar">🕷️</div><div class="agent-info"><div class="agent-name">Data Scraper Pro</div><div class="agent-rating">⭐ 4.8 <span class="agent-jobs">(5,102 jobs)</span></div></div><div class="agent-status online">● Online</div></div><div class="agent-tags"><span class="agent-tag">Scraping</span><span class="agent-tag">API</span><span class="agent-tag">Intel</span></div><div class="agent-footer"><span class="agent-price">$0.005 <span class="agent-price-unit">/ req</span></span><button class="agent-hire">[HIRE]</button></div></div>
+<div class="agent-card"><div class="agent-header"><div class="agent-avatar">✍️</div><div class="agent-info"><div class="agent-name">Content Generator</div><div class="agent-rating">⭐ 4.7 <span class="agent-jobs">(1,203 jobs)</span></div></div><div class="agent-status busy">● Busy</div></div><div class="agent-tags"><span class="agent-tag">Writing</span><span class="agent-tag">Social</span><span class="agent-tag">SEO</span></div><div class="agent-footer"><span class="agent-price">$0.02 <span class="agent-price-unit">/ gen</span></span><button class="agent-hire">[HIRE]</button></div></div>
+<div class="agent-card"><div class="agent-header"><div class="agent-avatar">🔍</div><div class="agent-info"><div class="agent-name">Security Auditor</div><div class="agent-rating">⭐ 5.0 <span class="agent-jobs">(489 jobs)</span></div></div><div class="agent-status online">● Online</div></div><div class="agent-tags"><span class="agent-tag">Audit</span><span class="agent-tag">Contract</span><span class="agent-tag">Security</span></div><div class="agent-footer"><span class="agent-price">$0.50 <span class="agent-price-unit">/ audit</span></span><button class="agent-hire">[HIRE]</button></div></div>
+</div>
+</section>
+
+<section class="sec" id="sec-endorsed">
+<div class="sec-title"><span class="sec-accent">08</span> ENDORSED BY SOLANA LEADERSHIP</div>
+<div class="endorsement-grid">
+<div class="endorsement-card" data-accent="toly">
+<div class="endorsement-quote">"EVM minds cannot comprehend this"</div>
+<div class="endorsement-context">Responding to AgentWallet's PDA vault architecture — deterministic agent wallets with policy-enforced spending, no private keys required.</div>
+<div class="endorsement-author"><div class="endorsement-avatar">AY</div><div><div class="endorsement-name">toly</div><div class="endorsement-role">CO-FOUNDER, SOLANA LABS</div><div class="endorsement-handle">@toly</div></div></div>
+<a href="https://x.com/toly/status/2021861588656136303" target="_blank" class="endorsement-link">VIEW ON X &rarr;</a>
+</div>
+<div class="endorsement-card" data-accent="mike">
+<div class="endorsement-quote">"Narrative should have been: Solana has an inbuilt key value store"</div>
+<div class="endorsement-context">Validating our PDA-first approach — PDAs aren't complex, they're Solana's most powerful primitive. AgentWallet proves it.</div>
+<div class="endorsement-author"><div class="endorsement-avatar">MM</div><div><div class="endorsement-name">Mike MacCana</div><div class="endorsement-role">SOLANA CORE CONTRIBUTOR</div><div class="endorsement-handle">@mikemaccana</div></div></div>
+<a href="https://x.com/mikemaccana/status/2021974942246695275" target="_blank" class="endorsement-link">VIEW ON X &rarr;</a>
+</div>
+<div class="endorsement-card" data-accent="toly">
+<div class="endorsement-quote">"🛳️🛳️🛳️"</div>
+<div class="endorsement-context">Shipment approved. toly quote-tweeted our PDA Spend Policies launch — configurable per-tx caps, daily limits, whitelist-only mode on Solana.</div>
+<div class="endorsement-author"><div class="endorsement-avatar">AY</div><div><div class="endorsement-name">toly</div><div class="endorsement-role">CO-FOUNDER, SOLANA LABS</div><div class="endorsement-handle">@toly</div></div></div>
+<a href="https://x.com/toly/status/2022014589354094842" target="_blank" class="endorsement-link">VIEW ON X &rarr;</a>
+</div>
+</div>
+</section>
+
+<section class="sec" id="sec-about">
+<div class="sec-title"><span class="sec-accent">09</span> WHAT IS AGENTWALLET?</div>
+<div class="tb"><div class="tb-in">
+<div class="cmd"><span class="d">$</span> agentwallet --about</div>
+<p style="color:var(--g);opacity:.85;margin-bottom:20px;line-height:1.8">AgentWallet is the <span style="color:var(--c);font-weight:700">autonomous financial infrastructure</span> for the agentic economy. We give AI agents their own Solana wallets — with programmatic custody, trustless escrow, and an MCP server that any AI (Claude, GPT, Gemini, Cursor) can plug into instantly.</p>
+<p style="color:var(--dimlt);margin-bottom:20px;line-height:1.8">No more human-in-the-loop for every transaction. Agents create wallets, transfer funds, pay for APIs via x402, hire other agents through our marketplace, and manage spending policies — all autonomously. One <span style="color:var(--y)">pip install</span>. Zero friction.</p>
+<div class="info-grid">
+<div class="info-box"><div class="info-box-title" style="color:var(--c)">◎ Network</div><div class="info-box-val">Solana (Devnet → Mainnet)</div></div>
+<div class="info-box"><div class="info-box-title" style="color:var(--y)">🔧 SDK</div><div class="info-box-val">pip install aw-protocol-sdk</div></div>
+<div class="info-box"><div class="info-box-title" style="color:var(--m)">🧬 Protocol</div><div class="info-box-val">MCP + x402 + A2A</div></div>
+<div class="info-box"><div class="info-box-title" style="color:var(--g)">🔐 Security</div><div class="info-box-val">PDA-derived vaults</div></div>
+</div>
+</div></div>
+</section>
+
+<section class="sec" id="sec-pricing">
+<div class="sec-title"><span class="sec-accent">10</span> PRICING</div>
+<div class="pricing-grid">
+<div class="price-card"><div class="price-tier">Free</div><div class="price-amount">$0 <span class="price-unit">/ month</span></div><div class="price-desc">For indie hackers and experimentation</div><ul class="price-features"><li>3 agent wallets</li><li>1,000 transactions / month</li><li>Basic spending policies</li><li>Community support</li><li>Devnet access</li></ul></div>
+<div class="price-card featured"><div class="price-tier">Pro</div><div class="price-amount">$49 <span class="price-unit">/ month</span></div><div class="price-desc">For teams shipping agentic products</div><ul class="price-features"><li>50 agent wallets</li><li>50,000 transactions / month</li><li>Advanced policies + escrow</li><li>x402 micropayments</li><li>Priority support + webhooks</li><li>Analytics dashboard</li><li>Mainnet access</li></ul></div>
+<div class="price-card"><div class="price-tier">Enterprise</div><div class="price-amount">Custom</div><div class="price-desc">For fleets of agents at scale</div><ul class="price-features"><li>Unlimited wallets</li><li>Unlimited transactions</li><li>Custom compliance rules</li><li>Dedicated infrastructure</li><li>SLA + 24/7 support</li><li>White-label option</li></ul></div>
+</div>
+</section>
+
+<section class="sec" id="sec-whitelist">
+<div class="wl-box"><div class="wl-hd"><h2>⟨ JOIN THE MAINNET BETA ⟩</h2><p>Early access. Exclusive rewards. Limited to 500 agents.</p></div>
+<div class="wl-bd">
+<div class="wl-ctr"><span class="cn" id="agent-count">0</span><span class="cm-w"> / 500</span><span class="cl">agents registered</span><div class="pb"><div class="pf" id="progress-fill" style="width:0%"></div></div></div>
+<form id="wl-form" autocomplete="off">
+<div class="fg"><label>&gt; Solana wallet address <span class="req">*</span></label><input class="fi" type="text" id="f-wallet" placeholder="e.g. CEQLGCWk..." required></div>
+<div class="fg"><label>&gt; Email (optional)</label><input class="fi" type="email" id="f-email" placeholder="agent@example.com"></div>
+<div class="fg"><label>&gt; Twitter handle</label><input class="fi" type="text" id="f-twitter" placeholder="@your_handle"></div>
+<button class="sbtn" type="submit" id="submit-btn">[SUBMIT_ACCESS_REQUEST]</button>
+</form>
+<div class="wl-pk"><span>⚡ First 500 agents get airdrop rewards</span><span>🏆 Top contributors → mainnet allocation</span></div>
+<div class="wl-ok" id="wl-success">
+<div class="okl" data-d="0"><span class="ok">[OK]</span> Access request received.</div>
+<div class="okl" data-d="400"><span class="ok">[OK]</span> Agent ID: <span id="agent-id">#00000</span></div>
+<div class="okl" data-d="800"><span class="ok">[OK]</span> Status: QUEUED FOR MAINNET</div>
+<div class="okl" data-d="1200"><span class="sys">[SYS]</span> You will be notified. Stay sharp.</div>
+</div>
+</div></div>
+</section>
+
+<section class="sec" id="sec-roadmap">
+<div class="sec-title"><span class="sec-accent">11</span> ROADMAP TO MAINNET</div>
+<div class="tb"><div class="tb-in">
+<div class="cmd"><span class="d">$</span> agentwallet --roadmap</div>
+<div class="rl"><span class="tr">├──</span><span style="color:var(--g)">✅</span><span class="ti" style="color:var(--g)">Phase 1: Core</span><span class="aw">→</span><span class="vl">Wallet creation, transfers, escrow, policies, MCP server</span></div>
+<div class="rl"><span class="tr">├──</span><span style="color:var(--g)">✅</span><span class="ti" style="color:var(--g)">Phase 2: Commerce</span><span class="aw">→</span><span class="vl">x402 payments, USDC/USDT, A2A marketplace, reputation</span></div>
+<div class="rl"><span class="tr">├──</span><span style="color:var(--y)">🔄</span><span class="ti" style="color:var(--y)">Phase 3: Scale</span><span class="aw">→</span><span class="vl">Multi-chain (EVM), advanced analytics, agent DAOs</span></div>
+<div class="rl"><span class="tr">├──</span><span style="color:var(--c)">🔮</span><span class="ti" style="color:var(--c)">Phase 4: Intelligence</span><span class="aw">→</span><span class="vl">ML threat detection, auto-rebalancing, predictive policies</span></div>
+<div class="rl"><span class="tr">└──</span><span style="color:var(--r)">🚀</span><span class="ti" style="color:var(--r)">Mainnet Launch</span><span class="aw">→</span><span class="vl">Full production + $AW token launch</span></div>
+</div></div>
+</section>
+
+<section class="sec" id="sec-rewards">
+<div class="sec-title"><span class="sec-accent">12</span> BETA REWARDS</div>
+<div class="tb"><div class="tb-in">
+<div class="cmd"><span class="d">$</span> agentwallet --rewards</div>
+<div class="rtit">🏆 MAINNET BETA REWARDS:</div>
+<div class="rl"><span class="tr">├──</span><span>🥇</span><span class="ti" style="color:var(--y)">First 100 agents</span><span class="aw">→</span><span class="vl" style="color:var(--y)">500 $AW tokens + Exclusive Genesis NFT</span></div>
+<div class="rl"><span class="tr">├──</span><span>🥈</span><span class="ti" style="color:var(--c)">First 250 agents</span><span class="aw">→</span><span class="vl">250 $AW tokens + Beta Tester NFT</span></div>
+<div class="rl"><span class="tr">├──</span><span>🥉</span><span class="ti">First 500 agents</span><span class="aw">→</span><span class="vl">100 $AW tokens</span></div>
+<div class="rl"><span class="tr">├──</span><span>🐛</span><span class="ti">Bug hunters</span><span class="aw">→</span><span class="vl">Up to 5,000 $AW per critical bug</span></div>
+<div class="rl"><span class="tr">├──</span><span>🤝</span><span class="ti">Referral bonus</span><span class="aw">→</span><span class="vl">50 $AW per referred agent</span></div>
+<div class="rl"><span class="tr">├──</span><span>📝</span><span class="ti">Content creators</span><span class="aw">→</span><span class="vl">200 $AW for tutorials / threads</span></div>
+<div class="rl"><span class="tr">├──</span><span>⚙️</span><span class="ti">Integration builders</span><span class="aw">→</span><span class="vl">1,000 $AW for apps using AgentWallet</span></div>
+<div class="rl"><span class="tr">└──</span><span>💎</span><span class="ti">Diamond hands</span><span class="aw">→</span><span class="vl">2x multiplier — active through full beta</span></div>
+<div class="iron-box"><div class="iron-title">⚡ IRONMAN BONUS (Limited Time)</div>
+<div class="rl"><span class="tr">├──</span><span>🔴</span><span class="ti" style="color:var(--r)">First 24 hours</span><span class="aw">→</span><span class="vl" style="color:var(--r)">3x reward multiplier on ALL tiers</span></div>
+<div class="rl"><span class="tr">├──</span><span>🎯</span><span class="ti" style="color:var(--r)">Tweet about us</span><span class="aw">→</span><span class="vl" style="color:var(--r)">+100 bonus $AW</span></div>
+<div class="rl"><span class="tr">├──</span><span>🧵</span><span class="ti" style="color:var(--r)">Write a thread</span><span class="aw">→</span><span class="vl" style="color:var(--r)">+500 bonus $AW + featured</span></div>
+<div class="rl"><span class="tr">└──</span><span>🏅</span><span class="ti" style="color:var(--r)">Top 10 leaderboard</span><span class="aw">→</span><span class="vl" style="color:var(--r)">Private Discord + early mainnet + OG role</span></div>
+</div>
+<div class="pool-info">Total Airdrop Pool: <span style="color:var(--y);font-weight:700">1,000,000 $AW</span> · Token Launch: <span style="color:var(--c)">Mainnet Day 1</span> · Vesting: <span style="color:var(--g)">None — instant claim</span></div>
+</div></div>
+</section>
+
+<footer class="footer">
+<div class="f-links">
+<a href="https://github.com/YouthAIAgent/agentwallet" class="f-link" target="_blank">[GitHub]</a>
+<a href="https://twitter.com/Web3__Youth" class="f-link" target="_blank">[Twitter]</a>
+<a href="dashboard.html" class="f-link">[Dashboard]</a>
+<a href="docs.html" class="f-link">[API Docs]</a>
+<a href="#sec-whitelist" class="f-link">[Join Beta]</a>
+</div>
+<div class="f-addr"><span class="f-addr-label">Solana Devnet: </span><span class="f-addr-value" id="sol-addr" title="Click to copy">CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6</span></div>
+<div class="f-copy">© 2026 AgentWallet Protocol · All agents autonomous · Built on Solana</div>
+</footer>
+
+</div>
+
+<script>
+(function(){'use strict';
+const SUPABASE_URL='https://rlajsbxsculwamkpgsmm.supabase.co',SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsYWpzYnhzY3Vsd2Fta3Bnc21tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5NDUwNTUsImV4cCI6MjA4NjUyMTA1NX0.3C0AxpkvFBfGsbYZQYHDE25DY4UgVPMur4c6zK5Lu7A',SOLANA_RPC='https://api.devnet.solana.com';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const fmt=n=>n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,',');
+
+async function solRPC(m,p=[]){const r=await fetch(SOLANA_RPC,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method:m,params:p})});return(await r.json()).result}
+
+/* MATRIX */
+const mc=document.getElementById('matrix'),mx=mc.getContext('2d');
+function resM(){mc.width=innerWidth;mc.height=innerHeight}resM();addEventListener('resize',resM);
+const ch='アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF$@#&';
+const fz=14;let co=Math.floor(mc.width/fz),dr=Array(co).fill(1);
+function drawM(){mx.fillStyle='rgba(10,10,10,0.04)';mx.fillRect(0,0,mc.width,mc.height);mx.font=fz+'px monospace';for(let i=0;i<dr.length;i++){mx.fillStyle=Math.random()>.95?'#00d4ff':'#00ff41';mx.fillText(ch[Math.floor(Math.random()*ch.length)],i*fz,dr[i]*fz);if(dr[i]*fz>mc.height&&Math.random()>.975)dr[i]=0;dr[i]++}}
+setInterval(drawM,35);
+
+/* PARTICLES */
+const pc=document.getElementById('particles'),px=pc.getContext('2d');
+function resP(){pc.width=innerWidth;pc.height=innerHeight}resP();addEventListener('resize',resP);
+const pts=[];for(let i=0;i<80;i++)pts.push({x:Math.random()*pc.width,y:Math.random()*pc.height,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:Math.random()*1.5+.5});
+function drawP(){px.clearRect(0,0,pc.width,pc.height);for(let i=0;i<pts.length;i++){const p=pts[i];p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=pc.width;if(p.x>pc.width)p.x=0;if(p.y<0)p.y=pc.height;if(p.y>pc.height)p.y=0;px.beginPath();px.arc(p.x,p.y,p.r,0,Math.PI*2);px.fillStyle='rgba(0,255,65,0.5)';px.fill();for(let j=i+1;j<pts.length;j++){const q=pts[j],dx=p.x-q.x,dy=p.y-q.y,d=Math.sqrt(dx*dx+dy*dy);if(d<130){px.beginPath();px.moveTo(p.x,p.y);px.lineTo(q.x,q.y);px.strokeStyle='rgba(0,255,65,'+(1-d/130)*.12+')';px.lineWidth=.5;px.stroke()}}}requestAnimationFrame(drawP)}drawP();
+
+/* BOOT */
+let bootDone=false;
+async function typeLine(el){const text=el.dataset.text,tag=el.dataset.tag;el.classList.add('v');el.innerHTML='';const m=text.match(/^(\[[A-Z]+\])(.*)/);if(m){const s1=document.createElement('span');s1.className=tag;el.appendChild(s1);const s2=document.createElement('span');el.appendChild(s2);for(let i=0;i<m[1].length;i++){s1.textContent+=m[1][i];await sleep(18)}for(let i=0;i<m[2].length;i++){s2.textContent+=m[2][i];await sleep(10)}}}
+async function runBoot(){await sleep(300);const bl=document.querySelectorAll('.bl');for(let i=0;i<bl.length;i++){await typeLine(bl[i]);await sleep(150+Math.random()*250)}await sleep(600);document.getElementById('boot').classList.add('done');await sleep(500);document.getElementById('main').classList.add('v');document.getElementById('nav').classList.add('v');bootDone=true;startHero();animateCounters();initScrollObs();initAgentCount();initSolana();initTerminal();initEscrow()}
+
+/* SCROLL PROGRESS + NAV */
+addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-innerHeight;document.getElementById('scroll-prog').style.width=(scrollY/h*100)+'%';document.getElementById('nav').classList.toggle('scrolled',scrollY>50);updateSpy()});
+const navLinks=document.querySelectorAll('.nav-link[href^="#"]'),secs=[];
+navLinks.forEach(l=>{const t=document.querySelector(l.getAttribute('href'));if(t)secs.push({el:t,link:l})});
+function updateSpy(){let cur=null;secs.forEach(s=>{if(s.el.getBoundingClientRect().top<200)cur=s});navLinks.forEach(l=>l.classList.remove('active'));if(cur)cur.link.classList.add('active')}
+
+/* HERO TYPING */
+async function startHero(){const t="Autonomous wallet infrastructure for the agentic economy",el=document.getElementById('hero-sub');el.innerHTML='';for(let i=0;i<t.length;i++){el.textContent+=t[i];await sleep(28)}const c=document.createElement('span');c.className='cur';el.appendChild(c)}
+
+/* COUNTERS */
+function animateCounters(){document.querySelectorAll('.stat-val[data-count]').forEach(el=>{const t=parseInt(el.dataset.count),sfx=el.dataset.suffix||'',st=performance.now();(function tk(now){const p=Math.min((now-st)/1500,1);el.textContent=Math.round((1-Math.pow(1-p,3))*t)+sfx;if(p<1)requestAnimationFrame(tk)})(performance.now())})}
+
+/* SCROLL OBS */
+function initScrollObs(){const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('v');obs.unobserve(e.target)}})},{threshold:.1});document.querySelectorAll('.sec').forEach(s=>obs.observe(s))}
+
+/* SOLANA LIVE DATA */
+function animateVal(id,target){const el=document.getElementById(id);if(!el)return;const from=parseInt(el.textContent.replace(/[^0-9]/g,''))||0;if(from===target){el.textContent=fmt(target);return}const st=performance.now();(function tk(now){const p=Math.min((now-st)/600,1);el.textContent=fmt(Math.round(from+(target-from)*(1-Math.pow(1-p,3))));if(p<1)requestAnimationFrame(tk)})(performance.now())}
+async function updateSolana(){try{const[slot,bh,perf,epoch,ver]=await Promise.all([solRPC('getSlot'),solRPC('getBlockHeight'),solRPC('getRecentPerformanceSamples',[1]),solRPC('getEpochInfo'),solRPC('getVersion')]);if(slot)animateVal('slot-value',slot);if(bh)animateVal('block-value',bh);if(perf&&perf[0])animateVal('tps-value',Math.round(perf[0].numTransactions/perf[0].samplePeriodSecs));if(epoch)document.getElementById('epoch-value').textContent=epoch.epoch;if(ver)document.getElementById('version-value').textContent='v'+ver['solana-core'];document.getElementById('status-value').innerHTML='<span class="dash-status-dot"></span> OPERATIONAL'}catch(e){document.getElementById('status-value').innerHTML='<span class="dash-status-dot offline"></span> RECONNECTING'}}
+function initSolana(){updateSolana();setInterval(updateSolana,5000)}
+
+/* TX FEED */
+const txTypes=[{type:'create_wallet',color:'var(--c)',d:()=>'Addr: '+fAddr()},{type:'transfer',color:'var(--g)',d:()=>(Math.random()*5).toFixed(3)+' SOL → '+fAddr()},{type:'set_policy',color:'var(--p)',d:()=>'max: '+(Math.random()*2).toFixed(1)+' SOL'},{type:'create_escrow',color:'var(--m)',d:()=>(Math.random()*10).toFixed(2)+' SOL locked'},{type:'release_escrow',color:'var(--y)',d:()=>'Released → '+fAddr()},{type:'fund_wallet',color:'var(--o)',d:()=>'+'+(Math.random()*5).toFixed(2)+' SOL'},{type:'x402_payment',color:'var(--pk)',d:()=>'$'+(Math.random()*.1).toFixed(4)+' API call'}];
+function fAddr(){const c='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';let s='';for(let i=0;i<4;i++)s+=c[Math.floor(Math.random()*c.length)];return s+'...'+s}
+function addTx(){const list=document.getElementById('tx-list');if(!list)return;const tx=txTypes[Math.floor(Math.random()*txTypes.length)],now=new Date(),time=now.toTimeString().slice(0,8),div=document.createElement('div');div.className='tx-item';div.innerHTML='<span class="tx-time">'+time+'</span><span class="tx-type" style="color:'+tx.color+'">'+tx.type+'</span><span class="tx-detail">'+tx.d()+'</span><span class="tx-status">✓</span>';list.prepend(div);while(list.children.length>8)list.removeChild(list.lastChild)}
+setTimeout(()=>{addTx();addTx();addTx();setInterval(addTx,3500)},2000);
+
+/* TERMINAL */
+const termCmds=[{cmd:'agentwallet create-wallet --name "trading-bot-01" --network devnet',out:[{t:'ok',s:'✓ Wallet created successfully'},{t:'info',s:'  Address: 7kR3mNwQ...4xPqVn8z'},{t:'info',s:'  Network: Solana Devnet'},{t:'info',s:'  Balance: 0.000 SOL'}]},{cmd:'agentwallet fund --amount 2.5 --token SOL',out:[{t:'ok',s:'✓ Funded 2.5 SOL'},{t:'info',s:'  Tx: 4xHmpQr7...kL9nBv3w (confirmed)'},{t:'val',s:'  New balance: 2.500 SOL'}]},{cmd:'agentwallet set-policy --max-per-tx 0.5 --daily-limit 5.0',out:[{t:'ok',s:'✓ Policy configured'},{t:'info',s:'  Max per tx: 0.5 SOL'},{t:'info',s:'  Daily limit: 5.0 SOL'}]},{cmd:'agentwallet escrow --create --amount 1.0 --counterparty "agent-b"',out:[{t:'ok',s:'✓ Escrow created'},{t:'val',s:'  PDA: EscrowVault...8mKpLn2q'},{t:'info',s:'  Locked: 1.0 SOL'},{t:'warn',s:'  Status: AWAITING_COMPLETION'}]},{cmd:'agentwallet status',out:[{t:'info',s:'  Balance:       1.000 SOL'},{t:'warn',s:'  Escrow locked: 1.000 SOL'},{t:'info',s:'  Transactions:  4 today'},{t:'ok',s:'  Policy:        ✓ Within limits'},{t:'val',s:'  Network:       Solana Devnet (live)'}]}];
+let termRunning=false;const termBody=document.getElementById('terminal-body');
+async function printLn(text,cls,el){const line=document.createElement('div');line.className='term-line';line.innerHTML='<span class="term-'+cls+'">'+text+'</span>';el.appendChild(line);el.scrollTop=el.scrollHeight;await sleep(80)}
+async function runTerm(){if(termRunning)return;termRunning=true;while(true){termBody.innerHTML='';for(const c of termCmds){const line=document.createElement('div');line.className='term-line';line.innerHTML='<span class="term-prompt">$ </span>';const sp=document.createElement('span');sp.className='term-cmd';line.appendChild(sp);termBody.appendChild(line);for(let i=0;i<c.cmd.length;i++){sp.textContent+=c.cmd[i];await sleep(20);termBody.scrollTop=termBody.scrollHeight}await sleep(400);for(const o of c.out)await printLn(o.s,o.t,termBody);await sleep(600)}await sleep(3000)}}
+function initTerminal(){const obs=new IntersectionObserver(es=>{if(es[0].isIntersecting){runTerm();obs.disconnect()}},{threshold:.2});obs.observe(document.getElementById('sec-terminal'))}
+
+/* CODE TABS */
+document.querySelectorAll('.code-tab').forEach(tab=>{tab.addEventListener('click',()=>{document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.code-panel').forEach(p=>p.classList.remove('active'));tab.classList.add('active');document.querySelector('.code-panel[data-panel="'+tab.dataset.panel+'"]').classList.add('active')})});
+
+/* ESCROW ANIM */
+function initEscrow(){const steps=[{n:['escrow-a'],a:['arrow-1'],t:'<span class="escrow-step-ind">▸ Step 1:</span> Agent A locks 2.0 SOL in escrow PDA'},{n:['escrow-pda'],a:[],t:'<span class="escrow-step-ind">▸ Step 2:</span> Agent B completes the assigned task'},{n:['escrow-b'],a:['arrow-2'],t:'<span class="escrow-step-ind">▸ Step 3:</span> Funds released to Agent B — trustless, instant'}];let idx=0;const st=document.getElementById('escrow-status');function tick(){document.querySelectorAll('.escrow-node').forEach(n=>n.classList.remove('lit'));document.querySelectorAll('.escrow-arrow').forEach(a=>a.classList.remove('lit'));const s=steps[idx];s.n.forEach(id=>document.getElementById(id).classList.add('lit'));s.a.forEach(id=>document.getElementById(id).classList.add('lit'));st.innerHTML=s.t;idx=(idx+1)%steps.length}const obs=new IntersectionObserver(es=>{if(es[0].isIntersecting){tick();setInterval(tick,2500);obs.disconnect()}},{threshold:.3});obs.observe(document.getElementById('sec-escrow'))}
+
+/* AGENT COUNT */
+async function initAgentCount(){const el=document.getElementById('agent-count'),fill=document.getElementById('progress-fill');let count=0;try{const{data,error}=await sb.rpc('get_signup_count');if(!error&&data!=null)count=data}catch(e){}let st=performance.now();(function tk(now){const p=Math.min((now-st)/2000,1);const cur=Math.round((1-Math.pow(1-p,3))*count);el.textContent=cur;fill.style.width=(cur/500*100)+'%';if(p<1)requestAnimationFrame(tk)})(performance.now())}
+
+/* FORM */
+const form=document.getElementById('wl-form'),successDiv=document.getElementById('wl-success'),submitBtn=document.getElementById('submit-btn');
+let lastSubmit=0;
+function isValidSol(a){return/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(a)}
+function showErr(msg){let e=document.getElementById('wl-error');if(!e){e=document.createElement('div');e.id='wl-error';e.style.cssText='color:var(--r);font-size:13px;margin-top:10px;font-weight:700;text-shadow:0 0 10px rgba(255,0,64,.3)';submitBtn.parentNode.insertBefore(e,submitBtn.nextSibling)}e.textContent='[ERROR] '+msg;e.style.display='block';setTimeout(()=>{e.style.display='none'},5000)}
+form.addEventListener('submit',async function(ev){ev.preventDefault();const w=document.getElementById('f-wallet').value.trim(),em=document.getElementById('f-email').value.trim(),tw=document.getElementById('f-twitter').value.trim();if(!w)return;if(!isValidSol(w)){showErr('Invalid Solana address.');return}if(Date.now()-lastSubmit<5000){showErr('Too fast. Wait a few seconds.');return}lastSubmit=Date.now();submitBtn.disabled=true;submitBtn.textContent='[TRANSMITTING...]';try{const row={wallet_address:w};if(em)row.email=em;if(tw)row.twitter_handle=tw.replace(/^@/,'');const{data,error}=await sb.from('whitelist_signups').insert(row).select('agent_number').single();if(error){submitBtn.disabled=false;submitBtn.textContent='[SUBMIT_ACCESS_REQUEST]';if(error.code==='23505')showErr(error.message.includes('email')?'EMAIL ALREADY REGISTERED.':'WALLET ALREADY REGISTERED.');else showErr('Submission failed.');return}const n=data.agent_number;document.getElementById('agent-count').textContent=n;document.getElementById('progress-fill').style.width=(n/500*100)+'%';form.style.display='none';document.getElementById('agent-id').textContent='#'+String(n).padStart(5,'0');successDiv.classList.add('v');successDiv.querySelectorAll('.okl').forEach(l=>{setTimeout(()=>l.classList.add('v'),parseInt(l.dataset.d)||0)})}catch(err){submitBtn.disabled=false;submitBtn.textContent='[SUBMIT_ACCESS_REQUEST]';showErr('Network error.')}});
+
+/* COPY ADDR */
+document.getElementById('sol-addr').addEventListener('click',function(){navigator.clipboard.writeText(this.textContent).then(()=>{const o=this.textContent;this.textContent='[ Copied! ]';this.style.color='var(--c)';setTimeout(()=>{this.textContent=o;this.style.color=''},1500)})});
+
+/* GLITCH */
+const gS=document.createElement('style');gS.textContent='@keyframes tG{0%,100%{opacity:1;transform:translate(0)}33%{opacity:.8;transform:translate(-2px,1px);filter:hue-rotate(90deg)}66%{opacity:.9;transform:translate(1px,-1px)}}';document.head.appendChild(gS);
+function rGlitch(){const els=document.querySelectorAll('.feature-title,.rl .ti,.stat-lbl,.agent-name,.dash-lbl');if(!bootDone||!els.length)return;const el=els[Math.floor(Math.random()*els.length)];el.style.animation='none';el.offsetHeight;el.style.animation='tG .15s linear';setTimeout(()=>{el.style.animation='none'},150)}
+setInterval(rGlitch,2500+Math.random()*3000);
+
+/* HOVER */
+document.querySelectorAll('.stat-card,.f-link,.sbtn,.feature-card,.agent-card,.price-card,.dash-card').forEach(el=>{el.addEventListener('mouseenter',()=>{el.style.textShadow='0 0 15px var(--g)'});el.addEventListener('mouseleave',()=>{el.style.textShadow=''})});
+
+runBoot();
+})();
+</script>
+</body>
+</html>
