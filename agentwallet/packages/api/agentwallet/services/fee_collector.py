@@ -6,9 +6,9 @@ from ..core.logging import get_logger
 logger = get_logger(__name__)
 
 FEE_BPS = {
-    "free": 50,       # 0.5%
-    "pro": 25,        # 0.25%
-    "enterprise": 10, # 0.1%
+    "free": 50,  # 0.5%
+    "pro": 25,  # 0.25%
+    "enterprise": 10,  # 0.1%
 }
 
 

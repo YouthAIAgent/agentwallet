@@ -53,9 +53,7 @@ class ComplianceModule:
         offset: int = 0,
     ) -> tuple[list[AuditEvent], int]:
         query = select(AuditEvent).where(AuditEvent.org_id == org_id)
-        count_query = select(func.count()).select_from(AuditEvent).where(
-            AuditEvent.org_id == org_id
-        )
+        count_query = select(func.count()).select_from(AuditEvent).where(AuditEvent.org_id == org_id)
 
         if event_type:
             query = query.where(AuditEvent.event_type == event_type)
@@ -68,9 +66,7 @@ class ComplianceModule:
             count_query = count_query.where(AuditEvent.resource_id == resource_id)
 
         total = await self.db.scalar(count_query)
-        result = await self.db.execute(
-            query.order_by(AuditEvent.created_at.desc()).offset(offset).limit(limit)
-        )
+        result = await self.db.execute(query.order_by(AuditEvent.created_at.desc()).offset(offset).limit(limit))
         return list(result.scalars().all()), total or 0
 
     async def detect_anomalies(self, org_id: uuid.UUID) -> list[dict]:
@@ -86,12 +82,14 @@ class ComplianceModule:
             )
         )
         if hourly_count and hourly_count > 100:
-            alerts.append({
-                "alert_type": "high_velocity",
-                "severity": "medium",
-                "description": f"{hourly_count} transactions in the last hour",
-                "details": {"count": hourly_count, "threshold": 100},
-            })
+            alerts.append(
+                {
+                    "alert_type": "high_velocity",
+                    "severity": "medium",
+                    "description": f"{hourly_count} transactions in the last hour",
+                    "details": {"count": hourly_count, "threshold": 100},
+                }
+            )
 
         # Check 2: Unusual large amounts
         avg_result = await self.db.execute(
@@ -111,19 +109,21 @@ class ComplianceModule:
                 )
             )
             for tx in large_txs.scalars().all():
-                alerts.append({
-                    "alert_type": "unusual_amount",
-                    "severity": "high",
-                    "description": (
-                        f"Transaction {tx.amount_lamports} lamports is "
-                        f"{tx.amount_lamports / avg_amount:.0f}x the average"
-                    ),
-                    "details": {
-                        "tx_id": str(tx.id),
-                        "amount": tx.amount_lamports,
-                        "average": int(avg_amount),
-                    },
-                })
+                alerts.append(
+                    {
+                        "alert_type": "unusual_amount",
+                        "severity": "high",
+                        "description": (
+                            f"Transaction {tx.amount_lamports} lamports is "
+                            f"{tx.amount_lamports / avg_amount:.0f}x the average"
+                        ),
+                        "details": {
+                            "tx_id": str(tx.id),
+                            "amount": tx.amount_lamports,
+                            "average": int(avg_amount),
+                        },
+                    }
+                )
 
         # Check 3: High failure rate
         recent_total = await self.db.scalar(
@@ -142,16 +142,18 @@ class ComplianceModule:
         if recent_total and recent_total > 5:
             fail_rate = (recent_failed or 0) / recent_total
             if fail_rate > 0.3:
-                alerts.append({
-                    "alert_type": "high_failure_rate",
-                    "severity": "high",
-                    "description": f"{fail_rate:.0%} failure rate in last hour",
-                    "details": {
-                        "total": recent_total,
-                        "failed": recent_failed,
-                        "rate": round(fail_rate, 2),
-                    },
-                })
+                alerts.append(
+                    {
+                        "alert_type": "high_failure_rate",
+                        "severity": "high",
+                        "description": f"{fail_rate:.0%} failure rate in last hour",
+                        "details": {
+                            "total": recent_total,
+                            "failed": recent_failed,
+                            "rate": round(fail_rate, 2),
+                        },
+                    }
+                )
 
         return alerts
 

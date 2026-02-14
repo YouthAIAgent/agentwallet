@@ -6,16 +6,19 @@ import pytest
 @pytest.mark.asyncio
 async def test_create_policy(client, test_agent):
     """Test creating a new policy."""
-    resp = await client.post("/v1/policies", json={
-        "name": "Test Spending Limit",
-        "rules": {
-            "spending_limit_lamports": 1_000_000_000,
-            "daily_limit_lamports": 5_000_000_000,
+    resp = await client.post(
+        "/v1/policies",
+        json={
+            "name": "Test Spending Limit",
+            "rules": {
+                "spending_limit_lamports": 1_000_000_000,
+                "daily_limit_lamports": 5_000_000_000,
+            },
+            "scope_type": "agent",
+            "scope_id": str(test_agent.id),
+            "priority": 10,
         },
-        "scope_type": "agent",
-        "scope_id": str(test_agent.id),
-        "priority": 10,
-    })
+    )
     assert resp.status_code == 201
     data = resp.json()
     assert data["name"] == "Test Spending Limit"
@@ -45,9 +48,12 @@ async def test_get_policy(client, test_policy):
 @pytest.mark.asyncio
 async def test_update_policy(client, test_policy):
     """Test updating a policy."""
-    resp = await client.patch(f"/v1/policies/{test_policy.id}", json={
-        "enabled": False,
-    })
+    resp = await client.patch(
+        f"/v1/policies/{test_policy.id}",
+        json={
+            "enabled": False,
+        },
+    )
     assert resp.status_code == 200
     assert resp.json()["enabled"] is False
 

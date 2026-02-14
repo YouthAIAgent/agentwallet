@@ -5,13 +5,14 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-
 # ---------------------------------------------------------------------------
 # Payment info (returned in 402 responses / discovery)
 # ---------------------------------------------------------------------------
 
+
 class X402PaymentRequirement(BaseModel):
     """Payment requirement returned in 402 responses."""
+
     scheme: str = "exact"
     network: str = "solana-mainnet"
     max_amount_required: str = Field(..., description="Amount in smallest unit (lamports or token base units)")
@@ -26,6 +27,7 @@ class X402PaymentRequirement(BaseModel):
 
 class X402PaymentPayload(BaseModel):
     """Payment proof sent with retry request."""
+
     x402_version: int = 1
     scheme: str = "exact"
     network: str = "solana-mainnet"
@@ -36,8 +38,10 @@ class X402PaymentPayload(BaseModel):
 # Server-side pricing configuration
 # ---------------------------------------------------------------------------
 
+
 class X402PriceEntry(BaseModel):
     """Pricing configuration for a single route."""
+
     route_pattern: str = Field(..., description="Route pattern (e.g. '/api/data/*', exact path, or regex)")
     method: str = Field(default="*", description="HTTP method (* for all, GET, POST, etc.)")
     price_lamports: int | None = Field(default=None, description="Price in lamports (SOL)")
@@ -49,6 +53,7 @@ class X402PriceEntry(BaseModel):
 
 class X402ConfigureRequest(BaseModel):
     """Configure x402 pricing for endpoints."""
+
     pricing: list[X402PriceEntry] = Field(..., description="List of route pricing entries")
     enabled: bool = True
     network: str = "solana-mainnet"
@@ -65,8 +70,10 @@ class X402ConfigureResponse(BaseModel):
 # Client-side spending limits
 # ---------------------------------------------------------------------------
 
+
 class X402SpendingLimit(BaseModel):
     """Spending limit for a domain or endpoint."""
+
     domain: str = Field(default="*", description="Domain pattern (e.g. 'api.example.com' or '*')")
     max_per_request_lamports: int | None = None
     max_per_request_usdc: float | None = None
@@ -76,6 +83,7 @@ class X402SpendingLimit(BaseModel):
 
 class X402ClientConfig(BaseModel):
     """Client configuration for auto-pay."""
+
     wallet_id: uuid.UUID
     enabled: bool = True
     spending_limits: list[X402SpendingLimit] = Field(default_factory=list)
@@ -87,8 +95,10 @@ class X402ClientConfig(BaseModel):
 # Payment verification
 # ---------------------------------------------------------------------------
 
+
 class X402VerifyRequest(BaseModel):
     """Manually verify a payment proof."""
+
     payment_header: str = Field(..., description="Contents of X-PAYMENT header")
     expected_pay_to: str = Field(..., description="Expected recipient address")
     expected_amount_lamports: int | None = None
@@ -109,6 +119,7 @@ class X402VerifyResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Payment history / status
 # ---------------------------------------------------------------------------
+
 
 class X402PaymentRecord(BaseModel):
     id: uuid.UUID
@@ -141,8 +152,10 @@ class X402StatusResponse(BaseModel):
 # MCP / auto-pay request
 # ---------------------------------------------------------------------------
 
+
 class X402MakeRequestInput(BaseModel):
     """Input for make_x402_request MCP tool."""
+
     url: str = Field(..., description="URL to request")
     method: str = Field(default="GET", description="HTTP method")
     headers: dict = Field(default_factory=dict, description="Additional headers")
@@ -154,6 +167,7 @@ class X402MakeRequestInput(BaseModel):
 
 class X402MakeRequestOutput(BaseModel):
     """Output from make_x402_request MCP tool."""
+
     status_code: int
     headers: dict
     body: str

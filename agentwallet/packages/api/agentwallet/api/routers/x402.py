@@ -1,8 +1,6 @@
 """x402 router -- configure pricing, check status, verify payments."""
 
-import uuid
-
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.database import get_db

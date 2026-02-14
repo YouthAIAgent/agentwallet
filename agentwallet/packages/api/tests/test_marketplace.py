@@ -1,7 +1,6 @@
 """Tests for marketplace endpoints — services, jobs, reputation."""
 
 import uuid
-from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import AsyncClient
@@ -145,8 +144,9 @@ async def test_marketplace_stats(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_unauthorized_access():
-    from httpx import ASGITransport, AsyncClient as AC
     from agentwallet.main import app
+    from httpx import ASGITransport
+    from httpx import AsyncClient as AC
 
     transport = ASGITransport(app=app)
     async with AC(transport=transport, base_url="http://test") as unauthed:

@@ -151,9 +151,7 @@ async def list_feedback(
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     svc = ERC8004Service(db)
     try:
-        items, total = await svc.list_feedback(
-            agent_id, auth.org_id, direction=direction, limit=limit, offset=offset
-        )
+        items, total = await svc.list_feedback(agent_id, auth.org_id, direction=direction, limit=limit, offset=offset)
     except NotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     return FeedbackListResponse(
@@ -218,9 +216,7 @@ async def bridge_escrow_feedback(
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     svc = ERC8004Service(db)
     try:
-        feedback = await svc.bridge_escrow_feedback(
-            escrow_id, auth.org_id, req.rating, req.comment
-        )
+        feedback = await svc.bridge_escrow_feedback(escrow_id, auth.org_id, req.rating, req.comment)
     except (ERC8004Error, ValidationError) as e:
         raise HTTPException(status_code=400, detail=str(e))
     except NotFoundError as e:

@@ -21,11 +21,7 @@ class TxProcessorWorker(BaseWorker):
     async def tick(self) -> None:
         factory = get_session_factory()
         async with factory() as db:
-            result = await db.execute(
-                select(Transaction)
-                .where(Transaction.status == "submitted")
-                .limit(50)
-            )
+            result = await db.execute(select(Transaction).where(Transaction.status == "submitted").limit(50))
             pending = result.scalars().all()
 
             if not pending:

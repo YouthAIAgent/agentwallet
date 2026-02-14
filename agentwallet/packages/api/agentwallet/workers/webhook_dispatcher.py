@@ -29,10 +29,7 @@ class WebhookDispatcherWorker(BaseWorker):
                 .where(
                     WebhookDelivery.delivered_at.is_(None),
                     WebhookDelivery.attempts < 5,
-                    (
-                        WebhookDelivery.next_retry_at.is_(None)
-                        | (WebhookDelivery.next_retry_at <= now)
-                    ),
+                    (WebhookDelivery.next_retry_at.is_(None) | (WebhookDelivery.next_retry_at <= now)),
                 )
                 .limit(20)
             )
@@ -47,9 +44,7 @@ class WebhookDispatcherWorker(BaseWorker):
 
             await db.commit()
 
-    async def _deliver(
-        self, client: httpx.AsyncClient, delivery: WebhookDelivery
-    ) -> None:
+    async def _deliver(self, client: httpx.AsyncClient, delivery: WebhookDelivery) -> None:
         delivery.attempts += 1
         payload_json = json.dumps(delivery.payload)
 
@@ -93,5 +88,5 @@ class WebhookDispatcherWorker(BaseWorker):
             self._schedule_retry(delivery)
 
     def _schedule_retry(self, delivery: WebhookDelivery) -> None:
-        backoff = min(2 ** delivery.attempts, 300)  # max 5 minutes
+        backoff = min(2**delivery.attempts, 300)  # max 5 minutes
         delivery.next_retry_at = datetime.now(timezone.utc) + timedelta(seconds=backoff)

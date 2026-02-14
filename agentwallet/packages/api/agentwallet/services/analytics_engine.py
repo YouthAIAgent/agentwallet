@@ -3,7 +3,7 @@
 import uuid
 from datetime import date, timedelta
 
-from sqlalchemy import func, select, text
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.logging import get_logger
@@ -142,9 +142,7 @@ class AnalyticsEngine:
                 func.coalesce(func.sum(Transaction.amount_lamports), 0),
                 func.coalesce(func.sum(Transaction.platform_fee_lamports), 0),
                 func.count(func.distinct(Transaction.to_address)),
-                func.sum(
-                    func.cast(Transaction.status == "failed", type_=func.literal(0).type)
-                ),
+                func.sum(func.cast(Transaction.status == "failed", type_=func.literal(0).type)),
             )
             .where(func.date(Transaction.created_at) == target)
             .group_by(Transaction.org_id)
@@ -167,15 +165,17 @@ class AnalyticsEngine:
                 existing.unique_destinations = row[4]
                 existing.failed_tx_count = row[5] or 0
             else:
-                self.db.add(AnalyticsDaily(
-                    org_id=row[0],
-                    date=target,
-                    tx_count=row[1],
-                    total_spend_lamports=row[2],
-                    total_fees_lamports=row[3],
-                    unique_destinations=row[4],
-                    failed_tx_count=row[5] or 0,
-                ))
+                self.db.add(
+                    AnalyticsDaily(
+                        org_id=row[0],
+                        date=target,
+                        tx_count=row[1],
+                        total_spend_lamports=row[2],
+                        total_fees_lamports=row[3],
+                        unique_destinations=row[4],
+                        failed_tx_count=row[5] or 0,
+                    )
+                )
             count += 1
 
         # Aggregate per-agent
@@ -209,15 +209,17 @@ class AnalyticsEngine:
                 existing.total_fees_lamports = row[4]
                 existing.unique_destinations = row[5]
             else:
-                self.db.add(AnalyticsDaily(
-                    org_id=row[0],
-                    agent_id=row[1],
-                    date=target,
-                    tx_count=row[2],
-                    total_spend_lamports=row[3],
-                    total_fees_lamports=row[4],
-                    unique_destinations=row[5],
-                ))
+                self.db.add(
+                    AnalyticsDaily(
+                        org_id=row[0],
+                        agent_id=row[1],
+                        date=target,
+                        tx_count=row[2],
+                        total_spend_lamports=row[3],
+                        total_fees_lamports=row[4],
+                        unique_destinations=row[5],
+                    )
+                )
             count += 1
 
         await self.db.flush()

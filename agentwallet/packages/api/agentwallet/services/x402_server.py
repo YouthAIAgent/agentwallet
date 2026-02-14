@@ -15,14 +15,12 @@ import re
 import time
 import uuid
 from datetime import datetime, timezone
-from typing import Any
 
 import httpx
-from fastapi import Request, Response
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
-from ..core.config import get_settings
 from ..core.logging import get_logger
 from ..core.solana import confirm_transaction
 
@@ -162,10 +160,7 @@ class X402PricingConfig:
 
     def get_total_incoming(self) -> int:
         """Total lamports received via x402."""
-        return sum(
-            p.get("amount_lamports", 0) for p in self._payments.values()
-            if p.get("status") == "verified"
-        )
+        return sum(p.get("amount_lamports", 0) for p in self._payments.values() if p.get("status") == "verified")
 
     def cache_verification(self, signature: str, valid: bool) -> None:
         # Evict oldest entries if cache is full
@@ -232,25 +227,25 @@ class X402ServerMiddleware(BaseHTTPMiddleware):
                     "x402": self._build_payment_requirement(pricing, config.network, path),
                 },
                 headers={
-                    "X-PAYMENT-REQUIRED": json.dumps(
-                        self._build_payment_requirement(pricing, config.network, path)
-                    ),
+                    "X-PAYMENT-REQUIRED": json.dumps(self._build_payment_requirement(pricing, config.network, path)),
                 },
             )
 
         # Payment verified — record it and proceed
-        config.record_payment({
-            "direction": "incoming",
-            "route_pattern": pricing["route_pattern"],
-            "method": method,
-            "path": path,
-            "payer_address": verification.get("payer", ""),
-            "payee_address": pricing["pay_to"],
-            "amount_lamports": verification.get("amount_lamports", 0),
-            "token_mint": verification.get("token_mint"),
-            "signature": verification.get("signature"),
-            "status": "verified",
-        })
+        config.record_payment(
+            {
+                "direction": "incoming",
+                "route_pattern": pricing["route_pattern"],
+                "method": method,
+                "path": path,
+                "payer_address": verification.get("payer", ""),
+                "payee_address": pricing["pay_to"],
+                "amount_lamports": verification.get("amount_lamports", 0),
+                "token_mint": verification.get("token_mint"),
+                "signature": verification.get("signature"),
+                "status": "verified",
+            }
+        )
 
         # Add verification info to request state for downstream handlers
         request.state.x402_payment = verification
@@ -258,10 +253,12 @@ class X402ServerMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
 
         # Add payment receipt header
-        response.headers["X-PAYMENT-RECEIPT"] = json.dumps({
-            "signature": verification.get("signature"),
-            "status": "accepted",
-        })
+        response.headers["X-PAYMENT-RECEIPT"] = json.dumps(
+            {
+                "signature": verification.get("signature"),
+                "status": "accepted",
+            }
+        )
 
         return response
 
@@ -287,9 +284,7 @@ class X402ServerMiddleware(BaseHTTPMiddleware):
             },
         )
 
-    def _build_payment_requirement(
-        self, pricing: dict, network: str, resource: str
-    ) -> dict:
+    def _build_payment_requirement(self, pricing: dict, network: str, resource: str) -> dict:
         """Build the x402 payment requirement object."""
         # Determine amount — prefer lamports, convert USDC to raw units
         if pricing.get("price_lamports"):
@@ -313,9 +308,7 @@ class X402ServerMiddleware(BaseHTTPMiddleware):
             "extra": extra,
         }
 
-    async def _verify_payment(
-        self, payment_header: str, pricing: dict, config: X402PricingConfig
-    ) -> dict:
+    async def _verify_payment(self, payment_header: str, pricing: dict, config: X402PricingConfig) -> dict:
         """Verify an X-PAYMENT header contains a valid payment proof.
 
         Returns dict with: valid, signature, payer, amount_lamports,
@@ -456,9 +449,7 @@ async def verify_payment_proof(
     # Verify on-chain
     try:
         async with httpx.AsyncClient(timeout=15) as client:
-            confirmed = await confirm_transaction(
-                client, signature, max_polls=10, poll_interval=1.5
-            )
+            confirmed = await confirm_transaction(client, signature, max_polls=10, poll_interval=1.5)
     except Exception as e:
         return {
             "valid": False,

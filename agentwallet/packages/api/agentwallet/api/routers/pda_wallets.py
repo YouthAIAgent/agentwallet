@@ -74,7 +74,9 @@ async def list_pda_wallets(
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     svc = PDAWalletService(db)
     wallets, total = await svc.list_pda_wallets(
-        org_id=auth.org_id, limit=limit, offset=offset,
+        org_id=auth.org_id,
+        limit=limit,
+        offset=offset,
     )
     return PDAWalletListResponse(
         data=[_wallet_response(w) for w in wallets],

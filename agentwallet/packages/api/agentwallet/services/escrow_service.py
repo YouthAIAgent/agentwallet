@@ -141,9 +141,7 @@ class EscrowService:
         logger.info("escrow_refunded", escrow_id=str(escrow_id))
         return escrow
 
-    async def dispute_escrow(
-        self, escrow_id: uuid.UUID, org_id: uuid.UUID, reason: str
-    ) -> Escrow:
+    async def dispute_escrow(self, escrow_id: uuid.UUID, org_id: uuid.UUID, reason: str) -> Escrow:
         """Mark escrow as disputed."""
         escrow = await self._get_escrow(escrow_id, org_id)
         self._validate_transition(escrow.status, "disputed")
@@ -175,9 +173,7 @@ class EscrowService:
             count_query = count_query.where(Escrow.status == status)
 
         total = await self.db.scalar(count_query)
-        result = await self.db.execute(
-            query.order_by(Escrow.created_at.desc()).offset(offset).limit(limit)
-        )
+        result = await self.db.execute(query.order_by(Escrow.created_at.desc()).offset(offset).limit(limit))
         return list(result.scalars().all()), total or 0
 
     async def expire_stale_escrows(self) -> int:
@@ -207,7 +203,4 @@ class EscrowService:
     def _validate_transition(self, current: str, target: str) -> None:
         allowed = VALID_TRANSITIONS.get(current, [])
         if target not in allowed:
-            raise EscrowStateError(
-                f"Cannot transition from '{current}' to '{target}'. "
-                f"Allowed: {allowed}"
-            )
+            raise EscrowStateError(f"Cannot transition from '{current}' to '{target}'. Allowed: {allowed}")

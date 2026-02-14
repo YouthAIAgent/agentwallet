@@ -1,6 +1,6 @@
 """Usage meter worker -- count usage for billing."""
 
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 
 from sqlalchemy import func, select
 
@@ -22,9 +22,7 @@ class UsageMeterWorker(BaseWorker):
         factory = get_session_factory()
         async with factory() as db:
             # Get all active orgs
-            result = await db.execute(
-                select(Organization.id).where(Organization.is_active.is_(True))
-            )
+            result = await db.execute(select(Organization.id).where(Organization.is_active.is_(True)))
             org_ids = [row[0] for row in result.all()]
 
             billing = BillingService(db)
@@ -33,13 +31,13 @@ class UsageMeterWorker(BaseWorker):
 
             for org_id in org_ids:
                 # Count transactions this period
-                tx_count = await db.scalar(
+                await db.scalar(
                     select(func.count()).where(
                         Transaction.org_id == org_id,
                         Transaction.created_at >= period_start,
                     )
                 )
-                tx_volume = await db.scalar(
+                await db.scalar(
                     select(func.coalesce(func.sum(Transaction.amount_lamports), 0)).where(
                         Transaction.org_id == org_id,
                         Transaction.created_at >= period_start,

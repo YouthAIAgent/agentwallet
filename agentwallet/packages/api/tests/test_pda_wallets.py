@@ -5,10 +5,8 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from agentwallet.models.pda_wallet import PDAWallet
-
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -146,9 +144,7 @@ async def test_create_pda_wallet(client, test_wallet):
     mock_pw.tx_signature = "MockSig" + uuid.uuid4().hex[:20]
     mock_pw.created_at = datetime.now(timezone.utc)
 
-    with patch(
-        "agentwallet.api.routers.pda_wallets.PDAWalletService"
-    ) as MockSvc:
+    with patch("agentwallet.api.routers.pda_wallets.PDAWalletService") as MockSvc:
         instance = MockSvc.return_value
         instance.create_pda_wallet = AsyncMock(return_value=mock_pw)
 
@@ -187,9 +183,7 @@ async def test_create_pda_wallet_with_agent_id(client, test_wallet, test_agent):
     mock_pw.tx_signature = "MockSigAgent" + uuid.uuid4().hex[:16]
     mock_pw.created_at = datetime.now(timezone.utc)
 
-    with patch(
-        "agentwallet.api.routers.pda_wallets.PDAWalletService"
-    ) as MockSvc:
+    with patch("agentwallet.api.routers.pda_wallets.PDAWalletService") as MockSvc:
         instance = MockSvc.return_value
         instance.create_pda_wallet = AsyncMock(return_value=mock_pw)
 
@@ -273,9 +267,7 @@ async def test_get_pda_wallet_state(client, test_pda_wallet):
         "pda_address": test_pda_wallet.pda_address,
     }
 
-    with patch(
-        "agentwallet.api.routers.pda_wallets.PDAWalletService"
-    ) as MockSvc:
+    with patch("agentwallet.api.routers.pda_wallets.PDAWalletService") as MockSvc:
         instance = MockSvc.return_value
         instance.get_pda_wallet = AsyncMock(return_value=test_pda_wallet)
         instance.get_pda_state = AsyncMock(return_value=mock_state)
@@ -296,14 +288,11 @@ async def test_get_pda_wallet_state(client, test_pda_wallet):
 async def test_get_pda_wallet_state_not_found(client):
     """Reading on-chain state for non-existent wallet returns 404."""
     fake_id = "00000000-0000-0000-0000-000000000000"
-    with patch(
-        "agentwallet.api.routers.pda_wallets.PDAWalletService"
-    ) as MockSvc:
+    with patch("agentwallet.api.routers.pda_wallets.PDAWalletService") as MockSvc:
         from agentwallet.core.exceptions import NotFoundError
+
         instance = MockSvc.return_value
-        instance.get_pda_wallet = AsyncMock(
-            side_effect=NotFoundError("PDA Wallet", fake_id)
-        )
+        instance.get_pda_wallet = AsyncMock(side_effect=NotFoundError("PDA Wallet", fake_id))
         resp = await client.get(f"/v1/pda-wallets/{fake_id}/state")
 
     assert resp.status_code == 404
@@ -321,9 +310,7 @@ async def test_transfer_from_pda(client, test_pda_wallet):
         "confirmed": True,
     }
 
-    with patch(
-        "agentwallet.api.routers.pda_wallets.PDAWalletService"
-    ) as MockSvc:
+    with patch("agentwallet.api.routers.pda_wallets.PDAWalletService") as MockSvc:
         instance = MockSvc.return_value
         instance.transfer_from_pda = AsyncMock(return_value=mock_result)
 
@@ -348,9 +335,7 @@ async def test_transfer_from_pda_unconfirmed(client, test_pda_wallet):
         "confirmed": False,
     }
 
-    with patch(
-        "agentwallet.api.routers.pda_wallets.PDAWalletService"
-    ) as MockSvc:
+    with patch("agentwallet.api.routers.pda_wallets.PDAWalletService") as MockSvc:
         instance = MockSvc.return_value
         instance.transfer_from_pda = AsyncMock(return_value=mock_result)
 
@@ -418,9 +403,7 @@ async def test_update_pda_limits(client, test_pda_wallet):
     mock_pw.tx_signature = test_pda_wallet.tx_signature
     mock_pw.created_at = datetime.now(timezone.utc)
 
-    with patch(
-        "agentwallet.api.routers.pda_wallets.PDAWalletService"
-    ) as MockSvc:
+    with patch("agentwallet.api.routers.pda_wallets.PDAWalletService") as MockSvc:
         instance = MockSvc.return_value
         instance.update_pda_limits = AsyncMock(return_value=mock_pw)
 
@@ -455,9 +438,7 @@ async def test_update_pda_limits_deactivate(client, test_pda_wallet):
     mock_pw.tx_signature = test_pda_wallet.tx_signature
     mock_pw.created_at = datetime.now(timezone.utc)
 
-    with patch(
-        "agentwallet.api.routers.pda_wallets.PDAWalletService"
-    ) as MockSvc:
+    with patch("agentwallet.api.routers.pda_wallets.PDAWalletService") as MockSvc:
         instance = MockSvc.return_value
         instance.update_pda_limits = AsyncMock(return_value=mock_pw)
 
@@ -487,9 +468,7 @@ async def test_update_pda_limits_partial(client, test_pda_wallet):
     mock_pw.tx_signature = test_pda_wallet.tx_signature
     mock_pw.created_at = datetime.now(timezone.utc)
 
-    with patch(
-        "agentwallet.api.routers.pda_wallets.PDAWalletService"
-    ) as MockSvc:
+    with patch("agentwallet.api.routers.pda_wallets.PDAWalletService") as MockSvc:
         instance = MockSvc.return_value
         instance.update_pda_limits = AsyncMock(return_value=mock_pw)
 
@@ -598,9 +577,7 @@ async def test_unauthenticated_list(unauthed_client):
 
 async def test_unauthenticated_get(unauthed_client):
     """Getting a PDA wallet without auth returns 401."""
-    resp = await unauthed_client.get(
-        f"/v1/pda-wallets/{uuid.uuid4()}"
-    )
+    resp = await unauthed_client.get(f"/v1/pda-wallets/{uuid.uuid4()}")
     assert resp.status_code == 401
 
 
@@ -653,9 +630,7 @@ async def test_unauthenticated_derive(unauthed_client):
 
 async def test_unauthenticated_state(unauthed_client):
     """Reading on-chain state without auth returns 401."""
-    resp = await unauthed_client.get(
-        f"/v1/pda-wallets/{uuid.uuid4()}/state"
-    )
+    resp = await unauthed_client.get(f"/v1/pda-wallets/{uuid.uuid4()}/state")
     assert resp.status_code == 401
 
 

@@ -25,7 +25,9 @@ class KeyManager:
                 raise RuntimeError(
                     "ENCRYPTION_KEY environment variable is not set. "
                     "This is required for encrypting wallet private keys at rest. "
-                    "Generate a Fernet key with: python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())' "
+                    "Generate a Fernet key with: "
+                    "python -c 'from cryptography.fernet import Fernet; "
+                    "print(Fernet.generate_key().decode())' "
                     "and set it in your .env file."
                 )
             self._fernet = Fernet(key.encode() if isinstance(key, str) else key)

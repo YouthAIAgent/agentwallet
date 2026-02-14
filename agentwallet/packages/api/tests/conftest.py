@@ -19,19 +19,18 @@ os.environ["ENCRYPTION_KEY"] = "6FaAOgDwunjVGE6f6h-MnByGs6nrV1SC8_EcwnQlSBU="
 os.environ["SOLANA_RPC_URL"] = "https://api.devnet.solana.com"
 os.environ["PLATFORM_WALLET_ADDRESS"] = "11111111111111111111111111111111"
 
-from agentwallet.core.database import Base, get_engine, get_session_factory, close_db
+from agentwallet.api.middleware.auth import create_access_token, hash_password
+from agentwallet.core.database import Base, close_db, get_engine, get_session_factory
 from agentwallet.main import app
 from agentwallet.models import (
     Agent,
+    Escrow,
     Organization,
+    Policy,
+    Transaction,
     User,
     Wallet,
-    Escrow,
-    Transaction,
-    Policy,
 )
-from agentwallet.api.middleware.auth import create_access_token, hash_password
-
 
 # ── Event loop ───────────────────────────────────────────
 
@@ -265,6 +264,8 @@ def mock_solana_rpc():
     mock_balance = AsyncMock(return_value=1_000_000_000)
     mock_tokens = AsyncMock(return_value=[])
 
-    with patch("agentwallet.services.wallet_manager.get_balance", mock_balance), \
-         patch("agentwallet.services.wallet_manager.get_token_accounts", mock_tokens):
+    with (
+        patch("agentwallet.services.wallet_manager.get_balance", mock_balance),
+        patch("agentwallet.services.wallet_manager.get_token_accounts", mock_tokens),
+    ):
         yield mock_balance

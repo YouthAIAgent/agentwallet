@@ -6,11 +6,14 @@ import pytest
 @pytest.mark.asyncio
 async def test_register(unauthed_client):
     """Test user registration."""
-    resp = await unauthed_client.post("/v1/auth/register", json={
-        "org_name": "Auth Test Org",
-        "email": "authtest@example.com",
-        "password": "SecurePass123",
-    })
+    resp = await unauthed_client.post(
+        "/v1/auth/register",
+        json={
+            "org_name": "Auth Test Org",
+            "email": "authtest@example.com",
+            "password": "SecurePass123",
+        },
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert "access_token" in data
@@ -28,11 +31,14 @@ async def test_register_duplicate_email(unauthed_client):
     resp = await unauthed_client.post("/v1/auth/register", json=payload)
     assert resp.status_code == 200
 
-    resp = await unauthed_client.post("/v1/auth/register", json={
-        "org_name": "Dup Org 2",
-        "email": "duptest@example.com",
-        "password": "OtherPass123",
-    })
+    resp = await unauthed_client.post(
+        "/v1/auth/register",
+        json={
+            "org_name": "Dup Org 2",
+            "email": "duptest@example.com",
+            "password": "OtherPass123",
+        },
+    )
     assert resp.status_code == 409
 
 
@@ -40,17 +46,23 @@ async def test_register_duplicate_email(unauthed_client):
 async def test_login(unauthed_client):
     """Test login flow."""
     # Register first
-    await unauthed_client.post("/v1/auth/register", json={
-        "org_name": "Login Test Org",
-        "email": "logintest@example.com",
-        "password": "TestPass123",
-    })
+    await unauthed_client.post(
+        "/v1/auth/register",
+        json={
+            "org_name": "Login Test Org",
+            "email": "logintest@example.com",
+            "password": "TestPass123",
+        },
+    )
 
     # Login
-    resp = await unauthed_client.post("/v1/auth/login", json={
-        "email": "logintest@example.com",
-        "password": "TestPass123",
-    })
+    resp = await unauthed_client.post(
+        "/v1/auth/login",
+        json={
+            "email": "logintest@example.com",
+            "password": "TestPass123",
+        },
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert "access_token" in data
@@ -59,10 +71,13 @@ async def test_login(unauthed_client):
 @pytest.mark.asyncio
 async def test_login_invalid_credentials(unauthed_client):
     """Test login with wrong password."""
-    resp = await unauthed_client.post("/v1/auth/login", json={
-        "email": "nonexistent@example.com",
-        "password": "wrongpass",
-    })
+    resp = await unauthed_client.post(
+        "/v1/auth/login",
+        json={
+            "email": "nonexistent@example.com",
+            "password": "wrongpass",
+        },
+    )
     assert resp.status_code in (401, 404)
 
 

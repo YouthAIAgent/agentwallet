@@ -70,9 +70,7 @@ class PDAWalletService:
             raise TransactionFailedError(f"Blockhash RPC error: {bh_data['error']}")
         return Hash.from_string(bh_data["result"]["value"]["blockhash"])
 
-    async def _send_transaction(
-        self, client: httpx.AsyncClient, tx: Transaction
-    ) -> str:
+    async def _send_transaction(self, client: httpx.AsyncClient, tx: Transaction) -> str:
         """Sign and send a transaction, return signature."""
         tx_b58 = base58.b58encode(bytes(tx)).decode()
         resp = await client.post(

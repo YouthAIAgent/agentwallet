@@ -7,23 +7,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from .core.config import get_settings
-from .core.database import close_db
-from .core.exceptions import (
-    AgentWalletError,
-    AuthenticationError,
-    AuthorizationError,
-    ConflictError,
-    ERC8004Error,
-    EVMTransactionError,
-    NotFoundError,
-    RateLimitError,
-    TierLimitError,
-    ValidationError,
-)
-from .core.logging import setup_logging
-from .core.redis_client import close_redis
-
 from .api.routers import (
     agents,
     analytics,
@@ -40,6 +23,26 @@ from .api.routers import (
     webhooks,
     x402,
 )
+from .core.config import get_settings
+from .core.database import close_db
+from .core.exceptions import (
+    AuthenticationError,
+    AuthorizationError,
+    ConflictError,
+    ERC8004Error,
+    EscrowStateError,
+    EVMTransactionError,
+    IdempotencyConflictError,
+    InsufficientBalanceError,
+    NotFoundError,
+    PolicyDeniedError,
+    RateLimitError,
+    TierLimitError,
+    TransactionFailedError,
+    ValidationError,
+)
+from .core.logging import setup_logging
+from .core.redis_client import close_redis
 
 
 @asynccontextmanager
@@ -63,6 +66,7 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+
 # Security Headers Middleware
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -82,6 +86,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 "worker-src 'self' blob:"
             )
         return response
+
 
 app.add_middleware(SecurityHeadersMiddleware)
 
@@ -160,6 +165,31 @@ async def erc8004_error_handler(request: Request, exc: ERC8004Error):
 @app.exception_handler(EVMTransactionError)
 async def evm_tx_error_handler(request: Request, exc: EVMTransactionError):
     return JSONResponse(status_code=502, content={"error": str(exc)})
+
+
+@app.exception_handler(TransactionFailedError)
+async def tx_failed_handler(request: Request, exc: TransactionFailedError):
+    return JSONResponse(status_code=502, content={"error": str(exc)})
+
+
+@app.exception_handler(InsufficientBalanceError)
+async def insufficient_balance_handler(request: Request, exc: InsufficientBalanceError):
+    return JSONResponse(status_code=400, content={"error": str(exc)})
+
+
+@app.exception_handler(PolicyDeniedError)
+async def policy_denied_handler(request: Request, exc: PolicyDeniedError):
+    return JSONResponse(status_code=403, content={"error": str(exc)})
+
+
+@app.exception_handler(IdempotencyConflictError)
+async def idempotency_conflict_handler(request: Request, exc: IdempotencyConflictError):
+    return JSONResponse(status_code=409, content={"error": str(exc)})
+
+
+@app.exception_handler(EscrowStateError)
+async def escrow_state_handler(request: Request, exc: EscrowStateError):
+    return JSONResponse(status_code=409, content={"error": str(exc)})
 
 
 @app.get("/health")

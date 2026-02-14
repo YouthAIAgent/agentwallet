@@ -4,8 +4,8 @@ import uuid
 
 from pydantic import BaseModel, Field
 
-
 # -- Requests --
+
 
 class RegisterIdentityRequest(BaseModel):
     metadata_uri: str | None = None
@@ -24,6 +24,7 @@ class BridgeEscrowFeedbackRequest(BaseModel):
 
 
 # -- Responses --
+
 
 class IdentityResponse(BaseModel):
     id: uuid.UUID

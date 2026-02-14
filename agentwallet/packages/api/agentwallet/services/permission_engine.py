@@ -9,7 +9,6 @@ from datetime import date, datetime, timezone
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..core.exceptions import ApprovalRequiredError, PolicyDeniedError
 from ..core.logging import get_logger
 from ..models.approval_request import ApprovalRequest
 from ..models.policy import Policy
@@ -68,9 +67,7 @@ class PermissionEngine:
             if limit is not None and amount_lamports > limit:
                 evaluation.allowed = False
                 evaluation.denied_by = policy.name
-                evaluation.denial_reason = (
-                    f"Amount {amount_lamports} exceeds per-tx limit {limit}"
-                )
+                evaluation.denial_reason = f"Amount {amount_lamports} exceeds per-tx limit {limit}"
                 return evaluation
 
             # Check daily spending limit
@@ -81,8 +78,7 @@ class PermissionEngine:
                     evaluation.allowed = False
                     evaluation.denied_by = policy.name
                     evaluation.denial_reason = (
-                        f"Daily spend {daily_spent + amount_lamports} "
-                        f"would exceed limit {daily_limit}"
+                        f"Daily spend {daily_spent + amount_lamports} would exceed limit {daily_limit}"
                     )
                     return evaluation
 
@@ -126,8 +122,7 @@ class PermissionEngine:
                     evaluation.allowed = False
                     evaluation.denied_by = policy.name
                     evaluation.denial_reason = (
-                        f"Outside allowed time window "
-                        f"{time_window['start']}-{time_window['end']} {tz_name}"
+                        f"Outside allowed time window {time_window['start']}-{time_window['end']} {tz_name}"
                     )
                     return evaluation
 

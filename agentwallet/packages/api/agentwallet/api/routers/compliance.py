@@ -7,7 +7,7 @@ from ...core.database import get_db
 from ...services.compliance_module import ComplianceModule
 from ..middleware.auth import AuthContext, get_auth_context
 from ..middleware.rate_limit import check_rate_limit
-from ..schemas.compliance import AuditLogResponse, AuditEventResponse
+from ..schemas.compliance import AuditEventResponse, AuditLogResponse
 
 router = APIRouter(prefix="/compliance", tags=["compliance"])
 
@@ -74,6 +74,4 @@ async def generate_report(
 ):
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     module = ComplianceModule(db)
-    return await module.generate_compliance_report(
-        org_id=auth.org_id, report_type=report_type, days=days
-    )
+    return await module.generate_compliance_report(org_id=auth.org_id, report_type=report_type, days=days)

@@ -31,6 +31,7 @@ def retry(
     Works with both sync and async functions.
     Raises RetryExhausted if all attempts fail.
     """
+
     def decorator(func):
         @functools.wraps(func)
         async def async_wrapper(*args, **kwargs):
@@ -85,4 +86,5 @@ def retry(
         if inspect.iscoroutinefunction(func):
             return async_wrapper
         return sync_wrapper
+
     return decorator

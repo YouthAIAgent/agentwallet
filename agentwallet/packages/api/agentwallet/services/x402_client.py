@@ -22,10 +22,9 @@ from ..core.config import get_settings
 from ..core.exceptions import (
     InsufficientBalanceError,
     PolicyDeniedError,
-    ValidationError,
 )
 from ..core.logging import get_logger
-from ..core.solana import get_balance, transfer_sol, confirm_transaction
+from ..core.solana import transfer_sol
 from ..models.transaction import Transaction
 from .token_service import TokenService
 from .wallet_manager import WalletManager
@@ -56,18 +55,18 @@ class X402SpendingTracker:
         today = date.today().isoformat()
         if domain not in self._daily_spend:
             self._daily_spend[domain] = {}
-        self._daily_spend[domain][today] = (
-            self._daily_spend[domain].get(today, 0) + amount_lamports
+        self._daily_spend[domain][today] = self._daily_spend[domain].get(today, 0) + amount_lamports
+        self._history.append(
+            {
+                "id": str(uuid.uuid4()),
+                "domain": domain,
+                "url": url,
+                "amount_lamports": amount_lamports,
+                "signature": signature,
+                "token_mint": token_mint,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
         )
-        self._history.append({
-            "id": str(uuid.uuid4()),
-            "domain": domain,
-            "url": url,
-            "amount_lamports": amount_lamports,
-            "signature": signature,
-            "token_mint": token_mint,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-        })
 
     def get_daily_spend(self, domain: str) -> int:
         today = date.today().isoformat()
@@ -183,6 +182,7 @@ class X402ClientMiddleware:
 
             # Extract domain for spending limits
             from urllib.parse import urlparse
+
             domain = urlparse(url).hostname or "unknown"
 
             # Determine payment amount
@@ -247,12 +247,14 @@ class X402ClientMiddleware:
 
             # Retry with payment header
             payment_header = base64.b64encode(
-                json.dumps({
-                    "x402Version": 1,
-                    "scheme": "exact",
-                    "network": payment_req.get("network", "solana-mainnet"),
-                    "payload": payment_proof,
-                }).encode()
+                json.dumps(
+                    {
+                        "x402Version": 1,
+                        "scheme": "exact",
+                        "network": payment_req.get("network", "solana-mainnet"),
+                        "payload": payment_proof,
+                    }
+                ).encode()
             ).decode()
 
             headers["X-PAYMENT"] = payment_header
@@ -354,7 +356,7 @@ class X402ClientMiddleware:
             else:
                 # SOL payment
                 async with httpx.AsyncClient(timeout=15) as client:
-                    settings = get_settings()
+                    get_settings()
                     signature = await transfer_sol(
                         client=client,
                         from_keypair=keypair,

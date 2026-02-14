@@ -68,15 +68,9 @@ async def list_policies(
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     from sqlalchemy import func
 
-    count = await db.scalar(
-        select(func.count()).select_from(Policy).where(Policy.org_id == auth.org_id)
-    )
+    count = await db.scalar(select(func.count()).select_from(Policy).where(Policy.org_id == auth.org_id))
     result = await db.execute(
-        select(Policy)
-        .where(Policy.org_id == auth.org_id)
-        .order_by(Policy.priority)
-        .offset(offset)
-        .limit(limit)
+        select(Policy).where(Policy.org_id == auth.org_id).order_by(Policy.priority).offset(offset).limit(limit)
     )
     policies = result.scalars().all()
     return PolicyListResponse(

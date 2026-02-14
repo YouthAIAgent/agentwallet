@@ -4,10 +4,11 @@ Revision ID: 002_erc8004
 Revises: 001_initial
 Create Date: 2025-06-01 00:00:00.000000
 """
+
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 revision: str = "002_erc8004"

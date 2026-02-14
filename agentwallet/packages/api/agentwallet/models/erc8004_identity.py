@@ -15,7 +15,9 @@ class ERC8004Identity(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     org_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("organizations.id"), nullable=False)
-    agent_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("agents.id"), unique=True, nullable=False)
+    agent_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("agents.id"), unique=True, nullable=False
+    )
     token_id: Mapped[int | None] = mapped_column(BigInteger)
     evm_address: Mapped[str] = mapped_column(String(42), nullable=False)
     chain_id: Mapped[int] = mapped_column(Integer, default=8453)

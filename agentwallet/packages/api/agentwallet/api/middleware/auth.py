@@ -16,7 +16,6 @@ from ...core.config import get_settings
 from ...core.database import get_db
 from ...models.api_key import ApiKey
 from ...models.organization import Organization
-from ...models.user import User
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -89,9 +88,7 @@ async def get_auth_context(
     api_key_header = request.headers.get("X-API-Key")
     if api_key_header:
         key_hash = hash_api_key(api_key_header)
-        api_key = await db.scalar(
-            select(ApiKey).where(ApiKey.key_hash == key_hash, ApiKey.is_active.is_(True))
-        )
+        api_key = await db.scalar(select(ApiKey).where(ApiKey.key_hash == key_hash, ApiKey.is_active.is_(True)))
         if not api_key:
             raise HTTPException(status_code=401, detail="Invalid API key")
 
