@@ -102,7 +102,7 @@ Add these to your README.md to show build status:
 To trigger a new release deployment:
 
 1. Create a new release in GitHub (`Releases > Create a new release`)
-2. Add a version tag (e.g., `v0.2.0`)
+2. Add a version tag (e.g., `v0.3.0`)
 3. The CI/CD pipeline will automatically:
    - Run all tests
    - Build packages

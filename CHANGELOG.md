@@ -5,6 +5,42 @@ All notable changes to AgentWallet Protocol will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-02-14
+
+### Added
+- **PDA Wallet API** — 7 new endpoints for on-chain policy-enforced wallets
+  - `POST /v1/pda-wallets` — Create PDA wallet on-chain via Anchor program
+  - `GET /v1/pda-wallets` — List PDA wallets
+  - `GET /v1/pda-wallets/{id}` — Get PDA wallet by ID
+  - `GET /v1/pda-wallets/{id}/state` — Read live on-chain state from Solana
+  - `POST /v1/pda-wallets/{id}/transfer` — Transfer SOL with on-chain limit enforcement
+  - `PATCH /v1/pda-wallets/{id}/limits` — Update spending limits on-chain
+  - `POST /v1/pda-wallets/derive` — Derive PDA address (utility)
+- **Core PDA module** (`core/pda.py`) — Anchor instruction builders, Borsh serialization, PDA derivation, on-chain state deserialization
+- **PDA wallet model** — SQLAlchemy model with BigInteger for Solana u64 compatibility
+- **PDA wallet service** — Full service layer with create, transfer, update, and state reads
+- **31 new tests** for PDA wallet endpoints (84 total passing)
+- **7 MCP tools** for PDA wallets (33 total tools)
+- **Platform config PDA** initialized on devnet — transfers working end-to-end
+- **Alembic migrations** — `004_pda_wallets` (table creation), `005_pda_bigint` (Integer to BigInteger fix)
+- Auto-migration on Railway deploy (`alembic upgrade head` in start command)
+
+### Changed
+- Removed all third-party AI branding references from codebase
+- Repository cleanup — removed promo assets, tweet cards, video scripts
+- Updated `.gitignore` for cleaner repo
+- `PLATFORM_WALLET_ADDRESS` updated on Railway to match on-chain platform config
+
+### Fixed
+- Integer overflow for spending limits > 2.1 SOL (Integer to BigInteger column migration)
+- Missing `platform_config` PDA on devnet (initialized with 0.5% fee)
+
+### Technical Details
+- Anchor Program: `CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6` (devnet)
+- Platform Config PDA: `9hFr15AFaQPDqsotRWtK9VyFmxuWmZnrjxViGZyNRZR5`
+- Fee: 0.5% (50 basis points)
+- Fee Wallet: `CxP7Ebp6G15xankL5AVzXUJ9jjigwLoXPu5hGUZBjtg2`
+
 ## [0.2.0] - 2026-02-12
 
 ### Added

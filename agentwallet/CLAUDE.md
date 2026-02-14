@@ -9,7 +9,7 @@ AI agent wallet infrastructure SaaS on Solana. Wallet-as-a-service for autonomou
 - **Railway Service**: trustworthy-celebration
 - **Railway Account**: YouthAIAgent (web3youth@gmail.com)
 - **GitHub**: https://github.com/YouthAIAgent/agentwallet
-- **Health**: `GET /health` returns `{"status":"ok","version":"0.2.0"}`
+- **Health**: `GET /health` returns `{"status":"ok","version":"0.3.0"}`
 - **Swagger Docs**: `GET /docs`
 
 ## Tech Stack
@@ -33,7 +33,7 @@ agentwallet/
 ├── docker-compose.yml, Dockerfile, Dockerfile.worker
 ├── alembic.ini, pyproject.toml, railway.json
 ├── packages/
-│   ├── api/          # FastAPI backend (53 endpoints under /v1)
+│   ├── api/          # FastAPI backend (60 endpoints under /v1)
 │   │   └── agentwallet/ (main, api/routers, core, models, services, workers, migrations)
 │   ├── sdk-python/   # pip install agentwallet-sdk
 │   ├── dashboard/    # React + Vite
@@ -42,8 +42,8 @@ agentwallet/
 │   └── landing/      # Static landing page
 ```
 
-## API Routes (all under /v1, 13 router groups)
-auth, wallets, agents, transactions, escrow, analytics, compliance, policies, webhooks, tokens, erc8004, x402, marketplace
+## API Routes (all under /v1, 14 router groups)
+auth, wallets, agents, transactions, escrow, analytics, compliance, policies, webhooks, tokens, erc8004, x402, marketplace, pda-wallets
 
 ## Critical Architecture Decisions (DO NOT REVERT)
 1. **JSONB -> JSON**: All 9 ORM model files use `JSON` not `JSONB` (SQLite test compat)
@@ -61,8 +61,8 @@ Required env vars: `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET_KEY`, `ENCRYPTION_KE
 See `.env.example` for the full list.
 
 ## Tests
-- **53/53 passing** with `pytest` (SQLite + aiosqlite backend)
-- 8 test files: test_agents, test_auth, test_escrow, test_marketplace, test_policies, test_transactions, test_wallets + conftest
+- **84/84 passing** with `pytest` (SQLite + aiosqlite backend)
+- 9 test files: test_agents, test_auth, test_escrow, test_marketplace, test_pda_wallets, test_policies, test_transactions, test_wallets + conftest
 - Config: `asyncio_mode = "auto"`, testpaths = `packages/api/tests`
 - conftest.py creates/drops tables per session, mocks Redis + Solana RPC
 

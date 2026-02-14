@@ -112,3 +112,46 @@ class AnalyticsSummary:
     unique_destinations: int
     period_start: str
     period_end: str
+
+
+@dataclass
+class PDAWallet:
+    id: str
+    org_id: str
+    pda_address: str
+    authority_wallet_id: str
+    agent_id: str | None
+    agent_id_seed: str
+    spending_limit_per_tx: int
+    daily_limit: int
+    bump: int
+    is_active: bool
+    tx_signature: str | None
+    created_at: str
+
+
+@dataclass
+class PDAWalletState:
+    pda_address: str
+    authority: str
+    org: str
+    agent_id: str
+    spending_limit_per_tx: int
+    daily_limit: int
+    daily_spent: int
+    last_reset_day: int
+    is_active: bool
+    bump: int
+    sol_balance: float
+
+
+@dataclass
+class PDATransferResult:
+    signature: str
+    confirmed: bool
+
+
+@dataclass
+class PDADeriveResult:
+    pda_address: str
+    bump: int
