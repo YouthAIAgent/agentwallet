@@ -1,6 +1,0 @@
-Contact: security@agentwallet.fun
-Contact: https://github.com/YouthAIAgent/agentwallet/security/advisories
-Expires: 2027-02-13T00:00:00.000Z
-Preferred-Languages: en
-Canonical: https://agentwallet.fun/.well-known/security.txt
-Policy: https://github.com/YouthAIAgent/agentwallet/blob/master/SECURITY.md

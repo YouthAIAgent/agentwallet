@@ -56,15 +56,9 @@ auth, wallets, agents, transactions, escrow, analytics, compliance, policies, we
 8. **SDK name**: Package is `agentwallet-sdk` on PyPI (plain `agentwallet` was taken)
 
 ## Environment Variables (Railway Production)
-```
-DATABASE_URL=postgresql+asyncpg://postgres:***@postgres.railway.internal:5432/railway
-REDIS_URL=redis://default:redis@redis.railway.internal:6379
-JWT_SECRET=aw_jwt_365e57d6eaccfd7bb6bfb85ad36dd9f456fde7639d7589465856de95fdf92678
-ENCRYPTION_KEY=Yp8ofKWIyBia-xB49Fspmqq3jJ64j5Bzb6VWSOMdJmg=
-SOLANA_RPC_URL=https://api.devnet.solana.com
-PLATFORM_WALLET_ADDRESS=11111111111111111111111111111111
-ENVIRONMENT=production
-```
+All secrets are managed via Railway dashboard — never commit secrets to the repo.
+Required env vars: `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET_KEY`, `ENCRYPTION_KEY`, `SOLANA_RPC_URL`, `PLATFORM_WALLET_ADDRESS`, `ENVIRONMENT`
+See `.env.example` for the full list.
 
 ## Tests
 - **53/53 passing** with `pytest` (SQLite + aiosqlite backend)
@@ -98,7 +92,4 @@ ENVIRONMENT=production
 8. Wrap Railway start command in sh -c + rename SDK to agentwallet-sdk
 
 ## Related Project
-- moltfarm (C:\Users\black\Desktop\moltfarm): Solana utilities reused in this project
-  - lib/wallet.py: transfer_sol(), async_get_balance(), confirm_transaction()
-  - lib/signer.py: sign_transaction(), decode_transaction()
-  - lib/common.py: retry() decorator, RetryableError
+- moltfarm: Solana utilities reused in this project (transfer_sol, confirm_transaction, retry decorator)

@@ -64,3 +64,34 @@ tweet-cards/
 test_x402.py
 test-voice.mp3
 test-edge-voice.mp3
+pda-thread/
+pda-wallet-thread/
+content-strategy/
+profile-assets/
+
+# Duplicate landing page files
+agentwallet/index.html
+agentwallet/script.js
+agentwallet/style.css
+
+# Solana keypair (NEVER commit)
+agentwallet/target/
+*-keypair.json
+
+# Hackathon artifacts
+docs/colosseum-submission.json
+docs/SUBMISSION.md
+
+# Root tooling (not part of project)
+/package.json
+/package-lock.json
+init_platform_config.py
+
+# Temp/output files
+temp-*
+*-output.png
+tweet-output.png
+orange-card-output.png
+
+# Claude Code
+.claude/
