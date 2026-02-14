@@ -21,7 +21,7 @@ Add to your MCP client config:
             "command": "agentwallet-mcp",
             "env": {
                 "AGENTWALLET_API_KEY": "aw_live_xxx",
-                "AGENTWALLET_BASE_URL": "https://your-api.up.railway.app/v1"
+                "AGENTWALLET_BASE_URL": "https://api.agentwallet.fun/v1"
             }
         }
     }
@@ -39,7 +39,7 @@ Add to your OpenClaw config:
             "command": "agentwallet-mcp",
             "env": {
                 "AGENTWALLET_API_KEY": "aw_live_xxx",
-                "AGENTWALLET_BASE_URL": "https://your-api.up.railway.app/v1"
+                "AGENTWALLET_BASE_URL": "https://api.agentwallet.fun/v1"
             }
         }
     }
