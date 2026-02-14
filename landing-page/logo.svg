@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+<defs>
+<linearGradient id="hexGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#9945FF"/>
+<stop offset="50%" stop-color="#00d4ff"/>
+<stop offset="100%" stop-color="#14F195"/>
+</linearGradient>
+<linearGradient id="hexBg" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#141420"/>
+<stop offset="100%" stop-color="#0a0a0f"/>
+</linearGradient>
+<filter id="neonGlow">
+<feGaussianBlur stdDeviation="4" result="blur"/>
+<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+<filter id="textGlow">
+<feGaussianBlur stdDeviation="2" result="blur"/>
+<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+</defs>
+<!-- Outer glow hex -->
+<polygon points="100,12 174,43 174,157 100,188 26,157 26,43" fill="none" stroke="url(#hexGrad)" stroke-width="2" opacity="0.3" filter="url(#neonGlow)"/>
+<!-- Main hex -->
+<polygon points="100,18 168,46 168,154 100,182 32,154 32,46" fill="url(#hexBg)" stroke="url(#hexGrad)" stroke-width="3.5" filter="url(#neonGlow)"/>
+<!-- Inner hex accent -->
+<polygon points="100,35 152,56 152,144 100,165 48,144 48,56" fill="none" stroke="url(#hexGrad)" stroke-width="0.5" opacity="0.15"/>
+<!-- AW text -->
+<text x="100" y="118" text-anchor="middle" font-family="'SF Mono','JetBrains Mono',monospace" font-size="62" font-weight="800" fill="url(#hexGrad)" filter="url(#textGlow)" letter-spacing="-1">AW</text>
+<!-- Solana dot -->
+<circle cx="100" cy="145" r="4" fill="#14F195" opacity="0.8">
+<animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
+</circle>
+</svg>
