@@ -150,7 +150,7 @@ pip install aw-protocol-sdk==0.2.0
 pip install agentwallet-mcp
 ```
 
-Any MCP-compatible AI (Claude, GPT, Cursor) can now create wallets, transfer SOL, manage escrow — as native tools. **27 tools** covering the full protocol. [See MCP docs →](agentwallet/packages/mcp-server/README.md)
+Any MCP-compatible AI can now create wallets, transfer SOL, manage escrow — as native tools. **27 tools** covering the full protocol. [See MCP docs →](agentwallet/packages/mcp-server/README.md)
 
 ### Deploy Your First Agent
 

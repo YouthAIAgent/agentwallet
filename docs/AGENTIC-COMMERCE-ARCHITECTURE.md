@@ -16,7 +16,7 @@ AgentWallet isn't just a wallet — it's the **financial operating system** for 
 │                                                                  │
 │  ┌────────────────────────────────────────────────────────────┐  │
 │  │  Layer 10: FOUNDATION MODEL                                │  │
-│  │  Claude, GPT, Gemini, Llama — the agent's brain            │  │
+│  │  GPT, Gemini, Llama — the agent's brain                     │  │
 │  │  Decides WHAT to buy, sell, trade, pay                     │  │
 │  └────────────────────────────────────────────────────────────┘  │
 │                              ↕                                   │
@@ -309,7 +309,7 @@ Agent A (buyer)                    Agent B (seller)
 MCP is how foundation models actually USE the financial stack. 27 tools that turn any LLM into a financially autonomous agent.
 
 ```python
-# Inside Claude's tool use:
+# Inside AI agent's tool use:
 create_agent(name="research-bot", capabilities=["data", "payments"])
 transfer_sol(from_wallet="...", to_address="...", amount_sol=0.5)
 create_escrow(funder_wallet="...", recipient="...", amount_sol=2.0)
@@ -332,7 +332,7 @@ The model decides. Everything else executes.
 
 | Model | Role |
 |---|---|
-| **Claude** | Complex reasoning, escrow conditions, dispute resolution |
+| **LLM** | Complex reasoning, escrow conditions, dispute resolution |
 | **GPT** | Trading strategies, market analysis |
 | **Gemini** | Multi-modal data processing, image analysis tasks |
 | **Llama** | Cost-effective bulk operations, classification |
@@ -344,7 +344,7 @@ The model decides. Everything else executes.
 ## The Full Transaction Flow
 
 ```
-Foundation Model (Claude)
+Foundation Model (LLM)
     │ "Pay 0.5 USDC to data-provider for weather API"
     ↓
 MCP Layer

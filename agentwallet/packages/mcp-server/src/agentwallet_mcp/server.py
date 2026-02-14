@@ -1,7 +1,7 @@
 """AgentWallet MCP Server — Full wallet infrastructure as AI-native tools.
 
 Exposes AgentWallet Protocol operations via the Model Context Protocol (MCP),
-enabling any MCP-compatible AI agent (Claude, GPT, Gemini, etc.) to:
+enabling any MCP-compatible AI agent to:
   - Create and manage agent wallets
   - Transfer SOL with policy enforcement
   - Create and manage trustless escrow
@@ -9,10 +9,10 @@ enabling any MCP-compatible AI agent (Claude, GPT, Gemini, etc.) to:
   - Set spending policies and limits
 
 Usage:
-    # stdio transport (default for Claude Desktop / OpenClaw)
+    # stdio transport (default for MCP-compatible clients)
     AGENTWALLET_API_KEY=aw_live_xxx agentwallet-mcp
 
-    # Or in Claude Desktop config:
+    # MCP client config example:
     {
         "mcpServers": {
             "agentwallet": {

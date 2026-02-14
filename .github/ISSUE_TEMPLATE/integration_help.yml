@@ -41,7 +41,7 @@ body:
       options:
         - Python SDK
         - REST API (direct)
-        - MCP Server (Claude/GPT)
+        - MCP Server (AI Agents)
         - Docker self-hosted
         - Solana program (CPI)
     validations:

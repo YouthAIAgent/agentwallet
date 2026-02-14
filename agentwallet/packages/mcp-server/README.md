@@ -2,7 +2,7 @@
 
 **Give any AI agent a Solana wallet in one tool call.**
 
-MCP (Model Context Protocol) server that exposes the full AgentWallet Protocol as AI-native tools. Works with Claude Desktop, OpenClaw, Cursor, and any MCP-compatible client.
+MCP (Model Context Protocol) server that exposes the full AgentWallet Protocol as AI-native tools. Works with any MCP-compatible client including desktop apps, IDEs, and agent frameworks.
 
 ## Quick Start
 
@@ -10,9 +10,9 @@ MCP (Model Context Protocol) server that exposes the full AgentWallet Protocol a
 pip install agentwallet-mcp
 ```
 
-### Claude Desktop
+### MCP Desktop Client
 
-Add to your `claude_desktop_config.json`:
+Add to your MCP client config:
 
 ```json
 {
