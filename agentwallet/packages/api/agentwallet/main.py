@@ -59,8 +59,8 @@ app = FastAPI(
     description="AI Agent Wallet Infrastructure on Solana",
     version="0.2.0",
     lifespan=lifespan,
-    docs_url=None if _is_prod else "/docs",
-    redoc_url=None if _is_prod else "/redoc",
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
 # Security Headers Middleware
@@ -74,7 +74,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
         if _is_prod:
             response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-            response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'"
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+                "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+                "img-src 'self' data: https://fastapi.tiangolo.com; "
+                "worker-src 'self' blob:"
+            )
         return response
 
 app.add_middleware(SecurityHeadersMiddleware)
