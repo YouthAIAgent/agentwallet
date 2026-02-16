@@ -67,7 +67,8 @@ Your AI agents need money. Not _your_ money — **their own wallets**, with prog
 | **API Docs** | [Swagger UI](https://api.agentwallet.fun/docs) |
 | **API Health** | [Live API](https://api.agentwallet.fun/health) |
 | **Solana Explorer** | [View on Devnet](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet) |
-| **SDK** | `pip install aw-protocol-sdk==0.3.0` |
+| **SDK (Python)** | `pip install aw-protocol-sdk==0.3.0` |
+| **SDK (TypeScript)** | `npm install github:YouthAIAgent/agentwallet#master` |
 | **MCP Server** | `pip install agentwallet-mcp` |
 
 ---
@@ -671,9 +672,14 @@ async def autonomous_agent_workflow():
 
 ## 🔌 Quick Install
 
-### SDK
+### SDK (Python)
 ```bash
 pip install aw-protocol-sdk==0.3.0
+```
+
+### SDK (TypeScript)
+```bash
+npm install github:YouthAIAgent/agentwallet#master
 ```
 
 ### MCP Server (AI-Native Tools)
@@ -729,6 +735,7 @@ curl -X POST http://localhost:8000/v1/auth/register \
 
 - ✅ **Core Protocol** — Wallets, escrow, policies, analytics
 - ✅ **Python SDK** — Published on PyPI (`pip install aw-protocol-sdk`)
+- ✅ **TypeScript SDK** — Install from GitHub (`npm install github:YouthAIAgent/agentwallet#master`)
 - ✅ **Devnet Deployment** — Live on Solana devnet
 - ✅ **Security Audit & Hardening** — 25 findings, 13 fixes applied, 84/84 tests passing
 - ✅ **MCP Integration** — 33 AI-native tools via Model Context Protocol
@@ -1228,7 +1235,8 @@ MIT — see [LICENSE](LICENSE).
 🔗 **Website:** [agentwallet.fun](https://agentwallet.fun)
 🔗 **API:** [api.agentwallet.fun](https://api.agentwallet.fun)
 🔗 **GitHub:** [github.com/YouthAIAgent/agentwallet](https://github.com/YouthAIAgent/agentwallet)
-🔗 **SDK:** `pip install aw-protocol-sdk==0.3.0`
+🔗 **SDK (Python):** `pip install aw-protocol-sdk==0.3.0`
+🔗 **SDK (TypeScript):** `npm install github:YouthAIAgent/agentwallet#master`
 🔗 **MCP:** `pip install agentwallet-mcp`
 
 ---

@@ -5,8 +5,11 @@ TypeScript/JavaScript SDK for [AgentWallet Protocol](https://github.com/YouthAIA
 ## Install
 
 ```bash
-npm install aw-protocol-sdk
+# Install directly from GitHub
+npm install github:YouthAIAgent/agentwallet#master
 ```
+
+> **Note:** The SDK source lives in `packages/sdk-ts/`. Once published to npm, you'll also be able to `npm install aw-protocol-sdk`.
 
 ## Quick Start
 

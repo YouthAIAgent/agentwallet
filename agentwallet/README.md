@@ -9,7 +9,8 @@
 
 - Live API: https://api.agentwallet.fun
 - Website: https://agentwallet.fun
-- SDK: `pip install aw-protocol-sdk`
+- SDK (Python): `pip install aw-protocol-sdk`
+- SDK (TypeScript): `npm install github:YouthAIAgent/agentwallet#master`
 
 ---
 
@@ -157,6 +158,7 @@ await aw.swarms.complete_subtask(swarm.id, task.id, "sub-1", result={"data": "..
 
 ## SDK Usage
 
+### Python
 ```bash
 pip install aw-protocol-sdk
 ```
@@ -197,6 +199,21 @@ async with AgentWallet(api_key="aw_live_...", base_url="https://api.agentwallet.
         name="Analysis Cluster",
         orchestrator_agent_id=agent.id,
     )
+```
+
+### TypeScript
+```bash
+npm install github:YouthAIAgent/agentwallet#master
+```
+
+```typescript
+import { AgentWallet } from 'aw-protocol-sdk';
+
+const aw = new AgentWallet({ apiKey: 'aw_live_...' });
+
+const agent = await aw.agents.create({ name: 'trading-bot' });
+const wallet = await aw.wallets.create({ agent_id: agent.id });
+const balance = await aw.wallets.getBalance(wallet.id);
 ```
 
 ## Environment Variables
