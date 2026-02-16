@@ -198,6 +198,19 @@ async def escrow_state_handler(request: Request, exc: EscrowStateError):
     return JSONResponse(status_code=409, content={"error": str(exc)})
 
 
+@app.get("/")
+async def root():
+    return {
+        "name": "AgentWallet Protocol",
+        "version": "0.4.0",
+        "description": "AI Agent Wallet Infrastructure on Solana",
+        "health": "/health",
+        "api": "/v1",
+        "docs": "https://agentwallet.fun/docs.html",
+        "github": "https://github.com/YouthAIAgent/agentwallet",
+    }
+
+
 @app.get("/health")
 async def health():
     return {"status": "ok", "version": "0.4.0"}
