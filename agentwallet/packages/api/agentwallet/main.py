@@ -18,6 +18,7 @@ from .api.routers import (
     marketplace,
     pda_wallets,
     policies,
+    public,
     swarms,
     tokens,
     transactions,
@@ -119,6 +120,7 @@ app.include_router(marketplace.router, prefix="/v1")
 app.include_router(pda_wallets.router, prefix="/v1")
 app.include_router(acp.router, prefix="/v1")
 app.include_router(swarms.router, prefix="/v1")
+app.include_router(public.router, prefix="/v1")
 
 
 # Global exception handlers
