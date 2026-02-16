@@ -65,8 +65,8 @@ app = FastAPI(
     description="AI Agent Wallet Infrastructure on Solana",
     version="0.4.0",
     lifespan=lifespan,
-    docs_url=None if _is_prod else "/docs",
-    redoc_url=None if _is_prod else "/redoc",
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
 
