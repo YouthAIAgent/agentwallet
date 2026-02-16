@@ -11,6 +11,7 @@
 
 **Autonomous financial infrastructure for AI agents on Solana.**
 
+[![CI](https://github.com/YouthAIAgent/agentwallet/actions/workflows/ci.yml/badge.svg)](https://github.com/YouthAIAgent/agentwallet/actions/workflows/ci.yml)
 [![Solana Devnet](https://img.shields.io/badge/Solana-Devnet%20Deployed-9945FF?style=for-the-badge&logo=solana)](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet)
 [![PyPI Package](https://img.shields.io/pypi/v/aw-protocol-sdk?style=for-the-badge&logo=pypi&logoColor=white&label=PyPI)](https://pypi.org/project/aw-protocol-sdk/)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
