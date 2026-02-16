@@ -67,7 +67,7 @@ Your AI agents need money. Not _your_ money — **their own wallets**, with prog
 | **API Docs** | [Swagger UI](https://api.agentwallet.fun/docs) |
 | **API Health** | [Live API](https://api.agentwallet.fun/health) |
 | **Solana Explorer** | [View on Devnet](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet) |
-| **SDK (Python)** | `pip install aw-protocol-sdk==0.3.0` |
+| **SDK (Python)** | `pip install aw-protocol-sdk==0.4.0` |
 | **SDK (TypeScript)** | `npm install github:YouthAIAgent/agentwallet#master` |
 | **MCP Server** | `pip install agentwallet-mcp` |
 
@@ -674,7 +674,7 @@ async def autonomous_agent_workflow():
 
 ### SDK (Python)
 ```bash
-pip install aw-protocol-sdk==0.3.0
+pip install aw-protocol-sdk==0.4.0
 ```
 
 ### SDK (TypeScript)
@@ -737,7 +737,7 @@ curl -X POST http://localhost:8000/v1/auth/register \
 - ✅ **Python SDK** — Published on PyPI (`pip install aw-protocol-sdk`)
 - ✅ **TypeScript SDK** — Install from GitHub (`npm install github:YouthAIAgent/agentwallet#master`)
 - ✅ **Devnet Deployment** — Live on Solana devnet
-- ✅ **Security Audit & Hardening** — 25 findings, 13 fixes applied, 84/84 tests passing
+- ✅ **Security Audit & Hardening** — 25 findings, 13 fixes applied, 110/110 tests passing
 - ✅ **MCP Integration** — 33 AI-native tools via Model Context Protocol
 - ✅ **A2A Commerce Protocol** — Agent-to-agent marketplace (v0.2.0)
 - ✅ **x402 Payments** — HTTP-native auto-pay middleware (v0.2.0)
@@ -1171,7 +1171,7 @@ ENCRYPTION      Fernet (dev) · AWS KMS (prod)
 BILLING         Stripe
 LOGGING         structlog (JSON)
 CONTAINERS      Docker Compose
-TESTING         pytest · pytest-asyncio · httpx (84 tests)
+TESTING         pytest · pytest-asyncio · httpx (110 tests)
 ```
 
 ---
@@ -1181,7 +1181,7 @@ TESTING         pytest · pytest-asyncio · httpx (84 tests)
 ```bash
 pip install -e ".[dev]"
 uvicorn agentwallet.main:app --reload --port 8000
-pytest packages/api/tests/ -v  # 84 tests
+pytest packages/api/tests/ -v  # 110 tests
 cd packages/dashboard && npm install && npm run dev
 cd packages/programs/agentwallet && anchor build
 ruff check packages/api/
@@ -1235,7 +1235,7 @@ MIT — see [LICENSE](LICENSE).
 🔗 **Website:** [agentwallet.fun](https://agentwallet.fun)
 🔗 **API:** [api.agentwallet.fun](https://api.agentwallet.fun)
 🔗 **GitHub:** [github.com/YouthAIAgent/agentwallet](https://github.com/YouthAIAgent/agentwallet)
-🔗 **SDK (Python):** `pip install aw-protocol-sdk==0.3.0`
+🔗 **SDK (Python):** `pip install aw-protocol-sdk==0.4.0`
 🔗 **SDK (TypeScript):** `npm install github:YouthAIAgent/agentwallet#master`
 🔗 **MCP:** `pip install agentwallet-mcp`
 
