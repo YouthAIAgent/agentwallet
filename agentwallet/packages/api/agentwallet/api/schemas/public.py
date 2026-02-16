@@ -15,7 +15,7 @@ class PublicStats(BaseModel):
     total_volume_sol: float
     api_endpoints: int = 88
     mcp_tools: int = 27
-    tests_passing: int = 106
+    tests_passing: int = 110
     router_groups: int = 16
 
 
