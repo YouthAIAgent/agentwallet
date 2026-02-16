@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI
 
 on:
   push:
@@ -41,10 +41,40 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run tests
-        run: pytest packages/api/tests/ -v
+        run: pytest packages/api/tests/ -v --tb=short
 
   # ──────────────────────────────────────────────
-  # Job 2: Dashboard build (runs in parallel with tests)
+  # Job 2: Lint with ruff (non-blocking)
+  # ──────────────────────────────────────────────
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agentwallet
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ruff
+        run: pip install ruff>=0.5
+
+      - name: Run ruff check
+        run: ruff check packages/api/ --output-format=github
+        continue-on-error: true
+
+      - name: Run ruff format check
+        run: ruff format --check packages/api/
+        continue-on-error: true
+
+  # ──────────────────────────────────────────────
+  # Job 3: Dashboard build (runs in parallel)
   # ──────────────────────────────────────────────
   dashboard:
     name: Dashboard Build
