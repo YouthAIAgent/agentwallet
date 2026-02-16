@@ -78,7 +78,7 @@ Required env vars: `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET_KEY`, `ENCRYPTION_KE
 See `.env.example` for the full list.
 
 ## Tests
-- **84/84 passing** with `pytest` (SQLite + aiosqlite backend)
+- **110/110 passing** with `pytest` (SQLite + aiosqlite backend)
 - 9 test files: test_agents, test_auth, test_escrow, test_marketplace, test_pda_wallets, test_policies, test_transactions, test_wallets + conftest
 - Config: `asyncio_mode = "auto"`, testpaths = `packages/api/tests`
 - conftest.py creates/drops tables per session, mocks Redis + Solana RPC
