@@ -1,0 +1,68 @@
+═══════════════════════════════════════════════════════════════════
+AGENTWALLET v2 BETA — DISCORD ANNOUNCEMENT
+═══════════════════════════════════════════════════════════════════
+
+@everyone The future is here. AgentWallet v2 Beta is LIVE! 
+
+```
+╔═══════════════════════════════════════════════════════════════════╗
+║           🤖 AGENTWALLET v2.0 BETA LAUNCH 🤖                      ║
+║                                                                   ║
+║     Your AI. Your Wallet. Real On-Chain Transactions.            ║
+╚═══════════════════════════════════════════════════════════════════╝
+```
+
+**What's AgentWallet?**
+It's not just a crypto wallet — it's an AI agent that can actually *do* things on-chain. Swap tokens, stake ETH, buy NFTs, bridge assets — all triggered by natural language.
+
+**✨ Key Features:**
+
+🛡️ **MPC-TSS Security** — Keys split across multiple parties. Never stored in one place.
+
+⛓️ **Multi-Chain Native** — ETH, BSC, Polygon, Arbitrum. More coming soon.
+
+🤖 **Natural Language Commands** — Just type what you want. "Swap 0.5 ETH for USDC"
+
+⚡ **Autonomous Execution** — Set it and forget it. Your agent works 24/7.
+
+📊 **Real-Time Monitoring** — Live balances, alerts, portfolio analytics.
+
+🧪 **Testnet Sandbox** — Build and test without risking real funds.
+
+**🚀 How to Join the Beta:**
+
+1️⃣ Sign up at → https://beta.agentwallet.io
+2️⃣ Connect your wallet (MetaMask, Rainbow, etc.)
+3️⃣ Get testnet ETH (we'll airdrop!)
+4️⃣ Start commanding your agent
+
+**Limited to 1,000 beta testers!**
+
+**🎁 Beta Perks:**
+• Early adopter NFT (limited edition)
+• Priority mainnet access
+• Token allocation for active testers
+• Private channel access for feedback
+
+**🔐 Security First:**
+• Non-custodial — we never hold your keys
+• Hardware Security Module (HSM) support
+• Rate limiting & spending caps
+• Audited by Trail of Bits
+
+**🔗 Quick Links:**
+• Beta Signup: https://beta.agentwallet.io
+• Live Demo: https://demo.agentwallet.io
+• Docs: https://docs.agentwallet.io
+• GitHub: https://github.com/agentwallet
+
+**Questions?**
+Drop them in #beta-feedback or DM the mods.
+
+Let's build the $10B autonomous agent economy together! 
+
+#AgentWallet #BetaLaunch #Web3 #AI #DeFi
+
+═══════════════════════════════════════════════════════════════════
+END OF DISCORD ANNOUNCEMENT
+═══════════════════════════════════════════════════════════════════

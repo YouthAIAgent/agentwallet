@@ -1,0 +1,144 @@
+═══════════════════════════════════════════════════════════════════
+AGENTWALLET v2 BETA — EMAIL TEMPLATE FOR TESTERS
+═══════════════════════════════════════════════════════════════════
+
+SUBJECT: 🚀 You're In! AgentWallet v2 Beta Access Granted
+
+═══════════════════════════════════════════════════════════════════
+
+```
+╔═══════════════════════════════════════════════════════════════════╗
+║                                                                   ║
+║              🤖 AGENTWALLET v2.0 BETA 🤖                         ║
+║                                                                   ║
+║     Welcome to the future of autonomous on-chain agents          ║
+║                                                                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+```
+
+Hi {{FIRST_NAME}},
+
+Congratulations! You've been selected to join the **AgentWallet v2 Beta** — an exclusive group of 1,000 pioneers building the future of AI-powered blockchain interaction.
+
+Your AI agent is ready. Your wallet awaits. Let's get started.
+
+═══════════════════════════════════════════════════════════════════
+📋 BETA TESTER QUICK START
+═══════════════════════════════════════════════════════════════════
+
+**STEP 1: Access Your Dashboard**
+→ https://beta.agentwallet.io/dashboard
+Login with the email address you used to sign up.
+
+**STEP 2: Connect Your Wallet**
+Supported wallets:
+• MetaMask (Browser Extension / Mobile)
+• Rainbow
+• WalletConnect-compatible wallets
+• Ledger (via WalletConnect)
+
+**STEP 3: Claim Your Testnet ETH**
+We've airdropped testnet ETH to your connected wallet address.
+If you need more, use the faucet: https://faucet.agentwallet.io
+
+**STEP 4: Create Your First Agent**
+• Go to "Agent Profiles"
+• Click "Create New Agent"
+• Set your risk tolerance and spending limits
+• Configure notification preferences
+
+**STEP 5: Execute Your First Command**
+Try these in the command box:
+```
+"Show my ETH balance"
+"Swap 0.01 ETH for USDC on Uniswap"
+"Check gas prices on Arbitrum"
+"Bridge 10 USDC to Polygon"
+```
+
+═══════════════════════════════════════════════════════════════════
+🎯 WHAT TO TEST
+═══════════════════════════════════════════════════════════════════
+
+We're looking for feedback on:
+
+✓ **User Experience** — Is the interface intuitive? Any confusion?
+✓ **Transaction Execution** — Do commands work as expected?
+✓ **Security Features** — Are spending limits and alerts clear?
+✓ **Multi-Chain Flows** — How smooth is cross-chain interaction?
+✓ **SDK/API** — If you're a dev, try our API: https://docs.agentwallet.io/api
+
+**Bonus:** Try to break it! Report any bugs or edge cases.
+
+═══════════════════════════════════════════════════════════════════
+📝 FEEDBACK & SUPPORT
+═══════════════════════════════════════════════════════════════════
+
+Your feedback shapes the final product. Here's how to share:
+
+📊 **Feedback Form**: https://forms.agentwallet.io/beta-feedback
+(Please submit at least once during your testing)
+
+💬 **Discord (Private Channel)**: https://discord.gg/agentwallet
+#beta-testers-only — Direct access to the core team
+
+🐛 **Bug Reports**: Reply to this email or use the in-app bug reporter
+
+📧 **Support**: beta-support@agentwallet.io
+
+═══════════════════════════════════════════════════════════════════
+🎁 YOUR BETA REWARDS
+═══════════════════════════════════════════════════════════════════
+
+As a thank you for your participation:
+
+🏅 **Early Adopter NFT** — Claim after submitting your first feedback
+🚀 **Priority Mainnet Access** — Skip the waitlist for public launch
+💎 **Token Allocation** — Active testers receive governance tokens
+🤝 **Founding Member Status** — Permanent recognition in our community
+
+═══════════════════════════════════════════════════════════════════
+⚠️ IMPORTANT NOTES
+═══════════════════════════════════════════════════════════════════
+
+• This is a BETA. Use testnet funds only.
+• If testing with real funds, use small amounts you can afford to lose.
+• All beta activity is monitored for security purposes.
+• Beta access expires in 60 days (we'll extend for active testers).
+
+═══════════════════════════════════════════════════════════════════
+🔗 USEFUL LINKS
+═══════════════════════════════════════════════════════════════════
+
+📚 Documentation: https://docs.agentwallet.io
+🎥 Video Demo: https://demo.agentwallet.io
+💻 GitHub: https://github.com/agentwallet
+🐦 Twitter: https://twitter.com/AgentWallet
+
+═══════════════════════════════════════════════════════════════════
+
+Ready to give your AI a bank account?
+
+→ [ACCESS BETA DASHBOARD](https://beta.agentwallet.io/dashboard)
+
+Welcome aboard, pioneer.
+
+The future of autonomous agents starts with you.
+
+```
+Best regards,
+The AgentWallet Team
+
+🤖 Building the $10B agent economy
+```
+
+═══════════════════════════════════════════════════════════════════
+
+AgentWallet Labs | https://agentwallet.io | beta-support@agentwallet.io
+
+Unsubscribe: {{UNSUBSCRIBE_LINK}}
+Twitter: @AgentWallet | Discord: discord.gg/agentwallet
+
+═══════════════════════════════════════════════════════════════════
+END OF EMAIL TEMPLATE
+═══════════════════════════════════════════════════════════════════
