@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# AgentWallet CLI helper — ./aw <command>
-# Type: ./aw help  to see all commands
+# AgentWallet CLI helper — ./aw [command]
+# No args → interactive menu  |  ./aw help → all commands
 
 BGREEN='\033[1;32m'
 GREEN='\033[0;32m'
@@ -13,13 +13,599 @@ RED='\033[0;31m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-CMD="${1:-help}"
+CMD="${1:-menu}"
+
+# ── Session ────────────────────────────────────────────────────────────────────
+SESSION_FILE="$(dirname "$0")/.aw_session"
+AW_TOKEN=""
+AW_EMAIL=""
+AW_ORG_ID=""
+AW_API="${AW_API:-http://localhost:8000}"
+
+load_session() {
+  [ -f "$SESSION_FILE" ] && source "$SESSION_FILE" 2>/dev/null
+}
+
+save_session() {
+  printf 'AW_TOKEN="%s"\nAW_EMAIL="%s"\nAW_ORG_ID="%s"\n' \
+    "$AW_TOKEN" "$AW_EMAIL" "$AW_ORG_ID" > "$SESSION_FILE"
+  chmod 600 "$SESSION_FILE" 2>/dev/null
+}
+
+clear_session() {
+  AW_TOKEN=""; AW_EMAIL=""; AW_ORG_ID=""
+  rm -f "$SESSION_FILE"
+}
+
+# ── API call ──────────────────────────────────────────────────────────────────
+# Sets HTTP_CODE and RESPONSE globals after each call
+api_call() {
+  local method="$1"
+  local path="$2"
+  local body="${3:-}"
+  local url="${AW_API}/v1${path}"
+  local tmp
+  tmp=$(mktemp 2>/dev/null || echo "/tmp/aw_$$")
+
+  local auth_args=()
+  [ -n "$AW_TOKEN" ] && auth_args+=(-H "Authorization: Bearer $AW_TOKEN")
+
+  if [ -n "$body" ]; then
+    HTTP_CODE=$(curl -s -o "$tmp" -w "%{http_code}" -X "$method" "$url" \
+      -H "Content-Type: application/json" \
+      "${auth_args[@]}" \
+      -d "$body" 2>/dev/null)
+  else
+    HTTP_CODE=$(curl -s -o "$tmp" -w "%{http_code}" -X "$method" "$url" \
+      "${auth_args[@]}" 2>/dev/null)
+  fi
+  RESPONSE=$(cat "$tmp" 2>/dev/null)
+  rm -f "$tmp" 2>/dev/null
+}
+
+# Extract a field from $RESPONSE JSON
+json_field() {
+  printf '%s' "$RESPONSE" | python3 -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+    keys = '$1'.split('.')
+    for k in keys:
+        if isinstance(d, list): d = d[int(k)]
+        else: d = d.get(k, '')
+    v = d if d is not None else ''
+    print(v)
+except: print('')" 2>/dev/null
+}
+
+# Check API reachability
+check_api() {
+  local s
+  s=$(curl -s -o /dev/null -w "%{http_code}" "${AW_API}/health" 2>/dev/null || echo "000")
+  [ "$s" = "200" ]
+}
+
+# ── UI helpers ────────────────────────────────────────────────────────────────
+sep()   { printf "  ${DIM}─────────────────────────────────────────${NC}\n"; }
+ok()    { printf "  ${BGREEN}✓${NC}  $1\n"; }
+err()   { printf "  ${RED}✗${NC}  $1\n"; }
+info()  { printf "  ${CYAN}ℹ${NC}  $1\n"; }
+pause() { printf "\n  ${DIM}Press Enter to continue...${NC}"; read -r _; }
+
+prompt() {
+  printf "  ${CYAN}?${NC} ${BOLD}$1${NC}: "
+  read -r "$2"
+}
+
+prompt_secret() {
+  printf "  ${CYAN}?${NC} ${BOLD}$1${NC}: "
+  if [ -t 0 ]; then read -rs "$2"; printf "\n"; else read -r "$2"; fi
+}
+
+print_banner() {
+  printf "\n"
+  printf "  ${BGREEN}╔════════════════════════════════════════╗${NC}\n"
+  printf "  ${BGREEN}║${NC}  ${BOLD}AgentWallet Protocol${NC}  ${DIM}v0.4.0${NC}         ${BGREEN}║${NC}\n"
+  printf "  ${BGREEN}║${NC}  ${DIM}Give your AI agent a wallet.${NC}          ${BGREEN}║${NC}\n"
+  printf "  ${BGREEN}╚════════════════════════════════════════╝${NC}\n"
+  printf "\n"
+}
+
+print_status() {
+  local dot="${RED}●${NC}"
+  check_api 2>/dev/null && dot="${BGREEN}●${NC}"
+  local auth="${DIM}not logged in${NC}"
+  [ -n "$AW_TOKEN" ] && [ -n "$AW_EMAIL" ] && auth="${BGREEN}●${NC} ${WHITE}${AW_EMAIL}${NC}"
+  printf "  API ${dot}  ${AW_API}  |  ${auth}\n\n"
+}
+
+# ── Flow: Register ────────────────────────────────────────────────────────────
+flow_register() {
+  printf "\n  ${BOLD}Create a new account${NC}\n"; sep
+
+  prompt "Organization name (e.g. MyStartup AI)" ORG_NAME
+  prompt "Email" R_EMAIL
+  printf "  ${DIM}Password needs: 8+ chars, uppercase, lowercase, digit, special char${NC}\n"
+  prompt_secret "Password" R_PASS
+
+  info "Creating account..."
+  local body
+  body=$(printf '{"org_name":"%s","email":"%s","password":"%s"}' \
+    "$ORG_NAME" "$R_EMAIL" "$R_PASS")
+  api_call POST /auth/register "$body"
+
+  if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
+    AW_TOKEN=$(json_field "access_token")
+    AW_ORG_ID=$(json_field "org_id")
+    AW_EMAIL="$R_EMAIL"
+    save_session
+    printf "\n"
+    ok "Account created! Logged in as ${WHITE}${AW_EMAIL}${NC}"
+    ok "Org ID: ${CYAN}${AW_ORG_ID}${NC}"
+  else
+    err "Registration failed: $(json_field detail) (HTTP $HTTP_CODE)"
+  fi
+  pause
+}
+
+# ── Flow: Login ───────────────────────────────────────────────────────────────
+flow_login() {
+  printf "\n  ${BOLD}Login to your account${NC}\n"; sep
+
+  prompt "Email" L_EMAIL
+  prompt_secret "Password" L_PASS
+
+  info "Logging in..."
+  local body
+  body=$(printf '{"email":"%s","password":"%s"}' "$L_EMAIL" "$L_PASS")
+  api_call POST /auth/login "$body"
+
+  if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
+    AW_TOKEN=$(json_field "access_token")
+    AW_ORG_ID=$(json_field "org_id")
+    AW_EMAIL="$L_EMAIL"
+    save_session
+    printf "\n"
+    ok "Logged in as ${WHITE}${AW_EMAIL}${NC}"
+  else
+    err "Login failed: $(json_field detail) (HTTP $HTTP_CODE)"
+  fi
+  pause
+}
+
+# ── Flow: Logout ──────────────────────────────────────────────────────────────
+flow_logout() {
+  clear_session
+  ok "Logged out."
+  pause
+}
+
+# ── Flow: Create Wallet ───────────────────────────────────────────────────────
+flow_create_wallet() {
+  [ -z "$AW_TOKEN" ] && { err "Login first (option 2)"; pause; return; }
+
+  printf "\n  ${BOLD}Create a new wallet${NC}\n"; sep
+
+  prompt "Wallet label (e.g. Agent Trading Wallet)" W_LABEL
+
+  printf "\n  ${BOLD}Wallet type:${NC}\n"
+  printf "  [1] Solana ${DIM}(default, recommended)${NC}\n"
+  printf "  [2] EVM ${DIM}(Ethereum / Base / Polygon)${NC}\n"
+  printf "  Choice [1]: "
+  read -r WT
+  local wtype="solana"
+  [ "$WT" = "2" ] && wtype="evm"
+
+  local label_safe
+  label_safe=$(printf '%s' "$W_LABEL" | sed 's/"/\\"/g')
+  local body
+  body=$(printf '{"wallet_type":"%s","label":"%s"}' "$wtype" "$label_safe")
+
+  info "Creating ${wtype} wallet..."
+  api_call POST /wallets "$body"
+
+  if [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "200" ]; then
+    local wid waddr
+    wid=$(json_field "id")
+    waddr=$(json_field "address")
+    printf "\n"
+    ok "Wallet created!"
+    printf "  ${DIM}Type:    ${NC}${wtype}\n"
+    printf "  ${DIM}Label:   ${NC}${W_LABEL}\n"
+    printf "  ${DIM}ID:      ${NC}${CYAN}${wid}${NC}\n"
+    if [ -n "$waddr" ] && [ "$waddr" != "null" ] && [ "$waddr" != "None" ]; then
+      printf "  ${DIM}Address: ${NC}${GREEN}${waddr}${NC}\n"
+      printf "\n"
+      info "Fund this address to deposit SOL into your wallet"
+    fi
+  else
+    err "Failed: $(json_field detail) (HTTP $HTTP_CODE)"
+  fi
+  pause
+}
+
+# ── Flow: List Wallets ────────────────────────────────────────────────────────
+flow_list_wallets() {
+  [ -z "$AW_TOKEN" ] && { err "Login first (option 2)"; pause; return; }
+
+  printf "\n  ${BOLD}Your wallets${NC}\n"; sep
+
+  api_call GET /wallets
+
+  if [ "$HTTP_CODE" = "200" ]; then
+    printf '%s' "$RESPONSE" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+ws = d.get('data', [])
+if not ws:
+    print('  No wallets yet. Create one with option 4.')
+else:
+    print(f'  {len(ws)} wallet(s):\n')
+    for i, w in enumerate(ws, 1):
+        label = w.get('label') or '(unlabeled)'
+        wtype = w.get('wallet_type', 'solana')
+        addr  = w.get('address') or 'generating...'
+        wid   = str(w.get('id',''))
+        print(f'  [{i}] {label}')
+        print(f'       Type:    {wtype}')
+        print(f'       Address: {addr}')
+        print(f'       ID:      {wid}')
+        print()
+" 2>/dev/null
+  else
+    err "Could not load wallets (HTTP $HTTP_CODE)"
+  fi
+  pause
+}
+
+# ── Helper: select a wallet interactively → sets SELECTED_WALLET_ID ──────────
+select_wallet() {
+  SELECTED_WALLET_ID=""
+  api_call GET /wallets
+  [ "$HTTP_CODE" != "200" ] && { err "Could not load wallets."; return 1; }
+
+  local count
+  count=$(printf '%s' "$RESPONSE" | python3 -c "
+import sys,json; d=json.load(sys.stdin); print(len(d.get('data',[])))
+" 2>/dev/null)
+
+  if [ "$count" = "0" ] || [ -z "$count" ]; then
+    err "No wallets found. Create one first (option 4)."
+    return 1
+  fi
+
+  printf '%s' "$RESPONSE" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+for i, w in enumerate(d.get('data', []), 1):
+    label = w.get('label') or '(unlabeled)'
+    wtype = w.get('wallet_type', 'solana')
+    addr  = (w.get('address') or 'N/A')[:20]
+    print(f'  [{i}] {label}  ({wtype})  {addr}...')
+" 2>/dev/null
+
+  printf "  Choice: "
+  read -r W_IDX
+
+  SELECTED_WALLET_ID=$(printf '%s' "$RESPONSE" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+ws = d.get('data', [])
+try:
+    idx = int('${W_IDX}') - 1
+    if 0 <= idx < len(ws): print(ws[idx]['id'])
+    else: print('')
+except: print('')
+" 2>/dev/null)
+
+  [ -z "$SELECTED_WALLET_ID" ] && { err "Invalid selection."; return 1; }
+  return 0
+}
+
+# ── Flow: Check Balance ───────────────────────────────────────────────────────
+flow_balance() {
+  [ -z "$AW_TOKEN" ] && { err "Login first (option 2)"; pause; return; }
+
+  printf "\n  ${BOLD}Check wallet balance${NC}\n"; sep
+  printf "  Select wallet:\n"
+  select_wallet || { pause; return; }
+
+  info "Fetching balance..."
+  api_call GET "/wallets/${SELECTED_WALLET_ID}/balance"
+
+  if [ "$HTTP_CODE" = "200" ]; then
+    printf "\n"
+    printf '%s' "$RESPONSE" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+sol = d.get('sol_balance', 0) or 0
+lam = d.get('lamports', 0) or 0
+addr = d.get('address', 'N/A')
+print(f'  Address: {addr}')
+print(f'  Balance: {float(sol):.6f} SOL  ({lam} lamports)')
+tokens = d.get('token_balances', [])
+if tokens:
+    print('  Tokens:')
+    for t in tokens:
+        mint = (t.get('mint') or '?')[:16] + '...'
+        amt  = t.get('amount', 0)
+        print(f'    {mint}  {amt}')
+" 2>/dev/null || printf '%s\n' "$RESPONSE"
+  else
+    err "Failed (HTTP $HTTP_CODE)"
+  fi
+  pause
+}
+
+# ── Flow: Send SOL ────────────────────────────────────────────────────────────
+flow_send() {
+  [ -z "$AW_TOKEN" ] && { err "Login first (option 2)"; pause; return; }
+
+  printf "\n  ${BOLD}Send SOL payment${NC}\n"; sep
+  info "Requires a funded wallet on Solana mainnet/devnet."
+  printf "\n"
+
+  printf "  Select source wallet:\n"
+  select_wallet || { pause; return; }
+  local src_id="$SELECTED_WALLET_ID"
+
+  prompt "Recipient Solana address" TO_ADDR
+  prompt "Amount in SOL (e.g. 0.01)" AMOUNT_SOL
+  prompt "Memo (optional, Enter to skip)" TX_MEMO
+
+  local idempotency_key
+  idempotency_key="aw-$(date +%s%N 2>/dev/null || date +%s)-$$"
+
+  local body
+  if [ -n "$TX_MEMO" ]; then
+    body=$(printf '{"from_wallet_id":"%s","to_address":"%s","amount_sol":%s,"memo":"%s","idempotency_key":"%s"}' \
+      "$src_id" "$TO_ADDR" "$AMOUNT_SOL" "$TX_MEMO" "$idempotency_key")
+  else
+    body=$(printf '{"from_wallet_id":"%s","to_address":"%s","amount_sol":%s,"idempotency_key":"%s"}' \
+      "$src_id" "$TO_ADDR" "$AMOUNT_SOL" "$idempotency_key")
+  fi
+
+  info "Submitting transaction..."
+  api_call POST /transactions/transfer-sol "$body"
+
+  if [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "200" ]; then
+    local tx_id sig status
+    tx_id=$(json_field "id")
+    sig=$(json_field "signature")
+    status=$(json_field "status")
+    printf "\n"
+    ok "Transaction submitted!"
+    printf "  ${DIM}TX ID:   ${NC}${CYAN}${tx_id}${NC}\n"
+    printf "  ${DIM}Status:  ${NC}${status}\n"
+    if [ -n "$sig" ] && [ "$sig" != "null" ] && [ "$sig" != "None" ]; then
+      printf "  ${DIM}Sig:     ${NC}${GREEN}${sig}${NC}\n"
+    fi
+  else
+    err "Failed: $(json_field detail) (HTTP $HTTP_CODE)"
+  fi
+  pause
+}
+
+# ── Flow: Create Escrow ───────────────────────────────────────────────────────
+flow_create_escrow() {
+  [ -z "$AW_TOKEN" ] && { err "Login first (option 2)"; pause; return; }
+
+  printf "\n  ${BOLD}Create escrow${NC}\n"; sep
+  info "Funds are locked until you release (→ recipient) or refund (→ you)."
+  printf "\n"
+
+  printf "  Select funder wallet:\n"
+  select_wallet || { pause; return; }
+  local funder_id="$SELECTED_WALLET_ID"
+
+  prompt "Recipient Solana address" ESC_RECIP
+  prompt "Amount in SOL (e.g. 0.5)" ESC_SOL
+  printf "  ${CYAN}?${NC} ${BOLD}Expiry in hours${NC} [24]: "
+  read -r ESC_EXP
+  ESC_EXP="${ESC_EXP:-24}"
+
+  local body
+  body=$(printf '{"funder_wallet_id":"%s","recipient_address":"%s","amount_sol":%s,"expires_in_hours":%s}' \
+    "$funder_id" "$ESC_RECIP" "$ESC_SOL" "$ESC_EXP")
+
+  info "Creating escrow..."
+  api_call POST /escrow "$body"
+
+  if [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "200" ]; then
+    local eid estatus eaddr
+    eid=$(json_field "id")
+    estatus=$(json_field "status")
+    eaddr=$(json_field "escrow_address")
+    printf "\n"
+    ok "Escrow created!"
+    printf "  ${DIM}Escrow ID:  ${NC}${CYAN}${eid}${NC}\n"
+    printf "  ${DIM}Status:     ${NC}${estatus}\n"
+    printf "  ${DIM}Amount:     ${NC}${ESC_SOL} SOL\n"
+    printf "  ${DIM}Recipient:  ${NC}${ESC_RECIP}\n"
+    printf "  ${DIM}Expires in: ${NC}${ESC_EXP} hours\n"
+    if [ -n "$eaddr" ] && [ "$eaddr" != "null" ] && [ "$eaddr" != "None" ]; then
+      printf "  ${DIM}On-chain:   ${NC}${GREEN}${eaddr}${NC}\n"
+    fi
+    printf "\n"
+    info "Use option 9 to release or refund this escrow later"
+  else
+    err "Failed: $(json_field detail) (HTTP $HTTP_CODE)"
+  fi
+  pause
+}
+
+# ── Flow: Manage Escrow ───────────────────────────────────────────────────────
+flow_manage_escrow() {
+  [ -z "$AW_TOKEN" ] && { err "Login first (option 2)"; pause; return; }
+
+  printf "\n  ${BOLD}Manage escrow${NC}\n"; sep
+
+  api_call GET /escrow
+
+  if [ "$HTTP_CODE" != "200" ]; then
+    err "Could not load escrows (HTTP $HTTP_CODE)"
+    pause; return
+  fi
+
+  local count
+  count=$(printf '%s' "$RESPONSE" | python3 -c "
+import sys,json; d=json.load(sys.stdin); print(len(d.get('data',[])))
+" 2>/dev/null)
+
+  if [ "$count" = "0" ] || [ -z "$count" ]; then
+    info "No escrows found. Create one with option 8."
+    pause; return
+  fi
+
+  printf '%s' "$RESPONSE" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+for i, e in enumerate(d.get('data', []), 1):
+    eid    = str(e.get('id',''))[:8] + '...'
+    sol    = e.get('amount_lamports', 0) / 1e9
+    status = e.get('status', '?')
+    recip  = (e.get('recipient_address') or '?')[:24] + '...'
+    print(f'  [{i}] {eid}  |  {sol:.4f} SOL  |  {status}')
+    print(f'       Recipient: {recip}')
+    print()
+" 2>/dev/null
+
+  printf "  Select escrow: "
+  read -r E_IDX
+
+  local escrow_id
+  escrow_id=$(printf '%s' "$RESPONSE" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+es = d.get('data', [])
+try:
+    idx = int('${E_IDX}') - 1
+    if 0 <= idx < len(es): print(es[idx]['id'])
+    else: print('')
+except: print('')
+" 2>/dev/null)
+
+  if [ -z "$escrow_id" ]; then
+    err "Invalid selection."
+    pause; return
+  fi
+
+  printf "\n  ${BOLD}Action:${NC}\n"
+  printf "  [1] ${BGREEN}Release${NC} — send funds to recipient\n"
+  printf "  [2] ${YELLOW}Refund${NC}  — return funds to funder\n"
+  printf "  [3] Dispute — flag for arbiter\n"
+  printf "  Choice: "
+  read -r ACT
+
+  local action
+  case "$ACT" in
+    1) action="release" ;;
+    2) action="refund" ;;
+    3) action="dispute" ;;
+    *) err "Invalid choice"; pause; return ;;
+  esac
+
+  local reason=""
+  if [ "$action" = "dispute" ]; then
+    prompt "Reason for dispute" reason
+  fi
+
+  local body
+  if [ -n "$reason" ]; then
+    body=$(printf '{"action":"%s","reason":"%s"}' "$action" "$reason")
+  else
+    body=$(printf '{"action":"%s"}' "$action")
+  fi
+
+  info "Executing ${action}..."
+  api_call POST "/escrow/${escrow_id}/action" "$body"
+
+  if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
+    local new_status
+    new_status=$(json_field "status")
+    printf "\n"
+    ok "Escrow ${action} complete!"
+    printf "  ${DIM}New status: ${NC}${new_status}\n"
+  else
+    err "Failed: $(json_field detail) (HTTP $HTTP_CODE)"
+  fi
+  pause
+}
+
+# ── Main Interactive Menu ─────────────────────────────────────────────────────
+cmd_menu() {
+  # Check curl is available
+  if ! command -v curl >/dev/null 2>&1; then
+    printf "${RED}Error: curl is required. Install it and try again.${NC}\n"
+    exit 1
+  fi
+  if ! command -v python3 >/dev/null 2>&1; then
+    printf "${RED}Error: python3 is required. Install it and try again.${NC}\n"
+    exit 1
+  fi
+
+  load_session
+
+  while true; do
+    printf "\n\n"
+    print_banner
+    print_status
+
+    printf "  ${BOLD}ACCOUNT${NC}\n"
+    printf "  ${YELLOW}[1]${NC} Register new account\n"
+    printf "  ${YELLOW}[2]${NC} Login\n"
+    [ -n "$AW_TOKEN" ] && printf "  ${YELLOW}[3]${NC} Logout\n"
+    printf "\n"
+
+    printf "  ${BOLD}WALLETS${NC}\n"
+    printf "  ${YELLOW}[4]${NC} Create a new wallet\n"
+    printf "  ${YELLOW}[5]${NC} List my wallets\n"
+    printf "  ${YELLOW}[6]${NC} Check wallet balance\n"
+    printf "\n"
+
+    printf "  ${BOLD}PAYMENTS${NC}\n"
+    printf "  ${YELLOW}[7]${NC} Send SOL payment\n"
+    printf "\n"
+
+    printf "  ${BOLD}ESCROW${NC}\n"
+    printf "  ${YELLOW}[8]${NC} Create new escrow\n"
+    printf "  ${YELLOW}[9]${NC} Release / Refund escrow\n"
+    printf "\n"
+
+    sep
+    printf "  ${YELLOW}[h]${NC} Help & dev commands   ${YELLOW}[q]${NC} Quit\n"
+    printf "\n"
+    printf "  ${BOLD}Enter choice:${NC} "
+    read -r CHOICE
+
+    case "$CHOICE" in
+      1) flow_register ;;
+      2) flow_login ;;
+      3) flow_logout ;;
+      4) flow_create_wallet ;;
+      5) flow_list_wallets ;;
+      6) flow_balance ;;
+      7) flow_send ;;
+      8) flow_create_escrow ;;
+      9) flow_manage_escrow ;;
+      h|H|help) cmd_help; printf "\n"; pause ;;
+      q|Q|quit|exit) printf "\n  ${DIM}Bye!${NC}\n\n"; exit 0 ;;
+      "") ;;  # ignore blank enter
+      *) err "Unknown choice '${CHOICE}'. Try 1–9, h, or q." ;;
+    esac
+  done
+}
 
 # ── Help ──────────────────────────────────────────────────────────────────────
 cmd_help() {
   printf "\n"
   printf "  ${BGREEN}AgentWallet Protocol${NC}  ${DIM}v0.4.0${NC}\n"
   printf "  ${DIM}Give your AI agent a wallet.${NC}\n\n"
+
+  printf "  ${BOLD}INTERACTIVE${NC}\n"
+  printf "  ${YELLOW}./aw${NC}            ${DIM}·${NC}  Guided menu (register, wallet, escrow, pay)\n"
+  printf "  ${YELLOW}./aw menu${NC}       ${DIM}·${NC}  Same as above\n"
+  printf "\n"
 
   printf "  ${BOLD}GETTING STARTED${NC}\n"
   printf "  ${YELLOW}./aw setup${NC}      ${DIM}·${NC}  First-time setup after git clone\n"
@@ -47,8 +633,8 @@ cmd_help() {
   printf "  ${YELLOW}./aw open${NC}       ${DIM}·${NC}  Open Swagger docs in browser\n"
   printf "\n"
 
-  printf "  ${DIM}Tip: Most commands also work with 'make <command>'${NC}\n"
-  printf "  ${DIM}Docs: README.md  |  Live API: https://api.agentwallet.fun/docs${NC}\n\n"
+  printf "  ${DIM}Live API: https://api.agentwallet.fun/docs${NC}\n"
+  printf "  ${DIM}Tip: Set AW_API=https://api.agentwallet.fun to use production${NC}\n\n"
 }
 
 # ── Setup ─────────────────────────────────────────────────────────────────────
@@ -81,8 +667,6 @@ cmd_restart() {
 # ── Status ────────────────────────────────────────────────────────────────────
 cmd_status() {
   printf "\n  ${BOLD}Service Status${NC}\n\n"
-
-  # API health
   if command -v curl >/dev/null 2>&1; then
     STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health 2>/dev/null || echo "000")
     if [ "$STATUS" = "200" ]; then
@@ -91,11 +675,9 @@ cmd_status() {
       printf "  ${RED}[DOWN]${NC} API        http://localhost:8000  (HTTP $STATUS)\n"
     fi
   fi
-
-  # Docker containers
   if docker ps --format "{{.Names}}\t{{.Status}}" 2>/dev/null | grep -q agentwallet; then
-    docker ps --format "{{.Names}}\t{{.Status}}" 2>/dev/null | grep agentwallet | while read name status; do
-      short=$(echo "$name" | sed 's/agentwallet-//;s/-1//')
+    docker ps --format "{{.Names}}\t{{.Status}}" 2>/dev/null | grep agentwallet | while read -r name status; do
+      short=$(printf '%s' "$name" | sed 's/agentwallet-//;s/-1//')
       printf "  ${BGREEN}[UP]${NC}   %-10s %s\n" "$short" "$status"
     done
   else
@@ -145,7 +727,7 @@ cmd_migrate() {
 # ── Health ────────────────────────────────────────────────────────────────────
 cmd_health() {
   printf "${DIM}Checking API health...${NC}\n"
-  curl -s http://localhost:8000/health | python -m json.tool 2>/dev/null \
+  curl -s http://localhost:8000/health | python3 -m json.tool 2>/dev/null \
     || curl -s http://localhost:8000/health \
     || printf "${RED}API not reachable. Is it running? Try: ./aw start${NC}\n"
 }
@@ -154,15 +736,10 @@ cmd_health() {
 cmd_open() {
   URL="http://localhost:8000/docs"
   printf "${DIM}Opening $URL ...${NC}\n"
-  # Cross-platform open
-  if command -v xdg-open >/dev/null 2>&1; then
-    xdg-open "$URL"
-  elif command -v open >/dev/null 2>&1; then
-    open "$URL"
-  elif command -v start >/dev/null 2>&1; then
-    start "$URL"
-  else
-    printf "${YELLOW}Open this URL in your browser: $URL${NC}\n"
+  if command -v xdg-open >/dev/null 2>&1; then   xdg-open "$URL"
+  elif command -v open >/dev/null 2>&1; then      open "$URL"
+  elif command -v start >/dev/null 2>&1; then     start "$URL"
+  else printf "${YELLOW}Open this URL in your browser: $URL${NC}\n"
   fi
 }
 
@@ -184,6 +761,7 @@ cmd_unknown() {
 
 # ── Dispatch ──────────────────────────────────────────────────────────────────
 case "$CMD" in
+  menu|"")          cmd_menu ;;
   help|--help|-h)   cmd_help ;;
   setup)            cmd_setup ;;
   start)            cmd_start ;;
