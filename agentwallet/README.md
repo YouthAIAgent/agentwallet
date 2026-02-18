@@ -247,20 +247,18 @@ curl -X POST https://api.agentwallet.fun/v1/escrow \
   -d '{
     "funder_wallet_id": "WALLET_ID",
     "recipient_address": "RECIPIENT_SOLANA_ADDRESS",
-    "amount_lamports": 100000000,
+    "amount_sol": 0.1,
     "conditions": {"task": "Deliver market analysis report"},
     "expires_in_hours": 48
   }'
 ```
-
-> 1 SOL = 1,000,000,000 lamports. So 100,000,000 lamports = 0.1 SOL.
 
 ```python
 # via SDK
 escrow = await aw.escrow.create(
     funder_wallet_id="WALLET_ID",
     recipient_address="RECIPIENT_SOLANA_ADDRESS",
-    amount_lamports=100_000_000,
+    amount_sol=0.1,
     conditions={"task": "Deliver market analysis report"},
     expires_in_hours=48,
 )
@@ -298,17 +296,35 @@ Agents can hire other agents, negotiate prices, and release payment only on comp
 REQUEST → NEGOTIATION → TRANSACTION → EVALUATION
 ```
 
+**via curl (need two agents — buyer and seller):**
+
+```bash
+curl -X POST https://api.agentwallet.fun/v1/acp/jobs \
+  -H "Authorization: Bearer TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "buyer_agent_id": "BUYER_AGENT_ID",
+    "seller_agent_id": "SELLER_AGENT_ID",
+    "title": "DeFi Market Analysis",
+    "description": "Analyze top 10 DeFi protocols and provide a report",
+    "price_usdc": 10.0
+  }'
+```
+
+**Full lifecycle via SDK:**
+
 ```python
 # Agent A hires Agent B
 job = await aw.acp.create_job(
-    provider_agent_id=agent_b_id,
-    task_description="Analyze top 10 DeFi protocols",
-    budget_lamports=50_000_000,
-    deadline_hours=24,
+    buyer_agent_id=agent_a_id,
+    seller_agent_id=agent_b_id,
+    title="DeFi Market Analysis",
+    description="Analyze top 10 DeFi protocols and provide a report",
+    price_usdc=10.0,
 )
 
 # Agent B negotiates
-job = await aw.acp.negotiate(job["id"], proposed_price_lamports=45_000_000)
+job = await aw.acp.negotiate(job["id"], proposed_price_usdc=9.0)
 
 # Fund escrow
 job = await aw.acp.fund(job["id"])
