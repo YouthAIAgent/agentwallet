@@ -67,7 +67,11 @@ test-edge-voice.mp3
 pda-thread/
 pda-wallet-thread/
 content-strategy/
+content-queue/
+articles/
+drafts/
 profile-assets/
+My Twitter Beast/
 
 # Duplicate landing page files
 agentwallet/index.html

@@ -2,10 +2,11 @@
 
 import uuid
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.database import get_db
+from ...core.exceptions import NotFoundError, TransactionFailedError, ValidationError
 from ...services.pda_wallet_service import PDAWalletService
 from ..middleware.auth import AuthContext, get_auth_context
 from ..middleware.rate_limit import check_rate_limit
@@ -51,14 +52,23 @@ async def create_pda_wallet(
     """Create a new PDA wallet on-chain with spending limits."""
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     svc = PDAWalletService(db)
-    pw = await svc.create_pda_wallet(
-        org_id=auth.org_id,
-        authority_wallet_id=req.authority_wallet_id,
-        agent_id_seed=req.agent_id_seed,
-        spending_limit_per_tx=req.spending_limit_per_tx,
-        daily_limit=req.daily_limit,
-        agent_id=req.agent_id,
-    )
+    try:
+        pw = await svc.create_pda_wallet(
+            org_id=auth.org_id,
+            authority_wallet_id=req.authority_wallet_id,
+            agent_id_seed=req.agent_id_seed,
+            spending_limit_per_tx=req.spending_limit_per_tx,
+            daily_limit=req.daily_limit,
+            agent_id=req.agent_id,
+        )
+    except NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValidationError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except TransactionFailedError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"On-chain PDA creation failed: {e}")
     return _wallet_response(pw)
 
 
@@ -94,7 +104,10 @@ async def get_pda_wallet(
     """Get a PDA wallet by ID."""
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     svc = PDAWalletService(db)
-    pw = await svc.get_pda_wallet(wallet_id, auth.org_id)
+    try:
+        pw = await svc.get_pda_wallet(wallet_id, auth.org_id)
+    except NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     return _wallet_response(pw)
 
 
@@ -108,8 +121,13 @@ async def get_pda_wallet_state(
     """Read on-chain state of a PDA wallet (live from Solana)."""
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     svc = PDAWalletService(db)
-    pw = await svc.get_pda_wallet(wallet_id, auth.org_id)
-    state = await svc.get_pda_state(pw.pda_address)
+    try:
+        pw = await svc.get_pda_wallet(wallet_id, auth.org_id)
+        state = await svc.get_pda_state(pw.pda_address)
+    except NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Failed to read on-chain state: {e}")
     return PDAWalletStateResponse(**state)
 
 
@@ -124,12 +142,19 @@ async def transfer_from_pda(
     """Execute a transfer through the PDA wallet with on-chain limit enforcement."""
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     svc = PDAWalletService(db)
-    result = await svc.transfer_from_pda(
-        pda_wallet_id=wallet_id,
-        org_id=auth.org_id,
-        recipient=req.recipient,
-        amount_lamports=req.amount_lamports,
-    )
+    try:
+        result = await svc.transfer_from_pda(
+            pda_wallet_id=wallet_id,
+            org_id=auth.org_id,
+            recipient=req.recipient,
+            amount_lamports=req.amount_lamports,
+        )
+    except NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValidationError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except TransactionFailedError as e:
+        raise HTTPException(status_code=502, detail=str(e))
     return PDATransferResponse(**result)
 
 
@@ -144,13 +169,20 @@ async def update_pda_limits(
     """Update spending limits and active status of a PDA wallet on-chain."""
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     svc = PDAWalletService(db)
-    pw = await svc.update_pda_limits(
-        pda_wallet_id=wallet_id,
-        org_id=auth.org_id,
-        spending_limit_per_tx=req.spending_limit_per_tx,
-        daily_limit=req.daily_limit,
-        is_active=req.is_active,
-    )
+    try:
+        pw = await svc.update_pda_limits(
+            pda_wallet_id=wallet_id,
+            org_id=auth.org_id,
+            spending_limit_per_tx=req.spending_limit_per_tx,
+            daily_limit=req.daily_limit,
+            is_active=req.is_active,
+        )
+    except NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValidationError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except TransactionFailedError as e:
+        raise HTTPException(status_code=502, detail=str(e))
     return _wallet_response(pw)
 
 

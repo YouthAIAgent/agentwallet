@@ -105,7 +105,7 @@ async def get_token_balances(
 
     # Get wallet and validate ownership
     try:
-        wallet = await token_service.wallet_mgr.get_wallet(wallet_id)
+        wallet = await token_service.wallet_mgr.get_wallet(wallet_id, auth.org_id)
         if wallet.org_id != auth.org_id:
             raise HTTPException(status_code=404, detail="Wallet not found")
 
