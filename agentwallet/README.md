@@ -109,52 +109,51 @@ Done. Your agent has a Solana wallet. Continue to [Core Features](#core-features
 
 ---
 
-## Option B — Run Locally (4 Commands)
+## Option B — Run Locally (2 Commands)
 
 > You need: **Git**, **Docker Desktop**, **Python 3.10+**
 > Install links: [Git](https://git-scm.com) | [Docker Desktop](https://www.docker.com/products/docker-desktop)
 
-**Command 1 — Clone the repo:**
+**Command 1 — Clone:**
 
 ```bash
 git clone https://github.com/YouthAIAgent/agentwallet.git && cd agentwallet/agentwallet
 ```
 
-**Command 2 — Auto-generate your config:**
+**Command 2 — Setup and start:**
 
 ```bash
-cp .env.example .env && python -c "
-import secrets, sys
-from cryptography.fernet import Fernet
-lines = open('.env').read()
-lines = lines.replace('your-jwt-secret-key-minimum-32-characters', secrets.token_hex(32))
-lines = lines.replace('your-fernet-encryption-key-here', Fernet.generate_key().decode())
-open('.env', 'w').write(lines)
-print('Config ready!')
-"
+bash setup.sh
 ```
 
-This auto-fills the secret keys. No manual editing needed.
+That's it. The script:
+- Checks that Docker and Python are installed
+- Copies `.env.example` → `.env` and auto-generates all secrets
+- Starts the API, PostgreSQL, and Redis via Docker
+- Waits until the API is healthy and prints the URL
 
-**Command 3 — Start everything:**
+Expected final output:
+```
+╔══════════════════════════════════════════════╗
+║              Setup Complete!                 ║
+║  API:   http://localhost:8000                ║
+║  Docs:  http://localhost:8000/docs           ║
+╚══════════════════════════════════════════════╝
+```
+
+You are done. Use `http://localhost:8000` instead of `https://api.agentwallet.fun` in all examples below.
+
+### Common commands after setup
 
 ```bash
-docker-compose up -d
+make start    # start API + DB + Redis
+make stop     # stop everything
+make logs     # tail API logs
+make test     # run 110 tests
+make restart  # restart API after code change
+make shell    # bash inside the API container
+make clean    # full reset (deletes all local data)
 ```
-
-Starts the API, database, and Redis. Wait ~30 seconds.
-
-**Command 4 — Verify it works:**
-
-```bash
-curl http://localhost:8000/health
-```
-
-Expected: `{"status":"ok","version":"0.4.0"}`
-
-You are done. Now use `http://localhost:8000` instead of `https://api.agentwallet.fun` in all examples.
-
-> **Note:** If Python command fails, install cryptography first: `pip install cryptography`
 
 ---
 
