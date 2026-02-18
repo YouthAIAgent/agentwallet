@@ -21,7 +21,7 @@ anchor-lang = "0.30.1"
 anchor-spl = "0.30.1"
 # Pin transitive deps for SBF toolchain compatibility (rustc 1.79)
 constant_time_eq = "=0.3.1"
-blake3 = "=1.5.5"
+blake3 = "=1.8.3"
 borsh = "=1.5.3"
 borsh-derive = "=1.5.3"
 proc-macro-crate = "=3.2.0"
