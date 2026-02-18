@@ -78,6 +78,42 @@ try:
 except: print('')" 2>/dev/null
 }
 
+# Extract human-readable error from $RESPONSE (handles both string and Pydantic list detail)
+api_error() {
+  printf '%s' "$RESPONSE" | python3 -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+    detail = d.get('detail', '')
+    if isinstance(detail, list):
+        msgs = [item.get('msg', str(item)) for item in detail]
+        print(' | '.join(msgs))
+    else:
+        print(str(detail) if detail else 'unknown error')
+except:
+    print('could not parse error')" 2>/dev/null
+}
+
+# Build JSON body safely via python (handles special chars in passwords etc.)
+make_json() {
+  # Usage: make_json key1 val1 key2 val2 ...
+  python3 -c "
+import sys, json, os
+args = sys.argv[1:]
+d = {}
+for i in range(0, len(args)-1, 2):
+    k = args[i]
+    v = args[i+1]
+    # try numeric
+    try: v = int(v)
+    except:
+        try: v = float(v)
+        except: pass
+    d[k] = v
+print(json.dumps(d))
+" "$@" 2>/dev/null
+}
+
 # Check API reachability
 check_api() {
   local s
@@ -130,8 +166,7 @@ flow_register() {
 
   info "Creating account..."
   local body
-  body=$(printf '{"org_name":"%s","email":"%s","password":"%s"}' \
-    "$ORG_NAME" "$R_EMAIL" "$R_PASS")
+  body=$(make_json "org_name" "$ORG_NAME" "email" "$R_EMAIL" "password" "$R_PASS")
   api_call POST /auth/register "$body"
 
   if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
@@ -143,7 +178,7 @@ flow_register() {
     ok "Account created! Logged in as ${WHITE}${AW_EMAIL}${NC}"
     ok "Org ID: ${CYAN}${AW_ORG_ID}${NC}"
   else
-    err "Registration failed: $(json_field detail) (HTTP $HTTP_CODE)"
+    err "Registration failed (HTTP $HTTP_CODE): $(api_error)"
   fi
   pause
 }
@@ -157,7 +192,7 @@ flow_login() {
 
   info "Logging in..."
   local body
-  body=$(printf '{"email":"%s","password":"%s"}' "$L_EMAIL" "$L_PASS")
+  body=$(make_json "email" "$L_EMAIL" "password" "$L_PASS")
   api_call POST /auth/login "$body"
 
   if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
@@ -168,7 +203,7 @@ flow_login() {
     printf "\n"
     ok "Logged in as ${WHITE}${AW_EMAIL}${NC}"
   else
-    err "Login failed: $(json_field detail) (HTTP $HTTP_CODE)"
+    err "Login failed (HTTP $HTTP_CODE): $(api_error)"
   fi
   pause
 }
@@ -196,10 +231,8 @@ flow_create_wallet() {
   local wtype="solana"
   [ "$WT" = "2" ] && wtype="evm"
 
-  local label_safe
-  label_safe=$(printf '%s' "$W_LABEL" | sed 's/"/\\"/g')
   local body
-  body=$(printf '{"wallet_type":"%s","label":"%s"}' "$wtype" "$label_safe")
+  body=$(make_json "wallet_type" "$wtype" "label" "$W_LABEL")
 
   info "Creating ${wtype} wallet..."
   api_call POST /wallets "$body"
@@ -219,7 +252,7 @@ flow_create_wallet() {
       info "Fund this address to deposit SOL into your wallet"
     fi
   else
-    err "Failed: $(json_field detail) (HTTP $HTTP_CODE)"
+    err "Failed (HTTP $HTTP_CODE): $(api_error)"
   fi
   pause
 }
@@ -358,11 +391,11 @@ flow_send() {
 
   local body
   if [ -n "$TX_MEMO" ]; then
-    body=$(printf '{"from_wallet_id":"%s","to_address":"%s","amount_sol":%s,"memo":"%s","idempotency_key":"%s"}' \
-      "$src_id" "$TO_ADDR" "$AMOUNT_SOL" "$TX_MEMO" "$idempotency_key")
+    body=$(make_json "from_wallet_id" "$src_id" "to_address" "$TO_ADDR" \
+      "amount_sol" "$AMOUNT_SOL" "memo" "$TX_MEMO" "idempotency_key" "$idempotency_key")
   else
-    body=$(printf '{"from_wallet_id":"%s","to_address":"%s","amount_sol":%s,"idempotency_key":"%s"}' \
-      "$src_id" "$TO_ADDR" "$AMOUNT_SOL" "$idempotency_key")
+    body=$(make_json "from_wallet_id" "$src_id" "to_address" "$TO_ADDR" \
+      "amount_sol" "$AMOUNT_SOL" "idempotency_key" "$idempotency_key")
   fi
 
   info "Submitting transaction..."
@@ -381,7 +414,7 @@ flow_send() {
       printf "  ${DIM}Sig:     ${NC}${GREEN}${sig}${NC}\n"
     fi
   else
-    err "Failed: $(json_field detail) (HTTP $HTTP_CODE)"
+    err "Failed (HTTP $HTTP_CODE): $(api_error)"
   fi
   pause
 }
@@ -405,8 +438,8 @@ flow_create_escrow() {
   ESC_EXP="${ESC_EXP:-24}"
 
   local body
-  body=$(printf '{"funder_wallet_id":"%s","recipient_address":"%s","amount_sol":%s,"expires_in_hours":%s}' \
-    "$funder_id" "$ESC_RECIP" "$ESC_SOL" "$ESC_EXP")
+  body=$(make_json "funder_wallet_id" "$funder_id" "recipient_address" "$ESC_RECIP" \
+    "amount_sol" "$ESC_SOL" "expires_in_hours" "$ESC_EXP")
 
   info "Creating escrow..."
   api_call POST /escrow "$body"
@@ -429,7 +462,7 @@ flow_create_escrow() {
     printf "\n"
     info "Use option 9 to release or refund this escrow later"
   else
-    err "Failed: $(json_field detail) (HTTP $HTTP_CODE)"
+    err "Failed (HTTP $HTTP_CODE): $(api_error)"
   fi
   pause
 }
@@ -527,7 +560,7 @@ except: print('')
     ok "Escrow ${action} complete!"
     printf "  ${DIM}New status: ${NC}${new_status}\n"
   else
-    err "Failed: $(json_field detail) (HTTP $HTTP_CODE)"
+    err "Failed (HTTP $HTTP_CODE): $(api_error)"
   fi
   pause
 }
