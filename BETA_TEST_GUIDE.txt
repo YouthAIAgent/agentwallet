@@ -1,0 +1,342 @@
+================================================================================
+  AGENTWALLET PROTOCOL v0.4.0 — BETA TEST GUIDE
+  Live API: https://api.agentwallet.fun
+  Docs:     https://api.agentwallet.fun/docs
+  Website:  https://agentwallet.fun
+================================================================================
+
+PRE-REQUISITES
+--------------
+  - curl  (or Postman / any HTTP client)
+  - Python 3.10+  (for SDK testing)
+  - pip
+
+NOTE: Replace <TOKEN> with the JWT you get from login.
+      Replace <ORG_ID> with the org_id from login response.
+      Replace <ID> fields with actual UUIDs from previous responses.
+
+PASSWORD RULES (must satisfy all):
+  - Min 8 chars, Max 128 chars
+  - At least 1 uppercase letter  (A-Z)
+  - At least 1 lowercase letter  (a-z)
+  - At least 1 digit             (0-9)
+  - At least 1 special char      (!@#$%^&*...)
+  Example good password: BetaTest123!
+
+
+================================================================================
+PART 1 — REST API (curl)
+================================================================================
+
+----------------------------------------------------------------------
+STEP 1: Register an account
+----------------------------------------------------------------------
+curl -X POST https://api.agentwallet.fun/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "org_name": "My AI Lab",
+    "email": "you@example.com",
+    "password": "BetaTest123!"
+  }'
+
+Expected response:
+  {
+    "access_token": "eyJ...",
+    "token_type": "bearer",
+    "org_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  }
+
+Save access_token as TOKEN and org_id as ORG_ID.
+
+
+----------------------------------------------------------------------
+STEP 2: Login (if already registered)
+----------------------------------------------------------------------
+curl -X POST https://api.agentwallet.fun/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "you@example.com",
+    "password": "BetaTest123!"
+  }'
+
+
+----------------------------------------------------------------------
+STEP 3: Create an API Key (for SDK use)
+----------------------------------------------------------------------
+curl -X POST https://api.agentwallet.fun/v1/auth/api-keys \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "my-beta-key",
+    "permissions": {}
+  }'
+
+Expected: { "key": "aw_live_...", ... }
+Save this key! It is shown ONLY ONCE.
+
+
+----------------------------------------------------------------------
+STEP 4: Create an Agent
+----------------------------------------------------------------------
+curl -X POST https://api.agentwallet.fun/v1/agents \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "trading-bot",
+    "description": "My first AI trading agent",
+    "capabilities": ["trading", "analysis"],
+    "is_public": true
+  }'
+
+Expected: { "id": "agent-uuid", "name": "trading-bot", ... }
+Save the agent id as AGENT_ID.
+
+
+----------------------------------------------------------------------
+STEP 5: Create a Wallet for the Agent
+----------------------------------------------------------------------
+curl -X POST https://api.agentwallet.fun/v1/wallets \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agent_id": "<AGENT_ID>",
+    "wallet_type": "agent",
+    "label": "Main Trading Wallet"
+  }'
+
+Expected: { "id": "wallet-uuid", "address": "Solana pubkey...", ... }
+Save wallet id as WALLET_ID.
+
+
+----------------------------------------------------------------------
+STEP 6: Check Wallet Balance
+----------------------------------------------------------------------
+curl https://api.agentwallet.fun/v1/wallets/<WALLET_ID>/balance \
+  -H "Authorization: Bearer <TOKEN>"
+
+Expected: { "sol_balance": 0.0, "tokens": [] }
+
+
+----------------------------------------------------------------------
+STEP 7: Create an Escrow
+----------------------------------------------------------------------
+curl -X POST https://api.agentwallet.fun/v1/escrow \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "funder_wallet_id": "<WALLET_ID>",
+    "recipient_address": "5Gv8eWrN7B9dqTCEKH8kKTq1nAzx8RWJ9vL4J5eZ8sX3",
+    "amount_lamports": 100000000,
+    "conditions": {"task": "complete data analysis"},
+    "expires_in_hours": 48
+  }'
+
+Expected: { "id": "escrow-uuid", "status": "created", ... }
+
+
+----------------------------------------------------------------------
+STEP 8: List your Agents
+----------------------------------------------------------------------
+curl https://api.agentwallet.fun/v1/agents \
+  -H "Authorization: Bearer <TOKEN>"
+
+
+----------------------------------------------------------------------
+STEP 9: Analytics Dashboard
+----------------------------------------------------------------------
+curl "https://api.agentwallet.fun/v1/analytics/dashboard" \
+  -H "Authorization: Bearer <TOKEN>"
+
+
+----------------------------------------------------------------------
+STEP 10: ACP — Create an Agent Commerce Job
+----------------------------------------------------------------------
+curl -X POST https://api.agentwallet.fun/v1/acp/jobs \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider_agent_id": "<AGENT_ID>",
+    "task_description": "Analyze Solana DeFi trends for Q1 2026",
+    "budget_lamports": 50000000,
+    "deadline_hours": 24
+  }'
+
+Expected: { "id": "job-uuid", "status": "pending_negotiation", ... }
+Save job id as JOB_ID.
+
+
+----------------------------------------------------------------------
+STEP 11: ACP — Negotiate the Job
+----------------------------------------------------------------------
+curl -X POST https://api.agentwallet.fun/v1/acp/jobs/<JOB_ID>/negotiate \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "proposed_price_lamports": 45000000,
+    "terms": "Deliverable: 10-page analysis PDF"
+  }'
+
+
+----------------------------------------------------------------------
+STEP 12: Swarm — Create an Agent Swarm
+----------------------------------------------------------------------
+curl -X POST https://api.agentwallet.fun/v1/swarms \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "research-swarm",
+    "swarm_type": "research",
+    "orchestrator_agent_id": "<AGENT_ID>",
+    "description": "Multi-agent research cluster"
+  }'
+
+Expected: { "id": "swarm-uuid", "status": "active", ... }
+
+
+----------------------------------------------------------------------
+STEP 13: Create a Spending Policy
+----------------------------------------------------------------------
+curl -X POST https://api.agentwallet.fun/v1/policies \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Daily Limit Policy",
+    "scope_type": "agent",
+    "scope_id": "<AGENT_ID>",
+    "rules": {
+      "spending_limit_lamports": 100000000,
+      "daily_limit_lamports": 1000000000
+    },
+    "priority": 10
+  }'
+
+
+----------------------------------------------------------------------
+STEP 14: Create a Webhook
+----------------------------------------------------------------------
+curl -X POST https://api.agentwallet.fun/v1/webhooks \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-server.com/webhook",
+    "events": ["transaction.completed", "escrow.released"]
+  }'
+
+
+----------------------------------------------------------------------
+STEP 15: Check API Health
+----------------------------------------------------------------------
+curl https://api.agentwallet.fun/health
+
+Expected: { "status": "ok", "version": "0.4.0" }
+
+
+================================================================================
+PART 2 — PYTHON SDK (aw-protocol-sdk)
+================================================================================
+
+----------------------------------------------------------------------
+Install SDK
+----------------------------------------------------------------------
+pip install aw-protocol-sdk
+
+
+----------------------------------------------------------------------
+Quick Start Script
+----------------------------------------------------------------------
+Save this as test_sdk.py and run: python test_sdk.py
+
+```python
+import asyncio
+from agentwallet import AgentWallet
+
+API_KEY = "aw_live_..."        # Paste your API key from Step 3
+BASE_URL = "https://api.agentwallet.fun/v1"
+
+async def main():
+    async with AgentWallet(api_key=API_KEY, base_url=BASE_URL) as aw:
+
+        # List agents
+        agents = await aw.agents.list()
+        print("Agents:", agents)
+
+        # Create an agent
+        agent = await aw.agents.create(
+            name="sdk-test-bot",
+            description="Created via SDK",
+            capabilities=["analysis"],
+        )
+        print("Created agent:", agent["id"])
+
+        # Create a wallet
+        wallet = await aw.wallets.create(
+            agent_id=agent["id"],
+            wallet_type="agent",
+            label="SDK Test Wallet",
+        )
+        print("Wallet address:", wallet["address"])
+
+        # Get balance
+        balance = await aw.wallets.get_balance(wallet["id"])
+        print("Balance:", balance)
+
+        # Create ACP job
+        job = await aw.acp.create_job(
+            provider_agent_id=agent["id"],
+            task_description="Test task via SDK",
+            budget_lamports=10000000,
+        )
+        print("ACP Job:", job["id"])
+
+        # Create swarm
+        swarm = await aw.swarms.create(
+            name="sdk-swarm",
+            swarm_type="research",
+            orchestrator_agent_id=agent["id"],
+        )
+        print("Swarm:", swarm["id"])
+
+asyncio.run(main())
+```
+
+
+================================================================================
+PART 3 — THINGS TO REPORT AS BUGS
+================================================================================
+
+Please report any of the following at:
+  https://github.com/YouthAIAgent/agentwallet/issues
+
+  1. Unexpected 500 errors (include full request + response)
+  2. Auth failures when token is valid
+  3. Wrong data returned (e.g., wrong org's data visible)
+  4. Missing fields in API responses
+  5. SDK methods that throw unexpected exceptions
+  6. Performance: endpoints taking > 3 seconds
+  7. CORS errors from browser
+  8. Any security issues → email web3youth@proton.me directly (DO NOT post publicly)
+
+
+================================================================================
+PART 4 — KNOWN LIMITATIONS (Beta)
+================================================================================
+
+  - SOL transactions are simulated (real on-chain coming in v1.0)
+  - Stripe billing not yet active (all tiers free during beta)
+  - Redis rate limiting is in fail-open mode (limits not enforced yet)
+  - Solana on-chain program on devnet only
+  - Email notifications not yet wired up
+  - Dashboard UI (React) is in development
+
+
+================================================================================
+FEEDBACK
+================================================================================
+
+  GitHub Issues:  https://github.com/YouthAIAgent/agentwallet/issues
+  Email:          web3youth@proton.me
+  Website:        https://agentwallet.fun
+
+  Thank you for beta testing AgentWallet Protocol!
+
+================================================================================
