@@ -21,7 +21,8 @@
 [![Live Demo](https://img.shields.io/badge/Demo-agentwallet.fun-00ff41?style=for-the-badge&logo=vercel)](https://agentwallet.fun)
 [![API Live](https://img.shields.io/badge/API-Live-0B0D0E?style=for-the-badge&logo=railway)](https://api.agentwallet.fun/docs)
 [![Security Audit](https://img.shields.io/badge/Security-Audited-00c853?style=for-the-badge&logo=shieldsdotio)](SECURITY_AUDIT.md)
-[![Tests](https://img.shields.io/badge/Tests-84%20Passed-00c853?style=for-the-badge&logo=pytest)](packages/api/tests/)
+[![Tests](https://img.shields.io/badge/Tests-110%20Passed-00c853?style=for-the-badge&logo=pytest)](packages/api/tests/)
+[![Try in Browser](https://img.shields.io/badge/Try_in_Browser-Codespaces-181717?style=for-the-badge&logo=github)](https://codespaces.new/YouthAIAgent/agentwallet?quickstart=1)
 
 > _"Your agents don't need permission. They need a wallet."_
 
@@ -76,6 +77,16 @@ Your AI agents need money. Not _your_ money — **their own wallets**, with prog
 ## ⚡ Quick Start — Interactive CLI (Easiest Way)
 
 No Docker, no Python setup. Just `git`, `bash`, and `curl`.
+
+### Zero-Install: Try in Your Browser
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/YouthAIAgent/agentwallet?quickstart=1)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/YouthAIAgent/agentwallet)
+
+> Click either button above — a terminal opens in your browser. Then run:
+> ```bash
+> cd agentwallet && AW_API=https://api.agentwallet.fun bash aw
+> ```
 
 ### 1. Clone & Launch
 
