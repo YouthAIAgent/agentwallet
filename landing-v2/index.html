@@ -256,18 +256,54 @@
       }
     }
     
+    // Validate Solana address format
+    function isValidSolanaAddress(address) {
+      try {
+        if (!address || address.length < 32 || address.length > 44) return false;
+        const pubkey = new solanaWeb3.PublicKey(address);
+        return solanaWeb3.PublicKey.isOnCurve(pubkey.toBytes());
+      } catch {
+        return false;
+      }
+    }
+    
     async function sendSOL() {
-      if (!wallet) return;
-      const to = document.getElementById('send-to').value;
-      const amount = parseFloat(document.getElementById('send-amount').value);
-      
-      if (!to || !amount) {
-        log('Please enter recipient and amount', 'error');
+      if (!wallet) {
+        log('Please connect wallet first', 'error');
         return;
       }
       
+      const to = document.getElementById('send-to').value.trim();
+      const amount = parseFloat(document.getElementById('send-amount').value);
+      
+      // Validate inputs
+      if (!to) {
+        log('Error: Please enter recipient address', 'error');
+        return;
+      }
+      
+      if (!isValidSolanaAddress(to)) {
+        log('Error: Invalid Solana address format', 'error');
+        return;
+      }
+      
+      if (!amount || amount <= 0) {
+        log('Error: Amount must be greater than 0', 'error');
+        return;
+      }
+      
+      // Check balance before sending
       try {
-        log('Sending ' + amount + ' SOL...', 'info');
+        const balance = await connection.getBalance(wallet.publicKey);
+        const balanceSOL = balance / solanaWeb3.LAMPORTS_PER_SOL;
+        const required = amount + 0.005; // Amount + estimated fee
+        
+        if (balanceSOL < required) {
+          log(`Error: Insufficient balance. Have: ${balanceSOL.toFixed(4)} SOL, Need: ${required.toFixed(4)} SOL`, 'error');
+          return;
+        }
+        
+        log(`Sending ${amount} SOL to ${to.slice(0,6)}...${to.slice(-4)}`, 'info');
         document.getElementById('send-btn').disabled = true;
         
         const tx = new solanaWeb3.Transaction().add(
