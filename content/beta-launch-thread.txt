@@ -1,0 +1,115 @@
+AGENTWALLET BETA LAUNCH - TWITTER THREAD
+═══════════════════════════════════════════════════════════════════
+
+[HOOK TWEET - 1/7]
+═══════════════════════════════════════════════════════════════════
+Imagine an AI that doesn't just chat—but actually TRANSACTS on-chain. 
+
+We're building toward a $10B autonomous agent economy where AI handles 
+your DeFi, trades, and on-chain actions. Securely. Programmatically. 
+
+The beta is LIVE. This is how it starts 
+
+#AgentWallet #Web3 #AI
+
+
+[FEATURES TWEET - 2/7]
+═══════════════════════════════════════════════════════════════════
+AgentWallet v2 Beta is here with REAL on-chain capabilities:
+
+✓ Autonomous transaction signing via MPC-TSS
+✓ Multi-chain support (ETH, BSC, Polygon, Arbitrum)
+✓ Smart contract interaction without copy-pasting addresses
+✓ Real-time balance monitoring & alerts
+✓ Gasless meta-transactions for smooth UX
+
+Your AI agent now has a bank account. Literally.
+
+#DeFi #Blockchain
+
+
+[DEMO TWEET - 3/7]
+═══════════════════════════════════════════════════════════════════
+Want to see it in action? 
+
+We recorded a live demo of AgentWallet executing:
+→ Token swaps on Uniswap
+→ NFT purchases on OpenSea  
+→ Staking operations on Lido
+→ Cross-chain bridging
+
+All triggered by natural language commands.
+
+Watch the demo: https://demo.agentwallet.io
+
+#DemoDay
+
+
+[HOW TO TEST TWEET - 4/7]
+═══════════════════════════════════════════════════════════════════
+Ready to test? Here's how to join the beta:
+
+1️⃣ Sign up: https://beta.agentwallet.io
+2️⃣ Connect your wallet (MetaMask, Rainbow, WalletConnect)
+3️⃣ Create your AI agent profile
+4️⃣ Fund with testnet ETH (we'll airdrop some!)
+5️⃣ Start commanding your agent
+
+Limited to 1,000 beta testers. First come, first served.
+
+#BetaTesting
+
+
+[SECURITY TWEET - 5/7]
+═══════════════════════════════════════════════════════════════════
+"But is it SAFE?" 
+
+We built AgentWallet with security-first architecture:
+
+🔒 Non-custodial MPC (Multi-Party Computation)
+🔒 Threshold signatures - keys never exist in one place
+🔒 Hardware security module (HSM) integration
+🔒 Rate limiting & spending caps
+🔒 Emergency pause & recovery mechanisms
+
+Your keys. Your crypto. Your control. Always.
+
+#Security #MPC
+
+
+[VISION TWEET - 6/7]
+═══════════════════════════════════════════════════════════════════
+This isn't just a wallet. It's the foundation for autonomous economic agents.
+
+Picture this:
+→ AI traders that execute 24/7
+→ DAO treasuries managed by智能合约 + AI
+→ DeFi yield farming on autopilot
+→ Subscription services that pay themselves
+
+The $10B agent economy starts with secure wallets.
+We're building the infrastructure.
+
+#FutureOfFinance
+
+
+[CTA TWEET - 7/7]
+═══════════════════════════════════════════════════════════════════
+The future of on-chain AI is here. Be among the first to experience it.
+
+Join the beta → https://beta.agentwallet.io
+Join our community → https://discord.gg/agentwallet
+Follow the build → @AgentWallet
+
+Questions? Reply below or DM us.
+
+Let's build the autonomous future together.
+
+RT + Tag a dev who needs to see this 
+
+#BetaLaunch #BuildInPublic
+
+
+═══════════════════════════════════════════════════════════════════
+END OF TWITTER THREAD
+═══════════════════════════════════════════════════════════════════
