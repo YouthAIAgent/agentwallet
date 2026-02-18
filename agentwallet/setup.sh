@@ -27,7 +27,7 @@ elif python --version >/dev/null 2>&1; then
 fi
 
 # ── Hacker Intro (all Unicode via Python with forced UTF-8) ──────────────────
-clear
+clear 2>/dev/null || true
 
 if [ -n "$PYTHON" ]; then
   PYTHONUTF8=1 PYTHONIOENCODING=utf-8 $PYTHON - <<'INTRO_EOF'
@@ -122,7 +122,7 @@ info "Python $PY_VER found"
 command -v docker >/dev/null 2>&1 \
   || error "Docker not found. Install Docker Desktop: https://www.docker.com/products/docker-desktop"
 
-docker info >/dev/null 2>&1 \
+docker ps >/dev/null 2>&1 \
   || error "Docker is not running. Start Docker Desktop and try again."
 
 info "Docker is running"
