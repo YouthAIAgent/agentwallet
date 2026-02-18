@@ -4,74 +4,111 @@
 
 set -e
 
-# ── Colors ───────────────────────────────────────────────────────────────────
+# ── Colors (ASCII-safe) ──────────────────────────────────────────────────────
 BGREEN='\033[1;32m'
 GREEN='\033[0;32m'
 BCYAN='\033[1;36m'
 CYAN='\033[0;36m'
 YELLOW='\033[1;33m'
-WHITE='\033[1;37m'
-DIM='\033[2m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-info()  { echo -e "${BGREEN}[✓]${NC} $1"; }
-warn()  { echo -e "${YELLOW}[!]${NC} $1"; }
-error() { echo -e "${RED}[✗]${NC} $1"; exit 1; }
-step()  { echo -e "\n${YELLOW}──── $1 ────${NC}"; }
+info()  { printf "${BGREEN}[OK]${NC} %s\n" "$1"; }
+warn()  { printf "${YELLOW}[!]${NC}  %s\n" "$1"; }
+error() { printf "${RED}[ERR]${NC} %s\n" "$1"; exit 1; }
+step()  { printf "\n${YELLOW}---- %s ----${NC}\n" "$1"; }
 
-# ── Detect Python ────────────────────────────────────────────────────────────
-PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null || echo "")
+# ── Detect Python (verify it actually runs, not just a Windows stub) ──────────
+PYTHON=""
+if python3 --version >/dev/null 2>&1; then
+  PYTHON=python3
+elif python --version >/dev/null 2>&1; then
+  PYTHON=python
+fi
 
-# ── Hacker Intro ─────────────────────────────────────────────────────────────
+# ── Hacker Intro (all Unicode via Python with forced UTF-8) ──────────────────
 clear
 
-# Matrix rain animation
 if [ -n "$PYTHON" ]; then
-  $PYTHON - <<'MATRIX_EOF'
-import random, time, sys, os
+  PYTHONUTF8=1 PYTHONIOENCODING=utf-8 $PYTHON - <<'INTRO_EOF'
+import sys, os, random, time
+
+# Force UTF-8 output
+try:
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+
+G  = "\033[1;32m"   # bright green
+C  = "\033[1;36m"   # bright cyan
+DIM = "\033[2m"
+W  = "\033[1;37m"
+Y  = "\033[1;33m"
+R  = "\033[0m"      # reset
+
 try:
     cols = os.get_terminal_size().columns
 except Exception:
     cols = 80
 cols = min(cols, 100)
-chars = "01アイウエオカキクケコABCDEF0123456789▓▒░"
+
+# ── Matrix rain ──────────────────────────────────────────────────────────────
+chars = "01ABCDEF0123456789#@!$%&*+-=><|"
 for _ in range(5):
     line = "".join(random.choice(chars) for _ in range(cols))
-    sys.stdout.write(f"\033[0;32m{line}\033[0m\n")
+    sys.stdout.write(f"{G}{line}{R}\n")
     sys.stdout.flush()
     time.sleep(0.07)
 time.sleep(0.2)
-MATRIX_EOF
-fi
+print()
 
 # ── Banner: AGENT (bright green) ─────────────────────────────────────────────
-echo -e "${BGREEN}"
-echo "    █████╗  ██████╗ ███████╗███╗   ██╗████████╗"
-echo "   ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝"
-echo "   ███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   "
-echo "   ██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   "
-echo "   ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   "
-echo "   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   "
+agent_art = [
+    "    \u2588\u2588\u2588\u2588\u2588\u256d\u2500  \u2588\u2588\u2588\u2588\u2588\u2588\u256d \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u256d\u2588\u2588\u2588\u256d   \u2588\u2588\u256d\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u256d",
+    "   \u2588\u2588\u256f\u2500\u2500\u2588\u2588\u256d\u2588\u2588\u256f\u2550\u2550\u2550\u2550\u256d \u2588\u2588\u256f\u2550\u2550\u2550\u2550\u256d\u2588\u2588\u2588\u2588\u256d  \u2588\u2588\u256d\u255a\u2550\u2550\u2588\u2588\u256f\u2550\u2550\u256d",
+    "   \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u256d\u2588\u2588\u256d  \u2588\u2588\u2588\u256d\u2588\u2588\u2588\u2588\u2588\u256d  \u2588\u2588\u256f\u2588\u2588\u256d \u2588\u2588\u256d   \u2588\u2588\u256d   ",
+    "   \u2588\u2588\u256f\u2500\u2500\u2588\u2588\u256d\u2588\u2588\u256d   \u2588\u2588\u256d\u2588\u2588\u256f\u2500\u2500\u256d  \u2588\u2588\u256d\u255a\u2588\u2588\u256d   \u2588\u2588\u256d   ",
+    "   \u2588\u2588\u256d  \u2588\u2588\u256d\u255a\u2588\u2588\u2588\u2588\u2588\u2588\u256f\u256d\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u256d\u2588\u2588\u256d \u255a\u2588\u2588\u2588\u2588\u256d   \u2588\u2588\u256d   ",
+    "   \u255a\u2550\u256d  \u255a\u2550\u256d \u255a\u2550\u2550\u2550\u2550\u2550\u256f \u255a\u2550\u2550\u2550\u2550\u2550\u2550\u256d\u255a\u2550\u256d  \u255a\u2550\u2550\u2550\u256d   \u255a\u2550\u256d   ",
+]
+for line in agent_art:
+    print(f"{G}  {line}{R}")
+
+print()
 
 # ── Banner: WALLET (bright cyan) ─────────────────────────────────────────────
-echo -e "${BCYAN}"
-echo "   ██╗    ██╗ █████╗ ██╗     ██╗     ███████╗████████╗"
-echo "   ██║    ██║██╔══██╗██║     ██║     ██╔════╝╚══██╔══╝"
-echo "   ██║ █╗ ██║███████║██║     ██║     █████╗     ██║   "
-echo "   ██║███╗██║██╔══██║██║     ██║     ██╔══╝     ██║   "
-echo "   ╚███╔███╔╝██║  ██║███████╗███████╗███████╗   ██║   "
-echo "    ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝   ╚═╝   "
-echo -e "${NC}"
+wallet_art = [
+    "   \u2588\u2588\u256d    \u2588\u2588\u256d \u2588\u2588\u2588\u2588\u2588\u256d \u2588\u2588\u256d     \u2588\u2588\u256d     \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u256d\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u256d",
+    "   \u2588\u2588\u256d    \u2588\u2588\u256d\u2588\u2588\u256f\u2500\u2500\u2588\u2588\u256d\u2588\u2588\u256d     \u2588\u2588\u256d     \u2588\u2588\u256f\u2550\u2550\u2550\u2550\u256d\u255a\u2550\u2550\u2588\u2588\u256f\u2500\u2500\u256d",
+    "   \u2588\u2588\u256d \u2588\u256d \u2588\u2588\u256d\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u256d\u2588\u2588\u256d     \u2588\u2588\u256d     \u2588\u2588\u2588\u2588\u2588\u256d     \u2588\u2588\u256d   ",
+    "   \u2588\u2588\u256d\u2588\u2588\u2588\u256d\u2588\u2588\u256d\u2588\u2588\u256f\u2500\u2500\u2588\u2588\u256d\u2588\u2588\u256d     \u2588\u2588\u256d     \u2588\u2588\u256f\u2500\u2500\u256d     \u2588\u2588\u256d   ",
+    "   \u255a\u2588\u2588\u2588\u256f\u2588\u2588\u2588\u256f\u2588\u2588\u256d  \u2588\u2588\u256d\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u256d\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u256d\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u256d   \u2588\u2588\u256d   ",
+    "    \u255a\u2550\u2550\u256d\u255a\u2550\u2550\u256d \u255a\u2550\u256d  \u255a\u2550\u256d\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u256d\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u256d\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u256d   \u255a\u2550\u256d   ",
+]
+for line in wallet_art:
+    print(f"{C}  {line}{R}")
+
+print()
 
 # ── Tagline box ───────────────────────────────────────────────────────────────
-echo -e "   ${DIM}┌─────────────────────────────────────────────────────────┐${NC}"
-echo -e "   ${DIM}│${NC}  ${BGREEN}Give your AI agent a wallet.${NC}                            ${DIM}│${NC}"
-echo -e "   ${DIM}│${NC}  ${DIM}Solana · Escrow · ACP · Swarms · v0.4.0 · MIT License${NC}  ${DIM}│${NC}"
-echo -e "   ${DIM}│${NC}  ${CYAN}https://agentwallet.fun${NC}  ${DIM}·  https://api.agentwallet.fun${NC}  ${DIM}│${NC}"
-echo -e "   ${DIM}└─────────────────────────────────────────────────────────┘${NC}"
-echo ""
-sleep 0.4
+box_w = 61
+line  = "\u2500" * box_w
+print(f"{DIM}   \u250c{line}\u2510{R}")
+print(f"{DIM}   \u2502{R}  {G}Give your AI agent a wallet.{R}                             {DIM}\u2502{R}")
+print(f"{DIM}   \u2502{R}  {DIM}Solana \u00b7 Escrow \u00b7 ACP \u00b7 Swarms \u00b7 v0.4.0 \u00b7 MIT{R}           {DIM}\u2502{R}")
+print(f"{DIM}   \u2502{R}  {C}https://agentwallet.fun{R}  \u00b7  {DIM}https://api.agentwallet.fun{R}  {DIM}\u2502{R}")
+print(f"{DIM}   \u2514{line}\u2518{R}")
+print()
+INTRO_EOF
+
+else
+  # Python not found — plain ASCII fallback
+  printf "\n  === AGENTWALLET PROTOCOL v0.4.0 ===\n"
+  printf "  Give your AI agent a wallet.\n"
+  printf "  https://agentwallet.fun\n\n"
+fi
+
+sleep 0.3
 
 # ── Step 1: Check prerequisites ──────────────────────────────────────────────
 step "Checking prerequisites"
@@ -90,16 +127,16 @@ docker info >/dev/null 2>&1 \
 
 info "Docker is running"
 
-command -v curl >/dev/null 2>&1 || warn "curl not found — health check will be skipped"
+command -v curl >/dev/null 2>&1 || warn "curl not found -- health check will be skipped"
 
 # ── Step 2: Create .env ──────────────────────────────────────────────────────
 step "Setting up environment"
 
 if [ -f .env ]; then
-  warn ".env already exists — skipping (delete it and re-run to reset)"
+  warn ".env already exists -- skipping (delete it and re-run to reset)"
 else
   cp .env.example .env
-  info "Copied .env.example → .env"
+  info "Copied .env.example -> .env"
 
   $PYTHON - <<'PYEOF'
 import secrets, sys
@@ -112,14 +149,14 @@ try:
 except ImportError:
     import base64, os
     fernet_key = base64.urlsafe_b64encode(os.urandom(32)).decode()
-    print("  (cryptography not installed — used fallback key generator)")
+    print("  (cryptography not installed -- used fallback key generator)")
 
 content = open('.env').read()
 content = content.replace('change-me-in-production', jwt_secret)
 content = content.replace('ENCRYPTION_KEY=', f'ENCRYPTION_KEY={fernet_key}')
 open('.env', 'w').write(content)
-print(f"  JWT_SECRET_KEY  → {jwt_secret[:8]}... (auto-generated)")
-print(f"  ENCRYPTION_KEY  → {fernet_key[:8]}... (auto-generated)")
+print(f"  JWT_SECRET_KEY  -> {jwt_secret[:8]}... (auto-generated)")
+print(f"  ENCRYPTION_KEY  -> {fernet_key[:8]}... (auto-generated)")
 PYEOF
   info "Secrets auto-generated"
 fi
@@ -141,7 +178,7 @@ while [ $ELAPSED -lt $MAX_WAIT ]; do
   if command -v curl >/dev/null 2>&1; then
     STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health 2>/dev/null || true)
     if [ "$STATUS" = "200" ]; then
-      echo ""
+      printf "\n"
       info "API is up!"
       break
     fi
@@ -152,25 +189,23 @@ while [ $ELAPSED -lt $MAX_WAIT ]; do
 done
 
 if [ $ELAPSED -ge $MAX_WAIT ]; then
-  echo ""
-  warn "API not responding after ${MAX_WAIT}s — run: docker compose logs api"
+  printf "\n"
+  warn "API not responding after ${MAX_WAIT}s -- run: docker compose logs api"
 fi
 
 # ── Done ─────────────────────────────────────────────────────────────────────
-echo ""
-echo -e "${BGREEN}"
-echo "   ╔══════════════════════════════════════════════════════╗"
-echo "   ║             ✓  Setup Complete!                       ║"
-echo "   ╠══════════════════════════════════════════════════════╣"
-echo -e "   ║  ${BCYAN}API   ${BGREEN}→  http://localhost:8000                       ║"
-echo -e "   ║  ${BCYAN}Docs  ${BGREEN}→  http://localhost:8000/docs                  ║"
-echo "   ╠══════════════════════════════════════════════════════╣"
-echo -e "   ║  ${YELLOW}make start${BGREEN}  → start services                         ║"
-echo -e "   ║  ${YELLOW}make stop${BGREEN}   → stop services                          ║"
-echo -e "   ║  ${YELLOW}make logs${BGREEN}   → view API logs                          ║"
-echo -e "   ║  ${YELLOW}make test${BGREEN}   → run 110 tests                          ║"
-echo "   ╚══════════════════════════════════════════════════════╝"
-echo -e "${NC}"
-echo "   Next → curl http://localhost:8000/health"
-echo "   Docs → README.md (Option B) for step-by-step usage"
-echo ""
+printf "\n${BGREEN}"
+printf "   +------------------------------------------------------+\n"
+printf "   |           [OK]  Setup Complete!                      |\n"
+printf "   +------------------------------------------------------+\n"
+printf "   |  API   ->  http://localhost:8000                     |\n"
+printf "   |  Docs  ->  http://localhost:8000/docs                |\n"
+printf "   +------------------------------------------------------+\n"
+printf "   |  make start  -> start services                       |\n"
+printf "   |  make stop   -> stop services                        |\n"
+printf "   |  make logs   -> view API logs                        |\n"
+printf "   |  make test   -> run 110 tests                        |\n"
+printf "   +------------------------------------------------------+\n"
+printf "${NC}\n"
+printf "   Next -> curl http://localhost:8000/health\n"
+printf "   Docs -> README.md (Option B) for step-by-step usage\n\n"
