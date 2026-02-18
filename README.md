@@ -73,6 +73,88 @@ Your AI agents need money. Not _your_ money — **their own wallets**, with prog
 
 ---
 
+## ⚡ Quick Start — Interactive CLI (Easiest Way)
+
+No Docker, no Python setup. Just `git`, `bash`, and `curl`.
+
+### 1. Clone & Launch
+
+```bash
+git clone https://github.com/YouthAIAgent/agentwallet.git
+cd agentwallet/agentwallet
+AW_API=https://api.agentwallet.fun bash aw
+```
+
+You'll see a hacker-style banner and an interactive menu:
+
+```
+  // AGENT WALLET  v0.4.0  ·  https://api.agentwallet.fun
+  API: [ UP ]   Auth: not logged in
+  ──────────────────────────────────────────────
+
+  ACCOUNT
+  [1] Register new account
+  [2] Login
+
+  WALLETS
+  [4] Create wallet
+  [5] List wallets
+  [6] Check balance
+
+  PAYMENTS
+  [7] Send SOL
+
+  ESCROW
+  [8] Create escrow
+  [9] Release / Refund escrow
+
+  [h] Help   [q] Quit
+```
+
+### 2. Register (press `1`)
+
+```
+>> Organization name: MyStartup AI
+>> Email: you@example.com
+>> Password: MyAgent123!
+```
+
+> Password rules: 8+ chars, 1 uppercase, 1 lowercase, 1 digit, 1 special char (`!@#$`)
+
+### 3. Create a Wallet (press `4`)
+
+```
+>> Wallet label: My First Wallet
+>> Choice [1]: 1    ← Agent wallet (default)
+```
+
+You'll get a **Solana address** — that's your agent's wallet. Fund it with devnet SOL from [faucet.solana.com](https://faucet.solana.com).
+
+### 4. Check Balance, Send SOL, Create Escrow
+
+| Action | Menu Option |
+|---|---|
+| List wallets | `5` |
+| Check balance | `6` |
+| Send SOL | `7` |
+| Create escrow | `8` |
+| Release/Refund escrow | `9` |
+
+Your session is saved automatically — next time just run `bash aw` and you're still logged in.
+
+### Requirements
+
+| Tool | Required? | Notes |
+|---|---|---|
+| `git` | Yes | To clone the repo |
+| `bash` | Yes | Git Bash on Windows works |
+| `curl` | Yes | Pre-installed on most systems |
+| `python` | Optional | Enables pretty JSON output + matrix banner |
+
+> **Windows users:** Use [Git Bash](https://git-scm.com/downloads) — the CLI works out of the box.
+
+---
+
 ## 📖 Developer Guide — Build Your First AI Agent Wallet
 
 _Complete step-by-step guide. Register → Create Agent → Fund → Transfer → PDA Wallet → Escrow → Marketplace. All on Solana devnet._
