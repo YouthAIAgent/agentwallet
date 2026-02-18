@@ -2,6 +2,9 @@
 # AgentWallet CLI helper — ./aw [command]
 # No args → interactive menu  |  ./aw help → all commands
 
+# Detect python (python3 or python on Windows)
+PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null || echo "")
+
 BGREEN='\033[1;32m'
 GREEN='\033[0;32m'
 BCYAN='\033[1;36m'
@@ -65,7 +68,7 @@ api_call() {
 
 # Extract a field from $RESPONSE JSON
 json_field() {
-  printf '%s' "$RESPONSE" | python3 -c "
+  printf '%s' "$RESPONSE" | "$PYTHON" -c "
 import sys, json
 try:
     d = json.load(sys.stdin)
@@ -80,7 +83,7 @@ except: print('')" 2>/dev/null
 
 # Extract human-readable error from $RESPONSE (handles both string and Pydantic list detail)
 api_error() {
-  printf '%s' "$RESPONSE" | python3 -c "
+  printf '%s' "$RESPONSE" | "$PYTHON" -c "
 import sys, json
 try:
     d = json.load(sys.stdin)
@@ -97,7 +100,7 @@ except:
 # Build JSON body safely via python (handles special chars in passwords etc.)
 make_json() {
   # Usage: make_json key1 val1 key2 val2 ...
-  python3 -c "
+  "$PYTHON" -c "
 import sys, json, os
 args = sys.argv[1:]
 d = {}
@@ -266,7 +269,7 @@ flow_list_wallets() {
   api_call GET /wallets
 
   if [ "$HTTP_CODE" = "200" ]; then
-    printf '%s' "$RESPONSE" | python3 -c "
+    printf '%s' "$RESPONSE" | "$PYTHON" -c "
 import sys, json
 d = json.load(sys.stdin)
 ws = d.get('data', [])
@@ -298,7 +301,7 @@ select_wallet() {
   [ "$HTTP_CODE" != "200" ] && { err "Could not load wallets."; return 1; }
 
   local count
-  count=$(printf '%s' "$RESPONSE" | python3 -c "
+  count=$(printf '%s' "$RESPONSE" | "$PYTHON" -c "
 import sys,json; d=json.load(sys.stdin); print(len(d.get('data',[])))
 " 2>/dev/null)
 
@@ -307,7 +310,7 @@ import sys,json; d=json.load(sys.stdin); print(len(d.get('data',[])))
     return 1
   fi
 
-  printf '%s' "$RESPONSE" | python3 -c "
+  printf '%s' "$RESPONSE" | "$PYTHON" -c "
 import sys, json
 d = json.load(sys.stdin)
 for i, w in enumerate(d.get('data', []), 1):
@@ -320,7 +323,7 @@ for i, w in enumerate(d.get('data', []), 1):
   printf "  Choice: "
   read -r W_IDX
 
-  SELECTED_WALLET_ID=$(printf '%s' "$RESPONSE" | python3 -c "
+  SELECTED_WALLET_ID=$(printf '%s' "$RESPONSE" | "$PYTHON" -c "
 import sys, json
 d = json.load(sys.stdin)
 ws = d.get('data', [])
@@ -348,7 +351,7 @@ flow_balance() {
 
   if [ "$HTTP_CODE" = "200" ]; then
     printf "\n"
-    printf '%s' "$RESPONSE" | python3 -c "
+    printf '%s' "$RESPONSE" | "$PYTHON" -c "
 import sys, json
 d = json.load(sys.stdin)
 sol = d.get('sol_balance', 0) or 0
@@ -481,7 +484,7 @@ flow_manage_escrow() {
   fi
 
   local count
-  count=$(printf '%s' "$RESPONSE" | python3 -c "
+  count=$(printf '%s' "$RESPONSE" | "$PYTHON" -c "
 import sys,json; d=json.load(sys.stdin); print(len(d.get('data',[])))
 " 2>/dev/null)
 
@@ -490,7 +493,7 @@ import sys,json; d=json.load(sys.stdin); print(len(d.get('data',[])))
     pause; return
   fi
 
-  printf '%s' "$RESPONSE" | python3 -c "
+  printf '%s' "$RESPONSE" | "$PYTHON" -c "
 import sys, json
 d = json.load(sys.stdin)
 for i, e in enumerate(d.get('data', []), 1):
@@ -507,7 +510,7 @@ for i, e in enumerate(d.get('data', []), 1):
   read -r E_IDX
 
   local escrow_id
-  escrow_id=$(printf '%s' "$RESPONSE" | python3 -c "
+  escrow_id=$(printf '%s' "$RESPONSE" | "$PYTHON" -c "
 import sys, json
 d = json.load(sys.stdin)
 es = d.get('data', [])
@@ -572,8 +575,8 @@ cmd_menu() {
     printf "${RED}Error: curl is required. Install it and try again.${NC}\n"
     exit 1
   fi
-  if ! command -v python3 >/dev/null 2>&1; then
-    printf "${RED}Error: python3 is required. Install it and try again.${NC}\n"
+  if [ -z "$PYTHON" ]; then
+    printf "${RED}Error: Python not found. Install Python and try again.${NC}\n"
     exit 1
   fi
 
@@ -760,7 +763,7 @@ cmd_migrate() {
 # ── Health ────────────────────────────────────────────────────────────────────
 cmd_health() {
   printf "${DIM}Checking API health...${NC}\n"
-  curl -s http://localhost:8000/health | python3 -m json.tool 2>/dev/null \
+  curl -s http://localhost:8000/health | "$PYTHON" -m json.tool 2>/dev/null \
     || curl -s http://localhost:8000/health \
     || printf "${RED}API not reachable. Is it running? Try: ./aw start${NC}\n"
 }
