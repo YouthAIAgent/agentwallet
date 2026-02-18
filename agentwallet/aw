@@ -302,17 +302,21 @@ flow_create_wallet() {
 
   printf "\n"
   printf "  ${DIM}Wallet type:${NC}\n"
-  printf "  ${YELLOW}[1]${NC} Solana ${DIM}(default)${NC}\n"
-  printf "  ${YELLOW}[2]${NC} EVM ${DIM}(Ethereum / Base)${NC}\n"
+  printf "  ${YELLOW}[1]${NC} Agent   ${DIM}(default — for AI agent operations)${NC}\n"
+  printf "  ${YELLOW}[2]${NC} Treasury ${DIM}(org-level treasury wallet)${NC}\n"
+  printf "  ${YELLOW}[3]${NC} Escrow  ${DIM}(for escrow-held funds)${NC}\n"
   printf "  ${YELLOW}>>${NC} Choice [1]: "
   read -r WT
-  local wtype="solana"
-  [ "$WT" = "2" ] && wtype="evm"
+  local wtype="agent"
+  case "$WT" in
+    2) wtype="treasury" ;;
+    3) wtype="escrow" ;;
+  esac
 
   local body
   body=$(make_json "wallet_type" "$wtype" "label" "$W_LABEL")
 
-  info "Creating ${wtype} wallet..."
+  info "Creating ${wtype} wallet (Solana)..."
   api_call POST /wallets "$body"
 
   if [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "200" ]; then
@@ -321,7 +325,7 @@ flow_create_wallet() {
     waddr=$(json_field "address")
     printf "\n"
     ok "Wallet created!"
-    printf "  ${DIM}  Type:    ${NC}${wtype}\n"
+    printf "  ${DIM}  Type:    ${NC}${wtype} (Solana)\n"
     printf "  ${DIM}  Label:   ${NC}${W_LABEL}\n"
     printf "  ${DIM}  ID:      ${NC}${CYAN}${wid}${NC}\n"
     if [ -n "$waddr" ] && [ "$waddr" != "null" ] && [ "$waddr" != "None" ]; then
