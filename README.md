@@ -22,7 +22,7 @@
 [![API Live](https://img.shields.io/badge/API-Live-0B0D0E?style=for-the-badge&logo=railway)](https://api.agentwallet.fun/docs)
 [![Security Audit](https://img.shields.io/badge/Security-Audited-00c853?style=for-the-badge&logo=shieldsdotio)](SECURITY_AUDIT.md)
 [![Tests](https://img.shields.io/badge/Tests-110%20Passed-00c853?style=for-the-badge&logo=pytest)](packages/api/tests/)
-[![Try in Browser](https://img.shields.io/badge/Try_in_Browser-Codespaces-181717?style=for-the-badge&logo=github)](https://codespaces.new/YouthAIAgent/agentwallet?quickstart=1)
+[![Try in Browser](https://img.shields.io/badge/Try_in_Browser-Codespaces-181717?style=for-the-badge&logo=github)](https://github.com/codespaces/new)
 
 > _"Your agents don't need permission. They need a wallet."_
 
@@ -74,21 +74,81 @@ Your AI agents need money. Not _your_ money — **their own wallets**, with prog
 
 ---
 
-## ⚡ Quick Start — Interactive CLI (Easiest Way)
+## ⚡ Quick Start — Try It in Your Browser (No Install)
 
-No Docker, no Python setup. Just `git`, `bash`, and `curl`.
+You don't need to install anything. Just open a free GitHub Codespace and paste one command. That's it — you'll have a Solana wallet in 60 seconds.
 
-### Zero-Install: Try in Your Browser
+### Step 1: Open a Codespace
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/YouthAIAgent/agentwallet?quickstart=1)
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/YouthAIAgent/agentwallet)
+Go to **[github.com/codespaces/new](https://github.com/codespaces/new)** and create a codespace for this repo:
 
-> Click either button above — a terminal opens in your browser. Then run:
-> ```bash
-> cd agentwallet && AW_API=https://api.agentwallet.fun bash aw
-> ```
+> **Repository:** `YouthAIAgent/agentwallet` → Click **"Create codespace"**
 
-### 1. Clone & Launch
+A VS Code editor opens in your browser with a terminal at the bottom. No downloads, no setup.
+
+### Step 2: Paste This One Command
+
+```bash
+cd agentwallet && AW_API=https://api.agentwallet.fun bash aw
+```
+
+This launches the AgentWallet interactive menu. You'll see a hacker-style banner and options like this:
+
+```
+  // AGENT WALLET  v0.4.0  ·  https://api.agentwallet.fun
+  API: [ UP ]   Auth: not logged in
+
+  ACCOUNT
+  [1] Register new account       ← Start here
+  [2] Login
+
+  WALLETS
+  [4] Create wallet              ← Then create a wallet
+  [5] List wallets
+  [6] Check balance              ← See your SOL balance
+
+  PAYMENTS
+  [7] Send SOL                   ← Transfer to any Solana address
+
+  ESCROW
+  [8] Create escrow              ← Lock funds for a deal
+  [9] Release / Refund escrow    ← Complete or cancel the deal
+```
+
+### Step 3: Register → Create Wallet → Done
+
+**Press `1` to register:**
+```
+>> Organization name: My AI Company
+>> Email: you@example.com
+>> Password: MyAgent123!
+```
+> Password needs: 8+ characters, uppercase, lowercase, number, special char (`!@#$`)
+
+**Press `4` to create a wallet:**
+```
+>> Wallet label: My First Wallet
+>> Choice [1]: 1
+```
+
+That's it. You now have a **real Solana wallet** with an on-chain address. Fund it with free devnet SOL at [faucet.solana.com](https://faucet.solana.com), then use option `7` to send SOL or option `8` to create an escrow.
+
+Your session saves automatically — close and reopen, you're still logged in.
+
+### What Can You Do From Here?
+
+| Press | What Happens |
+|---|---|
+| `5` | See all your wallets and their Solana addresses |
+| `6` | Check SOL balance of any wallet |
+| `7` | Send SOL to any Solana address |
+| `8` | Create an escrow (lock funds until work is done) |
+| `9` | Release payment to recipient or refund back to you |
+| `q` | Quit (session saved) |
+
+### Also Works Locally
+
+If you prefer your own terminal (Mac, Linux, Windows Git Bash):
 
 ```bash
 git clone https://github.com/YouthAIAgent/agentwallet.git
@@ -96,73 +156,7 @@ cd agentwallet/agentwallet
 AW_API=https://api.agentwallet.fun bash aw
 ```
 
-You'll see a hacker-style banner and an interactive menu:
-
-```
-  // AGENT WALLET  v0.4.0  ·  https://api.agentwallet.fun
-  API: [ UP ]   Auth: not logged in
-  ──────────────────────────────────────────────
-
-  ACCOUNT
-  [1] Register new account
-  [2] Login
-
-  WALLETS
-  [4] Create wallet
-  [5] List wallets
-  [6] Check balance
-
-  PAYMENTS
-  [7] Send SOL
-
-  ESCROW
-  [8] Create escrow
-  [9] Release / Refund escrow
-
-  [h] Help   [q] Quit
-```
-
-### 2. Register (press `1`)
-
-```
->> Organization name: MyStartup AI
->> Email: you@example.com
->> Password: MyAgent123!
-```
-
-> Password rules: 8+ chars, 1 uppercase, 1 lowercase, 1 digit, 1 special char (`!@#$`)
-
-### 3. Create a Wallet (press `4`)
-
-```
->> Wallet label: My First Wallet
->> Choice [1]: 1    ← Agent wallet (default)
-```
-
-You'll get a **Solana address** — that's your agent's wallet. Fund it with devnet SOL from [faucet.solana.com](https://faucet.solana.com).
-
-### 4. Check Balance, Send SOL, Create Escrow
-
-| Action | Menu Option |
-|---|---|
-| List wallets | `5` |
-| Check balance | `6` |
-| Send SOL | `7` |
-| Create escrow | `8` |
-| Release/Refund escrow | `9` |
-
-Your session is saved automatically — next time just run `bash aw` and you're still logged in.
-
-### Requirements
-
-| Tool | Required? | Notes |
-|---|---|---|
-| `git` | Yes | To clone the repo |
-| `bash` | Yes | Git Bash on Windows works |
-| `curl` | Yes | Pre-installed on most systems |
-| `python` | Optional | Enables pretty JSON output + matrix banner |
-
-> **Windows users:** Use [Git Bash](https://git-scm.com/downloads) — the CLI works out of the box.
+Only needs `bash` and `curl` — Python is optional (adds pretty output).
 
 ---
 
