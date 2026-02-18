@@ -1,0 +1,56 @@
+version: 2
+updates:
+  # Python API dependencies
+  - package-ecosystem: "pip"
+    directory: "/agentwallet"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "python"
+
+  # TypeScript SDK dependencies
+  - package-ecosystem: "npm"
+    directory: "/agentwallet/packages/sdk-ts"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "typescript"
+
+  # Dashboard dependencies
+  - package-ecosystem: "npm"
+    directory: "/agentwallet/packages/dashboard"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "frontend"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "ci"
+
+  # Rust/Anchor program
+  - package-ecosystem: "cargo"
+    directory: "/agentwallet/packages/programs/agentwallet"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "rust"
+      - "smart-contract"
