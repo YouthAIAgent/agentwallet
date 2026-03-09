@@ -43,7 +43,7 @@ jobs:
             type=sha
 
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./agentwallet
           file: ./agentwallet/Dockerfile
