@@ -33,7 +33,7 @@ dev = [
     "httpx",
     "ruff>=0.5",
     "mypy>=1.11",
-    "aiosqlite>=0.20",
+    "aiosqlite>=0.22.1",
 ]
 
 [build-system]
