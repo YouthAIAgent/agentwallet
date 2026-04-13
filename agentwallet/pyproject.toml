@@ -20,7 +20,7 @@ dependencies = [
     "bcrypt>=4.0",
     "structlog>=24.0",
     "cryptography>=42.0",
-    "stripe>=8.0",
+    "stripe>=15.0.1",
     "python-multipart>=0.0.9",
     "email-validator>=2.0",
 ]
