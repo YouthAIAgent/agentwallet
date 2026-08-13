@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # AgentWallet Protocol — One-command smoke test
 #
-# Verifies, in a single run:
-#   1. API        — /health, register, API key, agent creation
+# Verifies, in a single run:#   1. API       — /health, register, API key, agent + wallet creation,
+#                   escrow (create/get/list) and transactions list
 #   2. Python SDK — agent + wallet + balance via aw-protocol-sdk
 #   3. CLI        — `agentwallet_cli.main status` and `agents`
 #   4. MCP server — initialize handshake + tools/list
@@ -91,6 +91,7 @@ fi
 
 API_KEY=""
 TOKEN=""
+AGENT_ID=""
 if [ -n "$HEALTH" ]; then
   REG="$(curl -sf --max-time 15 -X POST "$API_BASE/auth/register" \
     -H "Content-Type: application/json" \
@@ -122,6 +123,55 @@ if [ -n "$HEALTH" ]; then
       pass "agent created via raw API ($AGENT_ID)"
     else
       fail "agent creation via raw API"
+      FAILED=1
+    fi
+
+    # Wallet — used as the escrow funder and recipient
+    WALLET_ID=""
+    WALLET_ADDR=""
+    if [ -n "$AGENT_ID" ]; then
+      WALLET="$(curl -sf --max-time 15 -X POST "$API_BASE/wallets" \
+        -H "X-API-Key: $API_KEY" -H "Content-Type: application/json" \
+        -d "{\"agent_id\":\"$AGENT_ID\",\"wallet_type\":\"agent\",\"label\":\"Smoke Wallet\"}" 2>/dev/null)" || WALLET=""
+      if [ -n "$WALLET" ] && WALLET_ID="$(json_get id "$WALLET" 2>/dev/null)" && WALLET_ADDR="$(json_get address "$WALLET" 2>/dev/null)"; then
+        pass "wallet created via raw API ($WALLET_ADDR)"
+      else
+        fail "wallet creation via raw API"
+        FAILED=1
+      fi
+    fi
+
+    # Escrow end-to-end (off-chain lifecycle): create -> get -> list
+    if [ -n "$WALLET_ID" ]; then
+      ESCROW="$(curl -sf --max-time 15 -X POST "$API_BASE/escrow" \
+        -H "X-API-Key: $API_KEY" -H "Content-Type: application/json" \
+        -d "{\"funder_wallet_id\":\"$WALLET_ID\",\"recipient_address\":\"$WALLET_ADDR\",\"amount_sol\":0.001,\"conditions\":{\"task\":\"smoke test\"},\"expires_in_hours\":24}" 2>/dev/null)" || ESCROW=""
+      if [ -n "$ESCROW" ] && ESCROW_ID="$(json_get id "$ESCROW" 2>/dev/null)" && [ "$(json_get status "$ESCROW" 2>/dev/null)" = "created" ]; then
+        pass "escrow created (status=created)"
+        if curl -sf --max-time 15 "$API_BASE/escrow/$ESCROW_ID" -H "X-API-Key: $API_KEY" 2>/dev/null | grep -q "$ESCROW_ID"; then
+          pass "escrow fetched by id"
+        else
+          fail "escrow fetch by id"
+          FAILED=1
+        fi
+        if curl -sf --max-time 15 "$API_BASE/escrow?status=created" -H "X-API-Key: $API_KEY" 2>/dev/null | grep -q "$ESCROW_ID"; then
+          pass "escrow appears in escrow list"
+        else
+          fail "escrow list"
+          FAILED=1
+        fi
+      else
+        fail "escrow creation"
+        FAILED=1
+      fi
+    fi
+
+    # Transactions: list endpoint (read path)
+    TX_LIST="$(curl -sf --max-time 15 "$API_BASE/transactions" -H "X-API-Key: $API_KEY" 2>/dev/null)" || TX_LIST=""
+    if [ -n "$TX_LIST" ] && echo "$TX_LIST" | "$PYTHON" -c "import sys,json; json.load(sys.stdin)" 2>/dev/null; then
+      pass "transactions list endpoint"
+    else
+      fail "transactions list endpoint"
       FAILED=1
     fi
   fi
