@@ -1,0 +1,46 @@
+name: Smoke Test
+
+# Runs the full-stack smoke test (API + SDK + CLI + MCP + Dashboard) on
+# every push to any branch and on pull requests. Mirrors the manual
+# flow: bash setup.sh (fresh .env + Postgres/Redis/API via Docker) then
+# bash smoke_test.sh.
+#
+# The smoke test registers a fresh org per run, so it never hits
+# free-tier limits, and the dashboard check falls back to a production
+# build when no dev server is running.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  smoke:
+    name: Full-Stack Smoke Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: agentwallet
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Set up Node 18
+        uses: actions/setup-node@v6
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: agentwallet/packages/dashboard/package-lock.json
+
+      - name: Start API + Postgres + Redis (Docker)
+        run: bash setup.sh
+
+      - name: Run smoke test
+        run: bash smoke_test.sh
