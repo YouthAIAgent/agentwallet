@@ -192,11 +192,24 @@ if [ ! -x "$MCP_BIN" ]; then
   fail "MCP binary not found in venv"
   FAILED=1
 else
-  MCP_OUT="$(printf '%s\n%s\n' \
+  MCP_OUT="$( { printf '%s\n%s\n' \
     '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"smoke-test","version":"1.0"}}}' \
-    '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' \
-    | AGENTWALLET_API_KEY="${API_KEY:-}" timeout 20 "$MCP_BIN" 2>/dev/null | tail -1)"
-  TOOLS="$(echo "$MCP_OUT" | "$PYTHON" -c "import sys,json;print(len(json.loads(sys.stdin.read())['result']['tools']))" 2>/dev/null)" || TOOLS=""
+    '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'; \
+    sleep 3; } | AGENTWALLET_API_KEY="${API_KEY:-}" timeout 25 "$MCP_BIN" 2>/dev/null)"
+  TOOLS="$(echo "$MCP_OUT" | "$PYTHON" -c "
+import sys, json
+for line in sys.stdin.read().splitlines():
+    line = line.strip()
+    if not line:
+        continue
+    try:
+        res = json.loads(line).get('result') or {}
+    except Exception:
+        continue
+    if 'tools' in res:
+        print(len(res['tools']))
+        break
+" 2>/dev/null)" || TOOLS=""
   if [ -n "$TOOLS" ] && [ "$TOOLS" -ge 30 ] 2>/dev/null; then
     pass "MCP initialized — $TOOLS tools exposed"
   else
