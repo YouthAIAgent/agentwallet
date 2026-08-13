@@ -2,9 +2,22 @@
 
 from __future__ import annotations
 
+import sys
+
 import pytest
 
-from agent_genesis.deployer.orchestrator import DeployerAgent, RuntimeType
+from agent_genesis.deployer.orchestrator import (
+    DeployerAgent,
+    RuntimeType,
+    _exec_cmd,
+)
+
+
+def test_exec_cmd_wraps_windows_shims(monkeypatch):
+    monkeypatch.setattr(sys, "platform", "win32")
+    assert _exec_cmd(["codex", "exec"]) == ["cmd", "/c", "codex", "exec"]
+    monkeypatch.setattr(sys, "platform", "linux")
+    assert _exec_cmd(["codex", "exec"]) == ["codex", "exec"]
 
 
 def test_runtime_configs_loaded(isolated_memory):

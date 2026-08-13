@@ -372,11 +372,37 @@ class GenesisCLI:
 
         try:
             if cmd == "design":
+                # Optional --runtime role=runtime flags -> designer constraints,
+                # e.g. `genesis design "parse docs" --runtime parser=local_llm`
+                # (also accepts the space form: --runtime parser=local_llm)
+                constraints = {}
+                prefs = {}
+                rest = []
+                i = 0
+                while i < len(cmd_args):
+                    a = cmd_args[i]
+                    if a == "--runtime" and i + 1 < len(cmd_args):
+                        role, _, rt = cmd_args[i + 1].partition("=")
+                        if role.strip() and rt.strip():
+                            prefs[role.strip()] = rt.strip()
+                        i += 2
+                    elif a.startswith("--runtime="):
+                        role, _, rt = a[len("--runtime="):].partition("=")
+                        if role.strip() and rt.strip():
+                            prefs[role.strip()] = rt.strip()
+                        i += 1
+                    else:
+                        rest.append(a)
+                        i += 1
+                cmd_args = rest
+                if prefs:
+                    constraints["runtime_prefs"] = prefs
+
                 task = " ".join(cmd_args)
                 if not task:
-                    print("Usage: genesis design <task>")
+                    print("Usage: genesis design <task> [--runtime role=runtime ...]")
                     return
-                result = await genesis_design(task)
+                result = await genesis_design(task, constraints or None)
                 spec = result.get("spec", {})
                 print(json.dumps(spec, indent=2, ensure_ascii=False))
                 
@@ -480,7 +506,7 @@ class GenesisCLI:
 🧬 Agent Genesis CLI
 
 Commands:
-  design <task>                    Design agent organization
+  design <task> [--runtime r=x]   Design agent organization (optionally force runtimes)
   deploy <org_id>                  Deploy organization
   breed <role> [generations]       Evolve agent genomes
   finetune                         Run nightly fine-tune

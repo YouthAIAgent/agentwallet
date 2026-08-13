@@ -6,6 +6,7 @@ Reads a task description → outputs complete Agent Organization Spec (JSON).
 from __future__ import annotations
 
 import json
+import os
 import uuid
 from dataclasses import dataclass, asdict
 from typing import Dict, List, Any, Optional
@@ -149,11 +150,16 @@ RUNTIME_STRENGTHS: Dict[RuntimeTarget, List[AgentRole]] = {
 }
 
 MODEL_DEFAULTS: Dict[RuntimeTarget, str] = {
-    RuntimeTarget.CLAUDE_CODE: "claude-3-5-sonnet-20241022",
-    RuntimeTarget.CODEX: "gpt-4o",
-    RuntimeTarget.HERMES: "qwen2.5:7b",
-    RuntimeTarget.LOCAL_LLM: "qwen2.5:7b",
-    RuntimeTarget.BOX: "claude-3-5-sonnet-20241022",
+    # Each default can be overridden per-machine, e.g. a proxy or Ollama
+    # with different model names:
+    #   GENESIS_CLAUDE_MODEL=gemini/gemini-3.6-flash
+    #   GENESIS_CODEX_MODEL=gpt-4o
+    #   GENESIS_LOCAL_LLM_MODEL=qwen3:1.7b
+    RuntimeTarget.CLAUDE_CODE: os.getenv("GENESIS_CLAUDE_MODEL", "claude-3-5-sonnet-20241022"),
+    RuntimeTarget.CODEX: os.getenv("GENESIS_CODEX_MODEL", "gpt-4o"),
+    RuntimeTarget.HERMES: os.getenv("GENESIS_HERMES_MODEL", "qwen2.5:7b"),
+    RuntimeTarget.LOCAL_LLM: os.getenv("GENESIS_LOCAL_LLM_MODEL", "qwen2.5:7b"),
+    RuntimeTarget.BOX: os.getenv("GENESIS_BOX_MODEL", "claude-3-5-sonnet-20241022"),
 }
 
 INPUT_CONTRACTS: Dict[AgentRole, Dict] = {
@@ -190,6 +196,24 @@ DEPENDENCY_GRAPH: Dict[AgentRole, List[AgentRole]] = {
 }
 
 
+def _env_runtime_prefs() -> Dict[str, str]:
+    """Parse GENESIS_RUNTIME_PREFS (e.g. "parser=local_llm,validator=local_llm").
+
+    Lets deploy operators target runtimes that are actually available on
+    their machine for every design, without editing code.
+    """
+    prefs: Dict[str, str] = {}
+    raw = os.getenv("GENESIS_RUNTIME_PREFS", "")
+    for item in raw.split(","):
+        item = item.strip()
+        if not item:
+            continue
+        role, _, rt = item.partition("=")
+        if role.strip() and rt.strip():
+            prefs[role.strip()] = rt.strip()
+    return prefs
+
+
 class DesignerAgent:
     """
     Task → Organization Spec.
@@ -198,9 +222,11 @@ class DesignerAgent:
 
     def __init__(self):
         self.memory = get_memory_fabric()
+        self.env_runtime_prefs = _env_runtime_prefs()
 
     def design(self, task: str, constraints: Optional[Dict] = None) -> OrganizationSpec:
         constraints = constraints or {}
+        constraints = {**constraints, "runtime_prefs": {**self.env_runtime_prefs, **constraints.get("runtime_prefs", {})}}
 
         # 1. Decompose into subproblems (simple keyword-based for MVP)
         subproblems = self._decompose_task(task)

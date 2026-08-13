@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from agent_genesis.cli.genesis import GenesisCLI
@@ -33,6 +35,23 @@ async def test_design_without_task_shows_usage(cli, capsys):
     await cli.run(["design"])
     out = capsys.readouterr().out
     assert "Usage: genesis design" in out
+
+
+@pytest.mark.asyncio
+async def test_design_with_runtime_constraint(cli, capsys):
+    """--runtime role=runtime must force the designer's runtime choice."""
+    await cli.run(
+        [
+            "design",
+            "parse documents, validate compliance",
+            "--runtime",
+            "parser=local_llm",
+        ]
+    )
+    out = capsys.readouterr().out
+    spec = json.loads(out)
+    parser = next(a for a in spec["agents"] if a["role"] == "parser")
+    assert parser["runtime"] == "local_llm"
 
 
 @pytest.mark.asyncio

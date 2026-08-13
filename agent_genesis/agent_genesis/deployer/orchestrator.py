@@ -14,12 +14,25 @@ import asyncio
 import json
 import uuid
 import os
+import sys
 from dataclasses import dataclass
-from typing import Dict, Any, Optional
+from typing import Dict, List, Any, Optional
 from enum import Enum
 from pathlib import Path
 
 from agent_genesis.memory import get_memory_fabric
+
+
+def _exec_cmd(cmd: List[str]) -> List[str]:
+    """Return a spawnable command list on the current platform.
+
+    On Windows, npm-installed CLIs (codex, claude, ...) ship as ``.cmd``
+    shims with no ``.exe``. ``asyncio.create_subprocess_exec`` cannot run
+    those directly (WinError 2), so wrap them through ``cmd /c``.
+    """
+    if sys.platform == "win32" and cmd:
+        return ["cmd", "/c", *cmd]
+    return cmd
 
 
 class RuntimeType(str, Enum):
@@ -169,7 +182,7 @@ class DeployerAgent:
         cmd_config = self.runtime_configs[RuntimeType.CLAUDE_CODE]
         args = [arg.format(model=spec["model"]) for arg in cmd_config["args_template"]]
 
-        cmd = [cmd_config["command"]] + args
+        cmd = _exec_cmd([cmd_config["command"]] + args)
         prompt = self._build_prompt(spec)
 
         try:
@@ -201,7 +214,7 @@ class DeployerAgent:
         cmd_config = self.runtime_configs[RuntimeType.CODEX]
         args = [arg.format(model=spec["model"]) for arg in cmd_config["args_template"]]
 
-        cmd = [cmd_config["command"]] + args
+        cmd = _exec_cmd([cmd_config["command"]] + args)
         prompt = self._build_prompt(spec)
 
         try:
@@ -324,11 +337,11 @@ class DeployerAgent:
                 return False
 
         elif runtime in (RuntimeType.CLAUDE_CODE, RuntimeType.CODEX):
-            # Check if CLI exists
+            # Check if CLI exists (npm .cmd shims on Windows need cmd /c)
             cmd = "claude" if runtime == RuntimeType.CLAUDE_CODE else "codex"
             try:
                 proc = await asyncio.create_subprocess_exec(
-                    cmd, "--version",
+                    *_exec_cmd([cmd, "--version"]),
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
                 )

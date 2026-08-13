@@ -50,12 +50,26 @@ python -c "from agent_genesis.memory import get_memory_fabric; m=get_memory_fabr
 ### 3. Design Your First Organization
 ```bash
 genesis design "Monitor GeM tenders, parse PDF requirements, analyze capabilities, draft proposal, validate compliance, submit"
+# Force runtimes per role to target what you actually have installed:
+genesis design "parse docs, validate compliance" --runtime parser=local_llm --runtime validator=local_llm
 ```
 
 ### 4. Deploy
 ```bash
 genesis deploy <org_id>
+genesis runtimes   # see which runtimes are available before deploying
 ```
+
+> **Runtimes:** `claude_code` and `codex` spawn their CLIs (`claude`/`codex`,
+> npm-installed). `local_llm` deploys to a local Ollama server
+> (`http://127.0.0.1:11434`). On Windows, npm `.cmd` shims are handled
+> automatically via `cmd /c`.
+
+> **Environment overrides** (per machine):
+> - `GENESIS_LOCAL_LLM_MODEL=qwen3:1.7b` — which Ollama model to use
+> - `GENESIS_CLAUDE_MODEL` / `GENESIS_CODEX_MODEL` — CLI model names
+> - `GENESIS_RUNTIME_PREFS="parser=local_llm,validator=local_llm"` — force
+>   runtimes for every design (deploy operators targeting available runtimes)
 
 ### 5. Run Fine-Tune (Mac mini M4)
 ```bash

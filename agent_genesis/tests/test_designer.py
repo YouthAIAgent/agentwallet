@@ -7,7 +7,17 @@ from agent_genesis.designer.architect import (
     DesignerAgent,
     OrganizationSpec,
     RuntimeTarget,
+    _env_runtime_prefs,
 )
+
+
+def test_env_runtime_prefs_parsing(monkeypatch):
+    monkeypatch.setenv("GENESIS_RUNTIME_PREFS", "parser=local_llm, validator=local_llm, ")
+    prefs = _env_runtime_prefs()
+    assert prefs == {"parser": "local_llm", "validator": "local_llm"}
+
+    monkeypatch.delenv("GENESIS_RUNTIME_PREFS", raising=False)
+    assert _env_runtime_prefs() == {}
 
 
 def test_design_builds_valid_spec(isolated_memory):

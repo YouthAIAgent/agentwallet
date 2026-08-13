@@ -219,8 +219,8 @@ const toolDefs = [
   },
   {
     name: "genesis_design",
-    description: "Design an Agent Genesis organization from a task description. Returns the org spec (id, agents with roles/runtimes, topology).",
-    input_schema: { type: "object", properties: { task: { type: "string" } }, required: ["task"] },
+    description: "Design an Agent Genesis organization from a task description. Returns the org spec (id, agents with roles/runtimes, topology). Optionally force runtimes per role (e.g. {\"parser\": \"local_llm\"}) to target available runtimes.",
+    input_schema: { type: "object", properties: { task: { type: "string" }, runtime_prefs: { type: "object", description: "Optional map of role -> runtime, e.g. {\"parser\": \"local_llm\"}" } }, required: ["task"] },
   },
   {
     name: "genesis_deploy",
@@ -302,8 +302,12 @@ async function runTool(name, args) {
       });
       return r.data ? { ok: r.status < 400, job: r.data } : { ok: false, error: `HTTP ${r.status}: ${JSON.stringify(r.data)}` };
     }
-    case "genesis_design":
-      return runGenesis(["design", args.task]);
+    case "genesis_design": {
+      const runtimeArgs = args.runtime_prefs
+        ? Object.entries(args.runtime_prefs).map(([role, rt]) => `--runtime ${role}=${rt}`)
+        : [];
+      return runGenesis(["design", args.task, ...runtimeArgs]);
+    }
     case "genesis_deploy":
       return runGenesis(["deploy", args.org_id]);
     case "genesis_orgs":
