@@ -2,7 +2,8 @@
 # AgentWallet Protocol — One-command smoke test
 #
 # Verifies, in a single run:#   1. API       — /health, register, API key, agent + wallet creation,
-#                   escrow (create/get/list) and transactions list
+#                   devnet-funded escrow (create/release) + SOL transfer,
+#                   and transactions list
 #   2. Python SDK — agent + wallet + balance via aw-protocol-sdk
 #   3. CLI        — `agentwallet_cli.main status` and `agents`
 #   4. MCP server — initialize handshake + tools/list
@@ -22,6 +23,7 @@ API_URL="${API_URL:-http://localhost:8000}"
 API_BASE="${API_BASE:-$API_URL/v1}"
 DASHBOARD_URL="${DASHBOARD_URL:-http://localhost:5173}"
 SKIP_DASHBOARD="${SKIP_DASHBOARD:-0}"
+SOLANA_RPC="${SOLANA_RPC:-https://api.devnet.solana.com}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ── Detect Python (verify it actually runs) ────────────────────────────────
@@ -69,6 +71,29 @@ detect_venv_py
 
 json_get() {  # json_get <field> <json>
   "$PYTHON" -c "import sys,json;print(json.load(sys.stdin)['$1'])" <<< "$2"
+}
+
+# Request devnet SOL (best effort — faucets are externally rate-limited).
+# Retries with smaller amounts, then polls on-chain balance. Echoes lamports.
+airdrop_devnet_sol() {
+  local addr="$1"
+  for amount in 500000000 200000000 100000000 100000000; do
+    curl -sf --max-time 20 -X POST "$SOLANA_RPC" -H "Content-Type: application/json" \
+      -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"requestAirdrop\",\"params\":[\"$addr\",$amount]}" \
+      >/dev/null 2>&1 || true
+    for i in $(seq 1 10); do
+      local resp bal
+      resp="$(curl -sf --max-time 10 -X POST "$SOLANA_RPC" -H "Content-Type: application/json" \
+        -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getBalance\",\"params\":[\"$addr\"]}" 2>/dev/null)" || resp=""
+      bal="$(echo "$resp" | "$PYTHON" -c "import sys,json;print(json.load(sys.stdin).get('result',{}).get('value',0))" 2>/dev/null || echo 0)"
+      if [ "${bal:-0}" -gt 0 ] 2>/dev/null; then
+        echo "$bal"
+        return 0
+      fi
+      sleep 5
+    done
+  done
+  return 1
 }
 
 have() { command -v "$1" >/dev/null 2>&1; }
@@ -126,42 +151,98 @@ if [ -n "$HEALTH" ]; then
       FAILED=1
     fi
 
-    # Wallet — used as the escrow funder and recipient
+    # Wallets — A is the funded sender/funder, B is the recipient
     WALLET_ID=""
     WALLET_ADDR=""
+    RECIPIENT_ID=""
+    RECIPIENT_ADDR=""
     if [ -n "$AGENT_ID" ]; then
-      WALLET="$(curl -sf --max-time 15 -X POST "$API_BASE/wallets" \
+      WALLET_A="$(curl -sf --max-time 15 -X POST "$API_BASE/wallets" \
         -H "X-API-Key: $API_KEY" -H "Content-Type: application/json" \
-        -d "{\"agent_id\":\"$AGENT_ID\",\"wallet_type\":\"agent\",\"label\":\"Smoke Wallet\"}" 2>/dev/null)" || WALLET=""
-      if [ -n "$WALLET" ] && WALLET_ID="$(json_get id "$WALLET" 2>/dev/null)" && WALLET_ADDR="$(json_get address "$WALLET" 2>/dev/null)"; then
-        pass "wallet created via raw API ($WALLET_ADDR)"
+        -d "{\"agent_id\":\"$AGENT_ID\",\"wallet_type\":\"agent\",\"label\":\"Smoke Funder\"}" 2>/dev/null)" || WALLET_A=""
+      if [ -n "$WALLET_A" ] && WALLET_ID="$(json_get id "$WALLET_A" 2>/dev/null)" && WALLET_ADDR="$(json_get address "$WALLET_A" 2>/dev/null)"; then
+        pass "funder wallet created ($WALLET_ADDR)"
       else
-        fail "wallet creation via raw API"
+        fail "funder wallet creation"
+        FAILED=1
+      fi
+      WALLET_B="$(curl -sf --max-time 15 -X POST "$API_BASE/wallets" \
+        -H "X-API-Key: $API_KEY" -H "Content-Type: application/json" \
+        -d "{\"agent_id\":\"$AGENT_ID\",\"wallet_type\":\"agent\",\"label\":\"Smoke Recipient\"}" 2>/dev/null)" || WALLET_B=""
+      if [ -n "$WALLET_B" ] && RECIPIENT_ID="$(json_get id "$WALLET_B" 2>/dev/null)" && RECIPIENT_ADDR="$(json_get address "$WALLET_B" 2>/dev/null)"; then
+        pass "recipient wallet created ($RECIPIENT_ADDR)"
+      else
+        fail "recipient wallet creation"
         FAILED=1
       fi
     fi
 
-    # Escrow end-to-end (off-chain lifecycle): create -> get -> list
-    if [ -n "$WALLET_ID" ]; then
-      ESCROW="$(curl -sf --max-time 15 -X POST "$API_BASE/escrow" \
+    # Devnet funding (best effort — faucets are externally rate-limited)
+    FUNDED=""
+    if [ -n "$WALLET_ID" ] && [ -n "$RECIPIENT_ADDR" ]; then
+      info "Requesting devnet airdrop for $WALLET_ADDR..."
+      if BAL="$(airdrop_devnet_sol "$WALLET_ADDR")"; then
+        FUNDED=1
+        pass "devnet airdrop received ($BAL lamports)"
+      else
+        warn "devnet airdrop failed ($SOLANA_RPC) — on-chain checks skipped"
+      fi
+    fi
+
+    # Escrow end-to-end: create -> get -> list, and release when funded
+    if [ -n "$WALLET_ID" ] && [ -n "$RECIPIENT_ADDR" ]; then
+      EXPECTED="created"
+      [ -n "$FUNDED" ] && EXPECTED="funded"
+      ESCROW="$(curl -sf --max-time 90 -X POST "$API_BASE/escrow" \
         -H "X-API-Key: $API_KEY" -H "Content-Type: application/json" \
-        -d "{\"funder_wallet_id\":\"$WALLET_ID\",\"recipient_address\":\"$WALLET_ADDR\",\"amount_sol\":0.001,\"conditions\":{\"task\":\"smoke test\"},\"expires_in_hours\":24}" 2>/dev/null)" || ESCROW=""
-      if [ -n "$ESCROW" ] && ESCROW_ID="$(json_get id "$ESCROW" 2>/dev/null)" && [ "$(json_get status "$ESCROW" 2>/dev/null)" = "created" ]; then
-        pass "escrow created (status=created)"
+        -d "{\"funder_wallet_id\":\"$WALLET_ID\",\"recipient_address\":\"$RECIPIENT_ADDR\",\"amount_sol\":0.001,\"conditions\":{\"task\":\"smoke test\"},\"expires_in_hours\":24}" 2>/dev/null)" || ESCROW=""
+      if [ -n "$ESCROW" ] && ESCROW_ID="$(json_get id "$ESCROW" 2>/dev/null)" && [ "$(json_get status "$ESCROW" 2>/dev/null)" = "$EXPECTED" ]; then
+        pass "escrow created (status=$EXPECTED)"
         if curl -sf --max-time 15 "$API_BASE/escrow/$ESCROW_ID" -H "X-API-Key: $API_KEY" 2>/dev/null | grep -q "$ESCROW_ID"; then
           pass "escrow fetched by id"
         else
           fail "escrow fetch by id"
           FAILED=1
         fi
-        if curl -sf --max-time 15 "$API_BASE/escrow?status=created" -H "X-API-Key: $API_KEY" 2>/dev/null | grep -q "$ESCROW_ID"; then
+        if curl -sf --max-time 15 "$API_BASE/escrow?status=$EXPECTED" -H "X-API-Key: $API_KEY" 2>/dev/null | grep -q "$ESCROW_ID"; then
           pass "escrow appears in escrow list"
         else
           fail "escrow list"
           FAILED=1
         fi
+        if [ "$EXPECTED" = "funded" ]; then
+          RELEASE="$(curl -sf --max-time 90 -X POST "$API_BASE/escrow/$ESCROW_ID/action" \
+            -H "X-API-Key: $API_KEY" -H "Content-Type: application/json" \
+            -d '{"action":"release"}' 2>/dev/null)" || RELEASE=""
+          if [ -n "$RELEASE" ] && [ "$(json_get status "$RELEASE" 2>/dev/null)" = "released" ]; then
+            pass "escrow released (status=released)"
+          else
+            fail "escrow release"
+            FAILED=1
+          fi
+        fi
       else
-        fail "escrow creation"
+        fail "escrow creation (expected status=$EXPECTED)"
+        FAILED=1
+      fi
+    fi
+
+    # Real SOL transfer + tx record (only when devnet funding succeeded)
+    if [ -n "$FUNDED" ] && [ -n "$WALLET_ID" ]; then
+      TX="$(curl -sf --max-time 90 -X POST "$API_BASE/transactions/transfer-sol" \
+        -H "X-API-Key: $API_KEY" -H "Content-Type: application/json" \
+        -d "{\"from_wallet_id\":\"$WALLET_ID\",\"to_address\":\"$RECIPIENT_ADDR\",\"amount_sol\":0.01,\"memo\":\"smoke test transfer\",\"idempotency_key\":\"smoke-$STAMP\"}" 2>/dev/null)" || TX=""
+      TX_ID="$(echo "$TX" | "$PYTHON" -c "import sys,json; d=json.load(sys.stdin); print(d['id']) if d.get('signature') else print('')" 2>/dev/null)" || TX_ID=""
+      if [ -n "$TX_ID" ]; then
+        pass "SOL transfer signed (tx $TX_ID)"
+        if curl -sf --max-time 15 "$API_BASE/transactions/$TX_ID" -H "X-API-Key: $API_KEY" 2>/dev/null | grep -q "$TX_ID"; then
+          pass "transaction recorded and fetched by id"
+        else
+          fail "transaction fetch by id"
+          FAILED=1
+        fi
+      else
+        fail "SOL transfer"
         FAILED=1
       fi
     fi
