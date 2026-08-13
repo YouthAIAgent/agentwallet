@@ -40,6 +40,11 @@ AgentWallet (default `http://localhost:8000` — start it with
 - `create_escrow` — lock funds payable on completion
 - `x402 pay-per-use` — pay for each API request on-chain (`/pay` or `AGX_PAY_PER_USE=1`)
 
+**Agent Genesis organizations** (requires `pip install -e agent_genesis`)
+- `genesis_design` — design an agent organization from a task (roles, runtimes, topology)
+- `genesis_deploy` — deploy a designed organization to its target runtimes
+- `genesis_orgs` — list organizations saved in Agent Genesis memory
+
 ## Slash commands
 
 | Command | What it does |

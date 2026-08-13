@@ -217,6 +217,21 @@ const toolDefs = [
     description: "Create an ACP job (agent-to-agent commerce) between two agents, priced in USDC.",
     input_schema: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, buyer_agent_id: { type: "string" }, seller_agent_id: { type: "string" }, price_usdc: { type: "number" } }, required: ["title", "description", "buyer_agent_id", "seller_agent_id", "price_usdc"] },
   },
+  {
+    name: "genesis_design",
+    description: "Design an Agent Genesis organization from a task description. Returns the org spec (id, agents with roles/runtimes, topology).",
+    input_schema: { type: "object", properties: { task: { type: "string" } }, required: ["task"] },
+  },
+  {
+    name: "genesis_deploy",
+    description: "Deploy a previously designed Agent Genesis organization to its target runtimes.",
+    input_schema: { type: "object", properties: { org_id: { type: "string" } }, required: ["org_id"] },
+  },
+  {
+    name: "genesis_orgs",
+    description: "List Agent Genesis organizations saved in memory (design results are persisted).",
+    input_schema: { type: "object", properties: {} },
+  },
 ];
 
 async function runTool(name, args) {
@@ -287,6 +302,12 @@ async function runTool(name, args) {
       });
       return r.data ? { ok: r.status < 400, job: r.data } : { ok: false, error: `HTTP ${r.status}: ${JSON.stringify(r.data)}` };
     }
+    case "genesis_design":
+      return runGenesis(["design", args.task]);
+    case "genesis_deploy":
+      return runGenesis(["deploy", args.org_id]);
+    case "genesis_orgs":
+      return runGenesis(["orgs"]);
     default:
       return { ok: false, error: `unknown tool: ${name}` };
   }
@@ -314,6 +335,70 @@ function runCommand(command) {
       if (!/^y/i.test(ans.trim())) { resolve({ ok: false, cancelled: true }); return; }
       execShell(command, resolve);
     });
+  });
+}
+
+// ── Agent Genesis CLI integration ─────────────────────────────────────
+// Runs the `genesis` command (installed via `pip install -e agent_genesis`)
+// and parses its JSON output. Falls back to `python -m agent_genesis.cli.genesis`
+// when the console script is missing from PATH.
+function runGenesis(args, timeoutMs = 120000) {
+  return new Promise((resolve) => {
+    const py = process.platform === "win32" ? "python" : "python3";
+    const candidates = [
+      { cmd: "genesis", args },
+      { cmd: py, args: ["-m", "agent_genesis.cli.genesis", ...args] },
+    ];
+    let idx = 0;
+    let done = false;
+    const finish = (result) => { if (!done) { done = true; resolve(result); } };
+    const attempt = () => {
+      if (done) return;
+      if (idx >= candidates.length) {
+        finish({ ok: false, error: "genesis CLI not found — install it with: cd agent_genesis && pip install -e ." });
+        return;
+      }
+      const { cmd, args: cargs } = candidates[idx++];
+      let attemptDone = false;
+      let started = false;
+      const proc = spawn(cmd, cargs, { stdio: ["ignore", "pipe", "pipe"] });
+      let out = "", err = "";
+      const timer = setTimeout(() => {
+        proc.kill();
+        finish({ ok: false, error: `genesis timed out after ${timeoutMs / 1000}s`, stdout: out, stderr: err });
+      }, timeoutMs);
+      const settle = (result) => {
+        if (attemptDone) return;
+        attemptDone = true;
+        clearTimeout(timer);
+        finish(result);
+      };
+      proc.on("spawn", () => { started = true; });
+      // ENOENT / spawn failure (binary missing) -> try the python -m fallback
+      const skipToFallback = () => {
+        if (attemptDone) return;
+        attemptDone = true;
+        clearTimeout(timer);
+        attempt();
+      };
+      proc.on("error", () => { if (!started) skipToFallback(); else settle({ ok: false, error: err.trim() || `failed to start ${cmd}` }); });
+      proc.stdout.on("data", (d) => { out += d; });
+      proc.stderr.on("data", (d) => { err += d; });
+      proc.on("close", (code) => {
+        if (!started) { skipToFallback(); return; }
+        if (code !== 0) {
+          settle({ ok: false, exit_code: code, error: err.trim() || `genesis exited with ${code}`, stdout: out });
+          return;
+        }
+        const text = out.trim();
+        try {
+          settle({ ok: true, ...JSON.parse(text) });
+        } catch {
+          settle({ ok: true, raw: text });
+        }
+      });
+    };
+    attempt();
   });
 }
 
@@ -534,6 +619,7 @@ function bootSequence() {
     ["ESTABLISHING ON-CHAIN IDENTITY", C.magenta],
     ["LOADING TOOLKIT  [read_file, write_file, run_command, wallet_balance, send_sol, create_escrow]", C.gray],
     ["LOADING TOOLKIT+ [create_agent, create_swarm, swarm_add_member, create_swarm_task, create_acp_job]", C.gray],
+    ["LOADING TOOLKIT++ [genesis_design, genesis_deploy, genesis_orgs]", C.gray],
     ["ARMING X402 PAYMENT RAIL", C.yellow],
     ["AGENT ONLINE", C.green],
   ];
