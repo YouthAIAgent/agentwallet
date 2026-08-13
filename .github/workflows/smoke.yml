@@ -43,4 +43,7 @@ jobs:
         run: bash setup.sh
 
       - name: Run smoke test
-        run: bash smoke_test.sh
+        # VALIDATOR_MODE spins up a local solana-test-validator so the on-chain
+        # checks (escrow fund/release, SOL transfer) run deterministically
+        # instead of depending on the rate-limited public devnet faucet.
+        run: VALIDATOR_MODE=1 bash smoke_test.sh

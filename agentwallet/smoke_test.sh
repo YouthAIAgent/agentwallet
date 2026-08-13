@@ -13,6 +13,8 @@
 #   bash smoke_test.sh
 #   API_URL=http://localhost:8000 bash smoke_test.sh
 #   SKIP_DASHBOARD=1 bash smoke_test.sh        # skip the dashboard check
+#   VALIDATOR_MODE=1 bash smoke_test.sh         # run on-chain checks against a
+#                                               # local solana-test-validator (Docker)
 #
 # Requires a running API (see setup.sh / make start) and, for the
 # dashboard fallback build, Node.js >= 18.
@@ -24,6 +26,10 @@ API_BASE="${API_BASE:-$API_URL/v1}"
 DASHBOARD_URL="${DASHBOARD_URL:-http://localhost:5173}"
 SKIP_DASHBOARD="${SKIP_DASHBOARD:-0}"
 SOLANA_RPC="${SOLANA_RPC:-https://api.devnet.solana.com}"
+VALIDATOR_MODE="${VALIDATOR_MODE:-0}"
+VALIDATOR_IMAGE="${VALIDATOR_IMAGE:-solanalabs/solana:stable}"
+VALIDATOR_CONTAINER="aw-solana-test-validator"
+VALIDATOR_RPC="http://localhost:8899"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ── Detect Python (verify it actually runs) ────────────────────────────────
@@ -94,6 +100,70 @@ airdrop_devnet_sol() {
     done
   done
   return 1
+}
+
+# ── Validator mode ──────────────────────────────────────────────────────────
+# Starts a local solana-test-validator (Docker) on the compose network and
+# points the API container at it, so the on-chain checks (escrow fund/release,
+# SOL transfer) run deterministically without the rate-limited devnet faucet.
+start_validator() {
+  local api_cid net
+  api_cid="$(docker compose -f "$ROOT/docker-compose.yml" ps -q api 2>/dev/null | head -1)"
+  net="$(docker inspect "$api_cid" --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}' 2>/dev/null)"
+  if [ -z "$api_cid" ] || [ -z "$net" ]; then
+    fail "validator mode needs the API running via docker compose"
+    return 1
+  fi
+  if ! docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^${VALIDATOR_CONTAINER}$"; then
+    docker rm -f "$VALIDATOR_CONTAINER" >/dev/null 2>&1 || true
+    docker run -d --name "$VALIDATOR_CONTAINER" --network "$net" -p 8899:8899 \
+      "$VALIDATOR_IMAGE" solana-test-validator >/dev/null 2>&1 || {
+      fail "could not start $VALIDATOR_CONTAINER (first run pulls the image — may take a while)"
+      return 1
+    }
+  fi
+  local ready=""
+  for i in $(seq 1 30); do
+    if curl -sf --max-time 5 -X POST "$VALIDATOR_RPC" -H "Content-Type: application/json" \
+      -d '{"jsonrpc":"2.0","id":1,"method":"getHealth"}' 2>/dev/null | grep -q '"ok"'; then
+      ready=1
+      break
+    fi
+    sleep 5
+  done
+  if [ -z "$ready" ]; then
+    fail "solana-test-validator did not become ready"
+    return 1
+  fi
+  # Point the API container at the validator. The override file uses compose
+  # 'environment' (higher precedence than env_file) and container-name DNS on
+  # the compose network — works on Linux CI and Docker Desktop alike.
+  cat > "$ROOT/.smoke-validator-compose.yml" <<YAML
+services:
+  api:
+    environment:
+      SOLANA_RPC_URL: http://${VALIDATOR_CONTAINER}:8899
+YAML
+  docker compose -f "$ROOT/docker-compose.yml" -f "$ROOT/.smoke-validator-compose.yml" \
+    up -d api >/dev/null 2>&1 || true
+  for i in $(seq 1 20); do
+    curl -sf --max-time 5 "$API_URL/health" >/dev/null 2>&1 && break
+    sleep 2
+  done
+  SOLANA_RPC="$VALIDATOR_RPC"
+  pass "API pointed at local validator (http://${VALIDATOR_CONTAINER}:8899)"
+}
+
+stop_validator() {
+  if [ "${VALIDATOR_RESTORED:-0}" = "1" ]; then return; fi
+  VALIDATOR_RESTORED=1
+  if [ -f "$ROOT/.smoke-validator-compose.yml" ]; then
+    docker compose -f "$ROOT/docker-compose.yml" up -d api >/dev/null 2>&1 || true
+    rm -f "$ROOT/.smoke-validator-compose.yml"
+  fi
+  if [ "${KEEP_VALIDATOR:-0}" != "1" ]; then
+    docker rm -f "$VALIDATOR_CONTAINER" >/dev/null 2>&1 || true
+  fi
 }
 
 have() { command -v "$1" >/dev/null 2>&1; }
@@ -177,9 +247,14 @@ if [ -n "$HEALTH" ]; then
       fi
     fi
 
-    # Devnet funding (best effort — faucets are externally rate-limited)
+    # Devnet funding — public faucet (best effort), or a local
+    # solana-test-validator when VALIDATOR_MODE=1 (deterministic, CI-safe)
     FUNDED=""
     if [ -n "$WALLET_ID" ] && [ -n "$RECIPIENT_ADDR" ]; then
+      if [ "$VALIDATOR_MODE" = "1" ]; then
+        info "Validator mode: starting local solana-test-validator..."
+        start_validator
+      fi
       info "Requesting devnet airdrop for $WALLET_ADDR..."
       if BAL="$(airdrop_devnet_sol "$WALLET_ADDR")"; then
         FUNDED=1
@@ -392,8 +467,10 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Summary
+# Summary — restore the API container and remove the validator if used
 # ═══════════════════════════════════════════════════════════════════════════
+stop_validator
+
 echo
 if [ "$FAILED" = "0" ]; then
   printf "${BGREEN}  All checks passed!${NC}\n"
