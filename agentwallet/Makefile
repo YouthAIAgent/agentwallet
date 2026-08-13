@@ -50,6 +50,10 @@ test:
 	@pip install -e ".[dev]" -q
 	pytest packages/api/tests -v --tb=short
 
+# One-command smoke test (API + SDK + CLI + MCP + Dashboard)
+smoke-test:
+	@bash smoke_test.sh
+
 # Lint with ruff
 lint:
 	@command -v ruff >/dev/null 2>&1 || pip install ruff -q

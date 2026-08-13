@@ -5,6 +5,11 @@ All notable changes to AgentWallet Protocol will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.4] - 2026-08-13
+
+### Added
+- **One-command smoke test** — `bash smoke_test.sh` (or `make smoke-test`) verifies the whole stack in a single run: API (`/health`, register, API key, agent creation via raw curl), Python SDK (agent + wallet + balance), CLI (`status`), MCP server (initialize handshake + `tools/list`), and Dashboard (live dev server or production build fallback). Creates a fresh timestamped org per run to avoid tier limits, and a reusable `.smoke-venv` for SDK/MCP/CLI deps.
+
 ## [0.4.3] - 2026-08-13
 
 ### Fixed
