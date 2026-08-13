@@ -16,7 +16,7 @@ from agentwallet import AgentWallet
 async with AgentWallet(api_key="aw_live_...") as aw:
     agent = await aw.agents.create(name="trading-bot")
     tx = await aw.transactions.transfer_sol(
-        from_wallet=agent["default_wallet_id"],
+        from_wallet=agent.default_wallet_id,
         to_address="RecipientPubkey...",
         amount_sol=0.5,
     )

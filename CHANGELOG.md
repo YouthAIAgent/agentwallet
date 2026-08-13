@@ -5,6 +5,11 @@ All notable changes to AgentWallet Protocol will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] - 2026-08-13
+
+### Fixed
+- **SDK README quickstart** — examples used dict access (`agent['id']`, `wallet["id"]`) but the SDK returns typed objects, so copy-pasting the quickstart crashed with `TypeError: 'Agent' object is not subscriptable`. The root README and the SDK README now use attribute access (`agent.id`, `wallet.address`, `balance.sol_balance`), verified end-to-end against a live API.
+
 ## [0.4.2] - 2026-08-13
 
 ### Fixed
