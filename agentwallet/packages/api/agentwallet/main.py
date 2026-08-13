@@ -12,6 +12,7 @@ from .api.routers import (
     agents,
     analytics,
     auth,
+    billing,
     compliance,
     erc8004,
     escrow,
@@ -46,6 +47,7 @@ from .core.exceptions import (
 )
 from .core.logging import setup_logging
 from .core.redis_client import close_redis
+from .services.x402_server import X402ServerMiddleware
 
 
 @asynccontextmanager
@@ -93,6 +95,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(SecurityHeadersMiddleware)
 
+# x402 payment gateway -- gates configured routes behind HTTP 402 paywall
+app.add_middleware(X402ServerMiddleware)
+
 # CORS
 settings = get_settings()
 app.add_middleware(
@@ -100,11 +105,21 @@ app.add_middleware(
     allow_origins=[o.strip() for o in settings.api_cors_origins.split(",") if o.strip()],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "X-Request-ID", "X-API-Key", "X-Agent-Id"],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+        "X-Request-ID",
+        "X-API-Key",
+        "X-Agent-Id",
+        "X-PAYMENT",
+        "X-Payment-Proof",
+        "X-PAYMENT-REQUIRED",
+    ],
 )
 
 # Register routers under /v1
 app.include_router(auth.router, prefix="/v1")
+app.include_router(billing.router, prefix="/v1")
 app.include_router(wallets.router, prefix="/v1")
 app.include_router(agents.router, prefix="/v1")
 app.include_router(transactions.router, prefix="/v1")

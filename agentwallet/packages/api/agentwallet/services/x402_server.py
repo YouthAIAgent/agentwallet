@@ -21,13 +21,17 @@ from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
+from ..core.config import get_settings
 from ..core.logging import get_logger
-from ..core.solana import confirm_transaction
+from ..core.solana import confirm_transaction, verify_transfer_on_chain
 
 logger = get_logger(__name__)
 
-# USDC mint
-USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+# USDC mint (devnet by default; overridable via config)
+def _usdc_mint() -> str:
+    return get_settings().usdc_mint_address or "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+
+USDC_MINT = _usdc_mint()
 
 
 class X402PricingConfig:
@@ -201,8 +205,10 @@ class X402ServerMiddleware(BaseHTTPMiddleware):
         if not config.enabled:
             return await call_next(request)
 
-        # Strip /v1 prefix for matching (routes are configured without prefix)
+        # Strip /v1 prefix for matching (routes can be configured with or without it)
         path = request.url.path
+        if path.startswith("/v1"):
+            path = path[3:] or "/"
         method = request.method
 
         # Check if this route requires payment
@@ -210,8 +216,12 @@ class X402ServerMiddleware(BaseHTTPMiddleware):
         if pricing is None:
             return await call_next(request)
 
-        # Check for X-PAYMENT header
-        payment_header = request.headers.get("X-PAYMENT")
+        # Check for payment proof header (both x402 V1 header names supported)
+        payment_header = (
+            request.headers.get("X-PAYMENT")
+            or request.headers.get("X-Payment-Proof")
+            or request.headers.get("X-PAYMENT-PROOF")
+        )
         if not payment_header:
             # Return 402 with payment requirements
             return self._make_402_response(pricing, config.network, path)
@@ -263,7 +273,7 @@ class X402ServerMiddleware(BaseHTTPMiddleware):
         return response
 
     def _make_402_response(self, pricing: dict, network: str, resource: str) -> JSONResponse:
-        """Build a standard 402 Payment Required response."""
+        """Build a standard 402 Payment Required response (x402 spec compliant)."""
         payment_req = self._build_payment_requirement(pricing, network, resource)
 
         return JSONResponse(
@@ -271,6 +281,7 @@ class X402ServerMiddleware(BaseHTTPMiddleware):
             content={
                 "error": "Payment Required",
                 "description": pricing.get("description", "This endpoint requires payment"),
+                "x402Version": "1.0",
                 "x402": payment_req,
                 "accepts": [payment_req],
             },
@@ -285,17 +296,23 @@ class X402ServerMiddleware(BaseHTTPMiddleware):
         )
 
     def _build_payment_requirement(self, pricing: dict, network: str, resource: str) -> dict:
-        """Build the x402 payment requirement object."""
+        """Build the x402 payment requirement object (spec + SDK compatible)."""
         # Determine amount — prefer lamports, convert USDC to raw units
         if pricing.get("price_lamports"):
             amount = str(pricing["price_lamports"])
-            extra = {}
+            token = "SOL"
+            token_mint = None
+            decimals = 9
         elif pricing.get("price_usdc"):
             amount = str(int(pricing["price_usdc"] * 1e6))  # USDC has 6 decimals
-            extra = {"token_mint": USDC_MINT, "token_symbol": "USDC", "decimals": 6}
+            token = "USDC"
+            token_mint = USDC_MINT
+            decimals = 6
         else:
             amount = "0"
-            extra = {}
+            token = "SOL"
+            token_mint = None
+            decimals = 9
 
         return {
             "scheme": "exact",
@@ -304,8 +321,14 @@ class X402ServerMiddleware(BaseHTTPMiddleware):
             "resource": resource,
             "description": pricing.get("description", ""),
             "pay_to": pricing["pay_to"],
+            "payTo": pricing["pay_to"],
+            "amount": amount,
+            "token": token_mint or token,
+            "token_symbol": token,
+            "decimals": decimals,
+            "token_mint": token_mint,
             "required_deadline_seconds": pricing.get("max_deadline_seconds", 60),
-            "extra": extra,
+            "extra": {"token_mint": token_mint, "token_symbol": token, "decimals": decimals},
         }
 
     async def _verify_payment(self, payment_header: str, pricing: dict, config: X402PricingConfig) -> dict:
@@ -351,31 +374,46 @@ class X402ServerMiddleware(BaseHTTPMiddleware):
             config.cache_verification(signature, False)
             return {"valid": False, "error": "Payment proof expired"}
 
-        # Verify on-chain
+        # Determine expected amount and token from pricing config
+        expected_amount = pricing.get("price_lamports", 0)
+        token_mint = None
+        if pricing.get("price_usdc"):
+            expected_amount = int(pricing["price_usdc"] * 1e6)
+            token_mint = USDC_MINT
+
+        pay_to = pricing.get("pay_to", "")
+        if not pay_to:
+            return {"valid": False, "error": "No pay_to configured for this route"}
+
+        # Verify on-chain -- real payer / recipient / amount from parsed tx
         try:
             async with httpx.AsyncClient(timeout=15) as client:
                 confirmed = await confirm_transaction(client, signature, max_polls=5, poll_interval=1.0)
+                if not confirmed:
+                    config.cache_verification(signature, False)
+                    return {"valid": False, "error": "Transaction not confirmed on-chain"}
+                result = await verify_transfer_on_chain(
+                    client,
+                    signature,
+                    expected_pay_to=pay_to,
+                    expected_amount=expected_amount,
+                    token_mint=token_mint,
+                )
         except Exception as e:
             logger.error("x402_verification_rpc_error", signature=signature[:24], error=str(e))
-            # On RPC failure, tentatively accept if payload looks valid
-            # (better UX than blocking; fraud is caught in reconciliation)
-            confirmed = True
-
-        if not confirmed:
             config.cache_verification(signature, False)
-            return {"valid": False, "error": "Transaction not confirmed on-chain"}
+            return {"valid": False, "error": f"RPC verification failed: {e}"}
 
-        # Verify amount (basic check — payload self-reports amount)
-        reported_amount = int(payload.get("amount", "0"))
-        expected_amount = pricing.get("price_lamports", 0)
-        if pricing.get("price_usdc"):
-            expected_amount = int(pricing["price_usdc"] * 1e6)
-
-        if expected_amount and reported_amount < expected_amount:
+        if not result["valid"]:
             config.cache_verification(signature, False)
             return {
                 "valid": False,
-                "error": f"Insufficient payment: got {reported_amount}, need {expected_amount}",
+                "signature": signature,
+                "payer": result.get("payer"),
+                "amount_lamports": result.get("amount"),
+                "token_mint": result.get("token_mint"),
+                "error": result.get("error", "Payment verification failed on-chain"),
+                "confirmed_on_chain": True,
             }
 
         config.cache_verification(signature, True)
@@ -383,10 +421,11 @@ class X402ServerMiddleware(BaseHTTPMiddleware):
         return {
             "valid": True,
             "signature": signature,
-            "payer": payload.get("payer", ""),
-            "amount_lamports": reported_amount,
-            "token_mint": payload.get("token_mint"),
-            "confirmed_on_chain": confirmed,
+            "payer": result.get("payer", ""),
+            "amount_lamports": result.get("amount", expected_amount),
+            "token_mint": result.get("token_mint"),
+            "confirmed_on_chain": True,
+            "error": None,
         }
 
 
@@ -446,10 +485,31 @@ async def verify_payment_proof(
                 "confirmed_on_chain": False,
             }
 
-    # Verify on-chain
+    # Verify on-chain -- real payer / recipient / amount from parsed tx
     try:
         async with httpx.AsyncClient(timeout=15) as client:
             confirmed = await confirm_transaction(client, signature, max_polls=10, poll_interval=1.5)
+            if not confirmed:
+                return {
+                    "valid": False,
+                    "signature": signature,
+                    "payer": payer,
+                    "amount_lamports": reported_amount,
+                    "token_mint": token_mint,
+                    "error": "Transaction not confirmed",
+                    "confirmed_on_chain": False,
+                }
+            expected_amount = expected_amount_lamports or (
+                int(expected_amount_usdc * 1e6) if expected_amount_usdc else 0
+            )
+            expected_mint = token_mint if "usdc" in (token_mint or "").lower() or expected_amount_usdc else None
+            result = await verify_transfer_on_chain(
+                client,
+                signature,
+                expected_pay_to=expected_pay_to,
+                expected_amount=expected_amount,
+                token_mint=expected_mint,
+            )
     except Exception as e:
         return {
             "valid": False,
@@ -462,11 +522,11 @@ async def verify_payment_proof(
         }
 
     return {
-        "valid": confirmed,
+        "valid": result["valid"],
         "signature": signature,
-        "payer": payer,
-        "amount_lamports": reported_amount,
-        "token_mint": token_mint,
-        "error": None if confirmed else "Transaction not confirmed",
-        "confirmed_on_chain": confirmed,
+        "payer": result.get("payer") or payer,
+        "amount_lamports": result.get("amount", reported_amount),
+        "token_mint": result.get("token_mint", token_mint),
+        "error": result.get("error"),
+        "confirmed_on_chain": True,
     }

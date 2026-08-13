@@ -1,6 +1,7 @@
 from .acp import AcpJob, AcpMemo, ResourceOffering
 from .agent import Agent
 from .analytics_daily import AnalyticsDaily
+from .billing_subscription import BillingSubscription
 from .api_key import ApiKey
 from .approval_request import ApprovalRequest
 from .audit_event import AuditEvent
@@ -28,6 +29,7 @@ __all__ = [
     "Policy",
     "AuditEvent",
     "AnalyticsDaily",
+    "BillingSubscription",
     "Webhook",
     "WebhookDelivery",
     "ApprovalRequest",

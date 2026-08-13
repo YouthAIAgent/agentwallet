@@ -8,8 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.config import get_settings
 from ..core.exceptions import (
+    ApprovalRequiredError,
     IdempotencyConflictError,
     InsufficientBalanceError,
+    PolicyDeniedError,
     ValidationError,
 )
 from ..core.logging import get_logger
@@ -30,14 +32,16 @@ logger = get_logger(__name__)
 class TokenService:
     """SPL Token transfer service for stablecoins."""
 
+    # Defaults; mint addresses are overridable via USDC_MINT_ADDRESS / USDT_MINT_ADDRESS
+    # so deployments can target devnet, mainnet or a local test validator.
     SUPPORTED_TOKENS = {
         "USDC": {
-            "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",  # devnet USDC
+            "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
             "decimals": 6,
             "name": "USD Coin",
         },
         "USDT": {
-            "mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",  # devnet USDT
+            "mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
             "decimals": 6,
             "name": "Tether",
         },
@@ -48,6 +52,20 @@ class TokenService:
         self.wallet_mgr = WalletManager(db)
         self.permission_engine = PermissionEngine(db)
         self.fee_collector = FeeCollector()
+
+        settings = get_settings()
+        self.SUPPORTED_TOKENS = {
+            "USDC": {
+                "mint": settings.usdc_mint_address,
+                "decimals": 6,
+                "name": "USD Coin",
+            },
+            "USDT": {
+                "mint": settings.usdt_mint_address,
+                "decimals": 6,
+                "name": "Tether",
+            },
+        }
 
     async def transfer_token(
         self,
@@ -119,20 +137,37 @@ class TokenService:
         if balance_info["amount"] < amount_raw:
             raise InsufficientBalanceError(available=balance_info["amount"], required=amount_raw)
 
-        # Get USD value for policy checking (simplified - use 1:1 for stablecoins)
-        usd_amount = amount
-
-        # Check policies
-        await self.permission_engine.check_transfer_policy(
+        # Check policies (same engine as SOL transfers)
+        evaluation = await self.permission_engine.evaluate(
             org_id=org_id,
-            wallet_id=from_wallet_id,
-            amount_usd=usd_amount,
             agent_id=agent_id,
+            wallet_id=from_wallet_id,
+            to_address=to_address,
+            amount_lamports=amount_raw,
+            token_mint=token_config["mint"],
         )
 
+        if evaluation.outcome == "deny":
+            raise PolicyDeniedError(evaluation.denied_by, evaluation.denial_reason)
+
+        if evaluation.outcome == "require_approval":
+            req = await self.permission_engine.create_approval_request(
+                org_id=org_id,
+                transaction_request={
+                    "wallet_id": str(from_wallet_id),
+                    "to_address": to_address,
+                    "amount_lamports": amount_raw,
+                    "token_symbol": token_symbol,
+                    "agent_id": str(agent_id) if agent_id else None,
+                    "memo": memo,
+                },
+                policy_id=evaluation.approval_policy_id,
+            )
+            raise ApprovalRequiredError(str(req.id))
+
         # Calculate platform fee
-        fee_lamports = self.fee_collector.calculate_fee(usd_amount, org_tier)
-        fee_recipient = get_settings().platform_fee_address
+        fee_lamports = self.fee_collector.calculate_fee(amount, org_tier)
+        fee_recipient = get_settings().platform_wallet_address or None
 
         # Create transaction record
         tx = Transaction(

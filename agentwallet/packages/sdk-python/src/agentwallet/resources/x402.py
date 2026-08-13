@@ -283,22 +283,32 @@ class X402Resource:
             if requirement.token.lower() != "sol":
                 token_mint = requirement.token
             
-            # Create transaction via AgentWallet
-            tx_response = await self.client.transactions.create(
-                wallet_id=wallet_id,
-                to_address=requirement.pay_to,
-                amount_lamports=amount_lamports,
-                token_mint=token_mint,
-                memo=f"x402 payment: {requirement.description}",
-            )
+            if token_mint is None:
+                # Native SOL transfer
+                tx_response = await self.client.transactions.transfer_sol(
+                    from_wallet=wallet_id,
+                    to_address=requirement.pay_to,
+                    amount_sol=amount_lamports / 1e9,
+                    memo=f"x402 payment: {requirement.description}",
+                )
+            else:
+                # SPL token transfer via /tokens/transfer
+                tx_response = await self.client.post("/tokens/transfer", json={
+                    "from_wallet_id": wallet_id,
+                    "to_address": requirement.pay_to,
+                    "token_symbol": "USDC",
+                    "amount": amount_lamports / 1e6,
+                    "memo": f"x402 payment: {requirement.description}",
+                })
             
-            if not tx_response.get("signature"):
+            signature = getattr(tx_response, "signature", None) if not isinstance(tx_response, dict) else tx_response.get("signature")
+            if not signature:
                 raise AgentWalletAPIError(500, "Payment failed: no signature returned", tx_response)
             
             return X402PaymentProof(
                 network=requirement.network,
                 token=requirement.token,
-                signature=tx_response["signature"],
+                signature=signature,
                 amount=requirement.amount,
             )
             

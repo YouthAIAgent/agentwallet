@@ -1,16 +1,26 @@
-"""x402 router -- configure pricing, check status, verify payments."""
+"""x402 router -- configure pricing, check status, verify payments, auto-pay."""
 
+import json
+from datetime import datetime, timezone
+
+import httpx
 from fastapi import APIRouter, Depends, Request
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.database import get_db
+from ...core.exceptions import NotFoundError, ValidationError
 from ...core.logging import get_logger
+from ...models.wallet import Wallet
+from ...services.transaction_engine import TransactionEngine
 from ...services.x402_server import get_pricing_config, verify_payment_proof
 from ..middleware.auth import AuthContext, get_auth_context
 from ..middleware.rate_limit import check_rate_limit
 from ..schemas.x402 import (
     X402ConfigureRequest,
     X402ConfigureResponse,
+    X402MakeRequestInput,
+    X402MakeRequestOutput,
     X402PriceEntry,
     X402StatusResponse,
     X402VerifyRequest,
@@ -59,6 +69,144 @@ async def configure_x402_pricing(
         enabled=req.enabled,
         pricing=req.pricing,
     )
+
+
+@router.post("/request", response_model=X402MakeRequestOutput)
+async def make_x402_request(
+    req: X402MakeRequestInput,
+    request: Request,
+    auth: AuthContext = Depends(get_auth_context),
+    db: AsyncSession = Depends(get_db),
+):
+    """Make an HTTP request with automatic x402 payment.
+
+    Flow: send request -> if 402 -> parse payment requirements -> pay via
+    the org's wallet -> retry with payment proof -> return final response.
+
+    Used by the MCP `make_x402_request` tool and direct API consumers.
+    """
+    await check_rate_limit(request, str(auth.org_id), auth.org_tier)
+
+    wallet = await db.scalar(select(Wallet).where(Wallet.id == req.wallet_id, Wallet.org_id == auth.org_id))
+    if not wallet:
+        raise NotFoundError("Wallet not found for this organization")
+
+    headers = dict(req.headers or {})
+    body = req.body
+    timeout = httpx.Timeout(30.0)
+
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        # Step 1: initial request
+        try:
+            resp = await client.request(req.method, req.url, headers=headers, content=body)
+        except httpx.RequestError as e:
+            raise ValidationError(f"Request failed: {e}")
+
+        # Step 2: no payment needed
+        if resp.status_code != 402:
+            return X402MakeRequestOutput(
+                status_code=resp.status_code,
+                headers=dict(resp.headers),
+                body=resp.text,
+                payment_made=False,
+            )
+
+        # Step 3: parse payment requirement from 402 response
+        try:
+            payment_info = resp.json()
+        except Exception:
+            raise ValidationError("402 response was not valid JSON")
+
+        accepts = payment_info.get("accepts") or []
+        if not accepts:
+            raise ValidationError("402 response has no accepted payment methods")
+
+        # Select first acceptable option (prefer USDC, then SOL)
+        option = None
+        for acc in accepts:
+            if acc.get("token_symbol") == "USDC" and acc.get("amount"):
+                option = acc
+                break
+        if option is None:
+            for acc in accepts:
+                if acc.get("amount") and (acc.get("token_symbol") == "SOL" or acc.get("token") == "SOL"):
+                    option = acc
+                    break
+        if option is None:
+            option = accepts[0]
+
+        pay_to = option.get("payTo") or option.get("pay_to")
+        amount = option.get("amount")
+        token_symbol = option.get("token_symbol", "SOL")
+        if not pay_to or not amount:
+            raise ValidationError("Payment option missing pay_to or amount")
+
+        # Budget check
+        amount_int = int(amount)
+        if req.max_amount_lamports is not None and token_symbol == "SOL" and amount_int > req.max_amount_lamports:
+            raise ValidationError(
+                f"Payment {amount_int} lamports exceeds max_amount_lamports={req.max_amount_lamports}"
+            )
+        if req.max_amount_usdc is not None and token_symbol == "USDC":
+            if amount_int / 1e6 > req.max_amount_usdc:
+                raise ValidationError(
+                    f"Payment {amount_int / 1e6} USDC exceeds max_amount_usdc={req.max_amount_usdc}"
+                )
+
+        # Step 4: execute payment via org wallet
+        engine = TransactionEngine(db)
+        if token_symbol == "USDC":
+            from ...services.token_service import TokenService
+
+            tx = await TokenService(db).transfer_token(
+                org_id=auth.org_id,
+                org_tier=auth.org_tier,
+                from_wallet_id=req.wallet_id,
+                to_address=pay_to,
+                token_symbol="USDC",
+                amount=amount_int / 1e6,
+                memo=payment_info.get("description", "x402 payment"),
+                idempotency_key=f"x402:{req.url}:{amount_int}",
+            )
+        else:
+            tx = await engine.transfer_sol(
+                org_id=auth.org_id,
+                org_tier=auth.org_tier,
+                wallet_id=req.wallet_id,
+                to_address=pay_to,
+                amount_lamports=amount_int,
+                memo=payment_info.get("description", "x402 payment"),
+                idempotency_key=f"x402:{req.url}:{amount_int}",
+            )
+
+        signature = getattr(tx, "signature", None)
+        if not signature:
+            raise ValidationError("Payment transaction has no signature yet (pending approval?)")
+
+        # Step 5: retry with payment proof
+        payment_header = json.dumps(
+            {
+                "network": payment_info.get("network", "solana-mainnet"),
+                "token": pay_to,
+                "signature": signature,
+                "amount": amount,
+                "timestamp": int(datetime.now(timezone.utc).timestamp()),
+            }
+        )
+        retry_headers = {**headers, "X-PAYMENT": payment_header}
+        try:
+            retry = await client.request(req.method, req.url, headers=retry_headers, content=body)
+        except httpx.RequestError as e:
+            raise ValidationError(f"Retry request failed: {e}")
+
+        return X402MakeRequestOutput(
+            status_code=retry.status_code,
+            headers=dict(retry.headers),
+            body=retry.text,
+            payment_made=True,
+            payment_signature=signature,
+            payment_amount_lamports=amount_int,
+        )
 
 
 @router.get("/status", response_model=X402StatusResponse)

@@ -222,6 +222,212 @@ async def confirm_transaction(
     return False
 
 
+async def get_parsed_transaction(
+    client: httpx.AsyncClient,
+    signature: str,
+) -> dict | None:
+    """Fetch a parsed transaction from the RPC.
+
+    Returns the parsed transaction body (the `result` object) or None if
+    the transaction is not found / not yet available.
+
+    Some RPC endpoints return null for `getParsedTransaction` (notably
+    local test-validators), but work fine with `getTransaction` using the
+    `jsonParsed` encoding -- so we fall back to that.
+    """
+    for method in ("getParsedTransaction", "getTransaction"):
+        try:
+            resp = await client.post(
+                _rpc_url(),
+                json={
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": method,
+                    "params": [
+                        signature,
+                        {
+                            "encoding": "jsonParsed",
+                            "maxSupportedTransactionVersion": 0,
+                            "commitment": "confirmed",
+                        },
+                    ],
+                },
+                timeout=_rpc_timeout(),
+            )
+            resp.raise_for_status()
+            body = resp.json()
+            if body.get("error"):
+                logger.warning("parsed_tx_rpc_error", signature=signature[:24], error=body["error"])
+                continue
+            result = body.get("result")
+            if isinstance(result, dict):
+                return result
+        except Exception as e:
+            logger.warning("parsed_tx_fetch_error", signature=signature[:24], error=str(e))
+    return None
+
+
+async def verify_transfer_on_chain(
+    client: httpx.AsyncClient,
+    signature: str,
+    expected_pay_to: str,
+    expected_amount: int,
+    token_mint: str | None = None,
+) -> dict:
+    """Verify that a confirmed transaction paid `expected_pay_to` at least `expected_amount`.
+
+    Uses getParsedTransaction to extract the real payer, recipient, and amount
+    from the on-chain record -- never trusts client-supplied payload fields.
+
+    Supports native SOL transfers (lamports) and SPL token transfers (USDC etc).
+
+    Returns dict with:
+        valid, payer, payee, amount, token_mint, error
+    """
+    # Poll for the parsed tx -- right after submission the RPC may not have
+    # full parsed data yet, and some validators return partial results.
+    import asyncio
+
+    tx = None
+    for _attempt in range(6):
+        tx = await get_parsed_transaction(client, signature)
+        if tx and tx.get("meta") and (tx.get("meta") or {}).get("preBalances"):
+            break
+        await asyncio.sleep(0.5)
+    if not tx:
+        return {"valid": False, "error": "Transaction not found on-chain"}
+
+    meta = tx.get("meta") or {}
+    if meta.get("err"):
+        return {"valid": False, "error": f"Transaction failed on-chain: {meta.get('err')}"}
+
+    tx_obj = tx.get("transaction") or {}
+    message = tx_obj.get("message") or {}
+    account_keys = message.get("accountKeys", [])
+
+    logger.debug(
+        "x402_parsed_tx",
+        signature=signature[:24],
+        keys_type=type(account_keys).__name__,
+        keys_len=len(account_keys),
+    )
+
+    if not account_keys:
+        return {"valid": False, "error": "Transaction has no account keys"}
+
+    # Payer is the fee payer (first signer / first account with signer=true)
+    payer = None
+    for acc in account_keys:
+        if isinstance(acc, dict) and acc.get("signer"):
+            payer = acc.get("pubkey")
+            break
+    if not payer and isinstance(account_keys[0], str):
+        payer = account_keys[0]
+    if not payer:
+        payer = str(account_keys[0]) if isinstance(account_keys[0], dict) else account_keys[0]
+    logger.debug("x402_parsed_tx_payer", signature=signature[:24], payer=payer, keys_sample=str(account_keys[:2])[:300])
+
+    resolved_keys: list[str] = []
+    for acc in account_keys:
+        if isinstance(acc, dict):
+            resolved_keys.append(acc.get("pubkey", ""))
+        elif isinstance(acc, str):
+            resolved_keys.append(acc)
+        else:
+            resolved_keys.append("")
+
+    # Normalize expected pay-to
+    expected_pay_to = expected_pay_to.strip()
+
+    if token_mint:
+        # SPL token transfer -- inspect pre/post token balances for payee ATA
+        payee_idx = None
+        if expected_pay_to in resolved_keys:
+            payee_idx = resolved_keys.index(expected_pay_to)
+        else:
+            # payee may be the associated token account owner -- find owner match
+            pre_tokens = meta.get("preTokenBalances") or []
+            for entry in pre_tokens:
+                if entry.get("owner") == expected_pay_to:
+                    payee_idx = entry.get("accountIndex")
+                    break
+
+        if payee_idx is None:
+            return {"valid": False, "error": "Payee not found in transaction accounts"}
+
+        received = 0
+        paid = 0
+        pre_tokens = meta.get("preTokenBalances") or []
+        post_tokens = meta.get("postTokenBalances") or []
+        pre_map = {e.get("accountIndex"): e for e in pre_tokens}
+        post_map = {e.get("accountIndex"): e for e in post_tokens}
+        indices = set(pre_map) | set(post_map)
+        for idx in indices:
+            pre = pre_map.get(idx, {}).get("uiTokenAmount") or {}
+            post = post_map.get(idx, {}).get("uiTokenAmount") or {}
+            mint = post_map.get(idx, {}).get("mint") or pre_map.get(idx, {}).get("mint") or ""
+            owner = post_map.get(idx, {}).get("owner") or pre_map.get(idx, {}).get("owner") or ""
+            if mint != token_mint:
+                continue
+            pre_amt = int(pre.get("amount", 0) or 0)
+            post_amt = int(post.get("amount", 0) or 0)
+            if owner == expected_pay_to and post_amt > pre_amt:
+                received += post_amt - pre_amt
+            if owner == payer and pre_amt > post_amt:
+                paid += pre_amt - post_amt
+
+        if received < expected_amount:
+            return {
+                "valid": False,
+                "payer": payer,
+                "payee": expected_pay_to,
+                "amount": received,
+                "token_mint": token_mint,
+                "error": f"Payee received {received}, expected at least {expected_amount}",
+            }
+
+        return {
+            "valid": True,
+            "payer": payer,
+            "payee": expected_pay_to,
+            "amount": received,
+            "token_mint": token_mint,
+            "error": None,
+        }
+
+    # Native SOL transfer -- inspect pre/post SOL balances
+    payee_idx = None
+    if expected_pay_to in resolved_keys:
+        payee_idx = resolved_keys.index(expected_pay_to)
+    if payee_idx is None:
+        return {"valid": False, "error": "Payee not found in transaction accounts"}
+
+    pre_balances = meta.get("preBalances", []) or []
+    post_balances = meta.get("postBalances", []) or []
+    if payee_idx >= len(pre_balances) or payee_idx >= len(post_balances):
+        return {"valid": False, "error": "Balance data unavailable for payee"}
+
+    received = post_balances[payee_idx] - pre_balances[payee_idx]
+    if received < expected_amount:
+        return {
+            "valid": False,
+            "payer": payer,
+            "payee": expected_pay_to,
+            "amount": received,
+            "token_mint": None,
+            "error": f"Payee received {received}, expected at least {expected_amount}",
+        }
+
+    return {
+        "valid": True,
+        "payer": payer,
+        "payee": expected_pay_to,
+        "amount": received,
+        "token_mint": None,
+        "error": None,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Transaction Decode / Sign (ported from moltfarm lib/signer.py)
 # ---------------------------------------------------------------------------
@@ -483,15 +689,17 @@ async def transfer_spl_token(
     bh = Hash.from_string(bh_data["result"]["value"]["blockhash"])
 
     # Build SPL token transfer instruction
-    # Token transfer instruction data: [1, amount (8 bytes little endian)]
-    instruction_data = bytes([1]) + amount.to_bytes(8, byteorder="little")
+    # Token transfer instruction data: opcode 3 (Transfer) + amount (8 bytes little endian)
+    instruction_data = bytes([3]) + amount.to_bytes(8, byteorder="little")
+
+    from solders.instruction import AccountMeta
 
     token_transfer_ix = Instruction(
         program_id=token_program,
         accounts=[
-            {"pubkey": sender_token_account_pubkey, "is_signer": False, "is_writable": True},
-            {"pubkey": recipient_token_account_pubkey, "is_signer": False, "is_writable": True},
-            {"pubkey": from_keypair.pubkey(), "is_signer": True, "is_writable": False},
+            AccountMeta(sender_token_account_pubkey, False, True),
+            AccountMeta(recipient_token_account_pubkey, False, True),
+            AccountMeta(from_keypair.pubkey(), True, False),
         ],
         data=instruction_data,
     )

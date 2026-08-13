@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     # Platform wallet (receives fees)
     platform_wallet_address: str = ""
 
+    # Stablecoin mint addresses (can be overridden per network, e.g. devnet vs mainnet)
+    usdc_mint_address: str = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"  # USDC
+    usdt_mint_address: str = "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"  # USDT
+
     # Encryption for private keys at rest
     encryption_key: str = ""
 

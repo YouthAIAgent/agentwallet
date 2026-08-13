@@ -129,12 +129,14 @@ async def get_token_balances(
 async def list_supported_tokens(
     request: Request,
     auth: AuthContext = Depends(get_auth_context),
+    db: AsyncSession = Depends(get_db),
 ):
     """List all supported stablecoins with mint addresses."""
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
 
+    token_service = TokenService(db)
     tokens = []
-    for symbol, config in TokenService.SUPPORTED_TOKENS.items():
+    for symbol, config in token_service.SUPPORTED_TOKENS.items():
         tokens.append(
             SupportedToken(
                 symbol=symbol,
