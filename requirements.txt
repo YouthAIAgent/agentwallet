@@ -1,0 +1,21 @@
+# Agent Genesis — Core Dependencies
+aiohttp>=3.9.0
+
+# Telegram Bot
+python-telegram-bot>=21.0
+
+# MLX Fine-tuning (Mac only - optional)
+# mlx>=0.23.0
+# mlx-lm>=0.18.0
+# mlx-lora>=0.0.5
+
+# OpenSpace Integration (optional - install from source)
+# pip install -e /path/to/OpenSpace
+
+# Database
+# SQLite is built-in
+
+# Utilities
+# numpy, faiss-cpu are optional (for embeddings)
+# numpy>=1.26.0
+# faiss-cpu>=1.8.0

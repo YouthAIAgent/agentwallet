@@ -1,0 +1,75 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-genesis"
+version = "0.1.0"
+description = "Self-evolving agent organization platform"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Agent Genesis Team", email = "agent-genesis@example.com"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+requires-python = ">=3.11"
+dependencies = [
+    "aiohttp>=3.9.0",
+    "python-telegram-bot>=21.0",
+]
+
+[project.optional-dependencies]
+mlx = [
+    "mlx>=0.23.0",
+    "mlx-lm>=0.18.0",
+    "mlx-lora>=0.0.5",
+]
+embeddings = [
+    "numpy>=1.26.0",
+    "faiss-cpu>=1.8.0",
+]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.5.0",
+    "mypy>=1.10.0",
+]
+all = [
+    "mlx>=0.23.0",
+    "mlx-lm>=0.18.0",
+    "mlx-lora>=0.0.5",
+    "numpy>=1.26.0",
+    "faiss-cpu>=1.8.0",
+]
+
+[project.entry-points]
+console_scripts = { genesis = "agent_genesis.cli.genesis:main", "genesis-bot" = "agent_genesis.cli.telegram_bot:main" }
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agent_genesis*", "memory*", "designer*", "breeder*", "deployer*", "finetune*", "skill_layer*", "plugins*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "F", "I", "W", "UP", "B", "C4", "SIM", "T20"]
+ignore = ["E501", "B008"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
