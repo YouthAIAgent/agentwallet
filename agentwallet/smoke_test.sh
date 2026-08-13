@@ -54,8 +54,18 @@ STAMP="$(date +%s)"
 EMAIL="smoke-${STAMP}@example.com"
 PASSWORD='SmokeTest123!'
 VENV="$ROOT/.smoke-venv"
-VENV_PY="$VENV/bin/python"
-[ -x "$VENV_PY" ] || VENV_PY="$VENV/Scripts/python.exe"
+VENV_PY=""
+
+# Locate the venv python: bin/ on Linux/macOS, Scripts/ on Windows.
+# The venv may not exist yet on first run — re-detect after creation.
+detect_venv_py() {
+  if [ -x "$VENV/bin/python" ]; then
+    VENV_PY="$VENV/bin/python"
+  elif [ -x "$VENV/Scripts/python.exe" ]; then
+    VENV_PY="$VENV/Scripts/python.exe"
+  fi
+}
+detect_venv_py
 
 json_get() {  # json_get <field> <json>
   "$PYTHON" -c "import sys,json;print(json.load(sys.stdin)['$1'])" <<< "$2"
@@ -126,16 +136,25 @@ if [ -z "$API_KEY" ]; then
   fail "SDK check skipped — no API key (API section failed)"
   FAILED=1
 else
-  if [ ! -x "$VENV_PY" ]; then
+  detect_venv_py
+  if [ -z "$VENV_PY" ]; then
     info "Creating venv at .smoke-venv (one-time)..."
-    "$PYTHON" -m venv "$VENV" || { fail "venv creation"; FAILED=1; }
-    "$VENV_PY" -m pip install -q --upgrade pip || true
-    "$VENV_PY" -m pip install -q "$ROOT/packages/sdk-python" "$ROOT/packages/mcp-server" || {
-      fail "installing SDK + MCP packages into venv"
+    if "$PYTHON" -m venv "$VENV" && detect_venv_py; then
+      "$VENV_PY" -m pip install -q --upgrade pip || true
+      "$VENV_PY" -m pip install -q "$ROOT/packages/sdk-python" "$ROOT/packages/mcp-server" || {
+        fail "installing SDK + MCP packages into venv"
+        FAILED=1
+      }
+    else
+      fail "venv creation"
       FAILED=1
-    }
+    fi
   fi
 
+  if [ -z "$VENV_PY" ]; then
+    fail "SDK quickstart skipped — venv unavailable"
+    FAILED=1
+  else
   SDK_OUT="$(AW_API_KEY="$API_KEY" "$VENV_PY" - "$API_BASE" 2>&1 <<'PYEOF'
 import asyncio, os, sys
 from agentwallet import AgentWallet
@@ -151,12 +170,13 @@ async def main():
 asyncio.run(main())
 PYEOF
 )"
-  if echo "$SDK_OUT" | grep -q "SDK_OK"; then
-    pass "SDK quickstart — $SDK_OUT"
-  else
-    fail "SDK quickstart"
-    echo "$SDK_OUT" | tail -5
-    FAILED=1
+    if echo "$SDK_OUT" | grep -q "SDK_OK"; then
+      pass "SDK quickstart — $SDK_OUT"
+    else
+      fail "SDK quickstart"
+      echo "$SDK_OUT" | tail -5
+      FAILED=1
+    fi
   fi
 fi
 
