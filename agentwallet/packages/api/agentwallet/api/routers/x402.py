@@ -14,7 +14,7 @@ from ...core.logging import get_logger
 from ...models.wallet import Wallet
 from ...services.transaction_engine import TransactionEngine
 from ...services.x402_server import get_pricing_config, verify_payment_proof
-from ..middleware.auth import AuthContext, get_auth_context
+from ..middleware.auth import AuthContext, get_auth_context, require_permission
 from ..middleware.rate_limit import check_rate_limit
 from ..schemas.x402 import (
     X402ConfigureRequest,
@@ -37,6 +37,7 @@ async def configure_x402_pricing(
     req: X402ConfigureRequest,
     request: Request,
     auth: AuthContext = Depends(get_auth_context),
+    _perm: None = Depends(require_permission("x402", "w")),
     db: AsyncSession = Depends(get_db),
 ):
     """Configure x402 payment requirements for API endpoints.

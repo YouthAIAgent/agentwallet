@@ -1,0 +1,32 @@
+{
+  "name": "aw-e2e",
+  "version": "0.1.0",
+  "description": "AgentWallet end-to-end testnet test — colorful hacker-style CLI. One command: register, wallet, transfer, escrow, x402, billing.",
+  "type": "module",
+  "bin": {
+    "aw-e2e": "./e2e.mjs"
+  },
+  "files": [
+    "e2e.mjs",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node e2e.mjs --dry-run"
+  },
+  "keywords": [
+    "agentwallet",
+    "ai",
+    "agent",
+    "wallet",
+    "solana",
+    "testnet",
+    "e2e",
+    "cli",
+    "hacker"
+  ],
+  "author": "AgentWallet Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}

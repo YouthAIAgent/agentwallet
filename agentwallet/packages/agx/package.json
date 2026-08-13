@@ -1,0 +1,32 @@
+{
+  "name": "agx",
+  "version": "0.1.0",
+  "description": "Agent Genesis terminal agent — Claude-Code-style AI agent with a Solana wallet. Bring your API provider, the agent brings its wallet.",
+  "type": "module",
+  "bin": {
+    "agx": "./agx.mjs"
+  },
+  "files": [
+    "agx.mjs",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node agx.mjs --version"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "claude-code",
+    "terminal",
+    "solana",
+    "wallet",
+    "x402",
+    "decentralized",
+    "web3"
+  ],
+  "author": "Agent Genesis",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}

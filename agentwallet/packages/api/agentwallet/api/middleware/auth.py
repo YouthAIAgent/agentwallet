@@ -65,6 +65,7 @@ class AuthContext:
         agent_id: uuid.UUID | None = None,
         org_tier: str = "free",
         actor_type: str = "user",
+        permissions: dict | None = None,
     ):
         self.org_id = org_id
         self.user_id = user_id
@@ -72,10 +73,45 @@ class AuthContext:
         self.agent_id = agent_id
         self.org_tier = org_tier
         self.actor_type = actor_type
+        # API-key permissions, e.g. {"wallets": "rw", "agents": "r"}.
+        # JWT (user) actors are considered full-access.
+        self.permissions = permissions or {}
 
     @property
     def actor_id(self) -> str:
         return str(self.user_id or self.api_key_id or "unknown")
+
+    def has_permission(self, resource: str, mode: str = "w") -> bool:
+        """Check whether this actor may access `resource` in `mode` (r/w).
+
+        User (JWT) actors bypass the check. API-key actors must have the
+        resource listed with the requested mode in their permissions dict.
+        """
+        if self.actor_type != "api_key":
+            return True
+        perms = self.permissions.get(resource, "")
+        if not perms:
+            return False
+        if mode == "r":
+            return "r" in perms
+        return "w" in perms
+
+
+def require_permission(resource: str, mode: str = "w"):
+    """FastAPI dependency factory: reject API keys lacking `resource` + `mode`.
+
+    Usage:
+        _perm: None = Depends(require_permission("wallets", "w"))
+    """
+
+    async def _checker(auth: AuthContext = Depends(get_auth_context)) -> None:
+        if not auth.has_permission(resource, mode):
+            raise HTTPException(
+                status_code=403,
+                detail=f"API key lacks '{mode}' permission on '{resource}'",
+            )
+
+    return _checker
 
 
 def _resolve_agent_id(request: Request) -> uuid.UUID | None:
@@ -132,6 +168,7 @@ async def get_auth_context(
             agent_id=agent_id,
             org_tier=org.tier if org else "free",
             actor_type="api_key",
+            permissions=api_key.permissions or {},
         )
 
     # Check for JWT bearer token (dashboard auth)
@@ -145,9 +182,19 @@ async def get_auth_context(
             user_id = uuid.UUID(payload["sub"])
             org_id = uuid.UUID(payload["org_id"])
 
+            from ...models.user import User
+
+            user = await db.get(User, user_id)
+            if not user or not user.is_active:
+                raise HTTPException(status_code=401, detail="Invalid token: user not found or disabled")
+
             org = await db.get(Organization, org_id)
             if not org or not org.is_active:
                 raise HTTPException(status_code=401, detail="Organization inactive")
+
+            # Verify the user belongs to the org encoded in the token
+            if user.org_id != org_id:
+                raise HTTPException(status_code=401, detail="Invalid token: user-org mismatch")
 
             # Verify agent belongs to this org if specified
             if agent_id:

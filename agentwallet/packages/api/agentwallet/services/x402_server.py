@@ -47,8 +47,11 @@ class X402PricingConfig:
         self._routes: list[dict] = []
         # payment_id -> payment_record
         self._payments: dict[str, dict] = {}
-        # signature -> verified (bool) -- cache to avoid re-verifying (bounded)
-        self._verified_signatures: dict[str, bool] = {}
+        # signature -> cache entry {valid, verified_at, payee, amount, token_mint}
+        # Cache stores the *verified* payment facts so replay protection can
+        # be enforced on cache hits (deadline, payee, amount) without
+        # re-parsing the transaction on every request.
+        self._verified_signatures: dict[str, dict] = {}
         self._max_cache_size: int = 10000
 
     def configure(
@@ -166,17 +169,36 @@ class X402PricingConfig:
         """Total lamports received via x402."""
         return sum(p.get("amount_lamports", 0) for p in self._payments.values() if p.get("status") == "verified")
 
-    def cache_verification(self, signature: str, valid: bool) -> None:
+    def cache_verification(
+        self,
+        signature: str,
+        valid: bool,
+        payee: str = "",
+        amount: int = 0,
+        token_mint: str | None = None,
+    ) -> None:
         # Evict oldest entries if cache is full
         if len(self._verified_signatures) >= self._max_cache_size:
             # Remove oldest 20% of entries
             to_remove = list(self._verified_signatures.keys())[: self._max_cache_size // 5]
             for key in to_remove:
                 del self._verified_signatures[key]
-        self._verified_signatures[signature] = valid
+        self._verified_signatures[signature] = {
+            "valid": valid,
+            "verified_at": time.time(),
+            "payee": payee,
+            "amount": amount,
+            "token_mint": token_mint,
+        }
 
-    def is_signature_cached(self, signature: str) -> bool | None:
-        return self._verified_signatures.get(signature)
+    def is_signature_cached(self, signature: str) -> dict | None:
+        entry = self._verified_signatures.get(signature)
+        if entry is None:
+            return None
+        return entry
+
+    def drop_signature_cache(self, signature: str) -> None:
+        self._verified_signatures.pop(signature, None)
 
 
 # Singleton pricing config (shared across requests)
@@ -352,28 +374,6 @@ class X402ServerMiddleware(BaseHTTPMiddleware):
         if not signature:
             return {"valid": False, "error": "No signature in payment payload"}
 
-        # Check cache
-        cached = config.is_signature_cached(signature)
-        if cached is not None:
-            if cached:
-                return {
-                    "valid": True,
-                    "signature": signature,
-                    "payer": payload.get("payer", ""),
-                    "amount_lamports": int(payload.get("amount", "0")),
-                    "token_mint": payload.get("token_mint"),
-                    "confirmed_on_chain": True,
-                }
-            else:
-                return {"valid": False, "error": "Previously rejected signature"}
-
-        # Verify timestamp freshness
-        timestamp = payload.get("timestamp", 0)
-        max_deadline = pricing.get("max_deadline_seconds", 60)
-        if timestamp and (time.time() - timestamp) > max_deadline:
-            config.cache_verification(signature, False)
-            return {"valid": False, "error": "Payment proof expired"}
-
         # Determine expected amount and token from pricing config
         expected_amount = pricing.get("price_lamports", 0)
         token_mint = None
@@ -384,6 +384,40 @@ class X402ServerMiddleware(BaseHTTPMiddleware):
         pay_to = pricing.get("pay_to", "")
         if not pay_to:
             return {"valid": False, "error": "No pay_to configured for this route"}
+
+        max_deadline = pricing.get("max_deadline_seconds", 60)
+
+        # Check cache -- replay protection is enforced on cache hits too:
+        # the proof must still be fresh AND match the current payee/amount.
+        cached = config.is_signature_cached(signature)
+        if cached is not None:
+            if not cached.get("valid"):
+                return {"valid": False, "error": "Previously rejected signature"}
+            # Deadline check on cache hit
+            if (time.time() - cached.get("verified_at", 0)) > max_deadline:
+                config.drop_signature_cache(signature)
+                return {"valid": False, "error": "Payment proof expired"}
+            # Payee / amount must match current pricing (prevents cross-route reuse)
+            if cached.get("payee") != pay_to:
+                config.drop_signature_cache(signature)
+                return {"valid": False, "error": "Payment proof does not match this endpoint's payee"}
+            if cached.get("amount", 0) < expected_amount:
+                config.drop_signature_cache(signature)
+                return {"valid": False, "error": "Payment proof amount below current price"}
+            return {
+                "valid": True,
+                "signature": signature,
+                "payer": payload.get("payer", ""),
+                "amount_lamports": cached.get("amount", 0),
+                "token_mint": cached.get("token_mint"),
+                "confirmed_on_chain": True,
+            }
+
+        # Verify timestamp freshness
+        timestamp = payload.get("timestamp", 0)
+        if timestamp and (time.time() - timestamp) > max_deadline:
+            config.cache_verification(signature, False)
+            return {"valid": False, "error": "Payment proof expired"}
 
         # Verify on-chain -- real payer / recipient / amount from parsed tx
         try:
@@ -416,7 +450,13 @@ class X402ServerMiddleware(BaseHTTPMiddleware):
                 "confirmed_on_chain": True,
             }
 
-        config.cache_verification(signature, True)
+        config.cache_verification(
+            signature,
+            True,
+            payee=pay_to,
+            amount=result.get("amount", expected_amount),
+            token_mint=result.get("token_mint", token_mint),
+        )
 
         return {
             "valid": True,

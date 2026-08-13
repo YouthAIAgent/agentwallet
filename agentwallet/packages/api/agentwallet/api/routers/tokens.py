@@ -15,7 +15,7 @@ from ...core.exceptions import (
     ValidationError,
 )
 from ...services.token_service import TokenService
-from ..middleware.auth import AuthContext, get_auth_context
+from ..middleware.auth import AuthContext, get_auth_context, require_permission
 from ..middleware.rate_limit import check_rate_limit
 from ..schemas.tokens import (
     SupportedToken,
@@ -49,6 +49,7 @@ async def transfer_token(
     req: TokenTransferRequest,
     request: Request,
     auth: AuthContext = Depends(get_auth_context),
+    _perm: None = Depends(require_permission("wallets", "w")),
     db: AsyncSession = Depends(get_db),
 ):
     """Transfer USDC/USDT between wallets."""

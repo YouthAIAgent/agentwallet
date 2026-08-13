@@ -17,8 +17,12 @@ class Settings(BaseSettings):
     solana_rpc_url: str = "https://api.devnet.solana.com"
     solana_network: str = "devnet"
 
-    # Platform wallet (receives fees)
+    # Platform wallet (receives fees, holds escrow custody)
     platform_wallet_address: str = ""
+    # Platform private key (hex, 64 bytes). Falls back to the gitignored
+    # packages/api/.platform-keypair.json file when unset. Required to sign
+    # escrow release/refund disbursements from the custody wallet.
+    platform_private_key_hex: str = ""
 
     # Stablecoin mint addresses (can be overridden per network, e.g. devnet vs mainnet)
     usdc_mint_address: str = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"  # USDC

@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ...core.database import get_db
 from ...services.swarm_service import SwarmService
 from ..middleware.auth import AuthContext, get_auth_context
+from ..middleware.rate_limit import rate_limited_auth
 from ..schemas.swarms import (
     SubtaskAssign,
     SubtaskComplete,
@@ -22,7 +23,11 @@ from ..schemas.swarms import (
     SwarmTaskResponse,
 )
 
-router = APIRouter(prefix="/swarms", tags=["Agent Swarms"])
+router = APIRouter(
+    prefix="/swarms",
+    tags=["Agent Swarms"],
+    dependencies=[Depends(rate_limited_auth)],
+)
 
 
 def _swarm_to_response(swarm, member_count: int = 0) -> SwarmResponse:

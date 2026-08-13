@@ -15,7 +15,7 @@ from ...core.exceptions import (
     ValidationError,
 )
 from ...services.usdc_billing import PLANS, UsdcBillingService
-from ..middleware.auth import AuthContext, get_auth_context
+from ..middleware.auth import AuthContext, get_auth_context, require_permission
 from ..middleware.rate_limit import check_rate_limit
 from ..schemas.billing import (
     Plan,
@@ -51,6 +51,7 @@ async def subscribe(
     req: SubscribeRequest,
     request: Request,
     auth: AuthContext = Depends(get_auth_context),
+    _perm: None = Depends(require_permission("billing", "w")),
     db: AsyncSession = Depends(get_db),
 ):
     """Subscribe to a tier, paying the USDC price on-chain from your wallet."""
@@ -102,6 +103,7 @@ async def renew(
     req: RenewRequest,
     request: Request,
     auth: AuthContext = Depends(get_auth_context),
+    _perm: None = Depends(require_permission("billing", "w")),
     db: AsyncSession = Depends(get_db),
 ):
     """Renew the active subscription for another billing period."""
@@ -129,6 +131,7 @@ async def renew(
 async def cancel(
     request: Request,
     auth: AuthContext = Depends(get_auth_context),
+    _perm: None = Depends(require_permission("billing", "w")),
     db: AsyncSession = Depends(get_db),
 ):
     """Cancel the subscription, downgrading the org to free."""

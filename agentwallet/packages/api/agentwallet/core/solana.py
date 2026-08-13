@@ -37,6 +37,33 @@ def _rpc_timeout() -> int:
     return get_settings().rpc_timeout
 
 
+def load_platform_keypair() -> Keypair:
+    """Load the platform wallet keypair (escrow custody / fee signer).
+
+    Prefers PLATFORM_PRIVATE_KEY_HEX (hex-encoded 64-byte secret key); falls
+    back to the gitignored packages/api/.platform-keypair.json file.
+
+    Raises ValueError if no key is configured.
+    """
+    import json as _json
+    from pathlib import Path
+
+    hex_key = get_settings().platform_private_key_hex
+    if not hex_key:
+        keyfile = Path("packages/api/.platform-keypair.json")
+        if keyfile.exists():
+            try:
+                hex_key = _json.loads(keyfile.read_text()).get("secret_key_hex", "")
+            except Exception:
+                hex_key = ""
+    if not hex_key:
+        raise ValueError(
+            "Platform private key not configured: set PLATFORM_PRIVATE_KEY_HEX or "
+            "place packages/api/.platform-keypair.json"
+        )
+    return Keypair.from_bytes(bytes.fromhex(hex_key))
+
+
 # ---------------------------------------------------------------------------
 # Balance
 # ---------------------------------------------------------------------------

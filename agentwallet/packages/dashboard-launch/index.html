@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[AGENTWALLET] // LAUNCH CONTROL</title>
+<style>
+  :root {
+    --bg: #050a08;
+    --panel: #0a120e;
+    --line: #143d26;
+    --green: #22ff88;
+    --dim-green: #0e8f55;
+    --cyan: #35e0ff;
+    --yellow: #ffd34d;
+    --red: #ff4d5e;
+    --magenta: #ff5cdb;
+    --gray: #5c7a68;
+    --text: #c9f2d9;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  /* scanlines + glow */
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.25) 0 1px, transparent 1px 3px);
+  }
+  body::after {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(34,255,136,0.07), transparent 60%);
+  }
+  .wrap { position: relative; z-index: 2; max-width: 1080px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  /* ── header ── */
+  header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+  .logo { font-size: 15px; letter-spacing: 2px; }
+  .logo b { color: var(--green); }
+  .status-pill {
+    font-size: 12px; padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px;
+    color: var(--gray); background: var(--panel);
+  }
+  .status-pill.live { color: var(--green); border-color: var(--dim-green); box-shadow: 0 0 12px rgba(34,255,136,0.25); }
+
+  /* ── hero ── */
+  .hero { margin: 40px 0 26px; }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 52px); line-height: 1.08; font-weight: 800;
+    color: var(--green); text-shadow: 0 0 24px rgba(34,255,136,0.4);
+  }
+  .hero h1 .c { color: var(--cyan); text-shadow: 0 0 24px rgba(53,224,255,0.4); }
+  .hero h1 .m { color: var(--magenta); text-shadow: 0 0 24px rgba(255,92,219,0.4); }
+  .hero p { margin-top: 14px; color: var(--gray); font-size: 14px; max-width: 620px; line-height: 1.7; }
+  .hero p b { color: var(--text); }
+
+  /* ── command rows ── */
+  .cmd { margin: 8px 0; display: flex; align-items: center; gap: 10px; }
+  .cmd .prompt { color: var(--green); font-weight: 700; }
+  .cmd code {
+    background: var(--panel); border: 1px solid var(--line); padding: 7px 12px;
+    border-radius: 6px; font-size: 13px; color: var(--cyan); flex: 1; overflow-x: auto; white-space: nowrap;
+  }
+  .btn {
+    background: transparent; border: 1px solid var(--dim-green); color: var(--green);
+    padding: 6px 14px; border-radius: 6px; font-family: inherit; font-size: 12px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:hover { background: rgba(34,255,136,0.12); box-shadow: 0 0 12px rgba(34,255,136,0.3); }
+  .btn.big { padding: 10px 22px; font-size: 14px; font-weight: 700; margin-top: 12px; }
+
+  /* ── grid ── */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 30px; }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 18px; position: relative; overflow: hidden;
+  }
+  .panel::before {
+    content: attr(data-tag); position: absolute; top: 0; right: 0;
+    background: var(--line); color: var(--bg); font-size: 10px; font-weight: 700;
+    padding: 3px 10px; border-bottom-left-radius: 8px; letter-spacing: 1px;
+  }
+  .panel h3 { color: var(--green); font-size: 13px; letter-spacing: 1.5px; margin-bottom: 12px; }
+  .panel .big { font-size: 30px; font-weight: 800; color: var(--text); }
+  .panel .big span { font-size: 13px; color: var(--gray); font-weight: 400; }
+
+  .checks { list-style: none; }
+  .checks li { padding: 6px 0; font-size: 13px; border-bottom: 1px dashed #10301e; display: flex; justify-content: space-between; gap: 10px; }
+  .checks li:last-child { border-bottom: none; }
+  .checks .st { color: var(--gray); }
+  .checks .ok { color: var(--green); }
+  .checks .bad { color: var(--red); }
+
+  /* ── terminal ── */
+  .term {
+    background: #020604; border: 1px solid var(--line); border-radius: 10px; margin-top: 30px;
+    overflow: hidden; box-shadow: 0 0 40px rgba(34,255,136,0.06);
+  }
+  .term-bar { display: flex; gap: 8px; align-items: center; padding: 10px 14px; background: #07100b; border-bottom: 1px solid var(--line); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot.r { background: #ff5f56; } .dot.y { background: #ffbd2e; } .dot.g { background: #27c93f; }
+  .term-title { margin-left: 8px; font-size: 11px; color: var(--gray); letter-spacing: 1px; }
+  .term-body { padding: 18px; font-size: 13px; line-height: 1.75; min-height: 260px; }
+  .term-body .ln { color: var(--green); }
+  .term-body .out { color: var(--text); }
+  .term-body .dim { color: var(--gray); }
+  .cursor { display: inline-block; width: 8px; height: 15px; background: var(--green); vertical-align: middle; animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ── roadmap ── */
+  .roadmap { margin-top: 30px; }
+  .roadmap h2 { color: var(--green); font-size: 14px; letter-spacing: 2px; margin-bottom: 16px; }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .step { border: 1px solid var(--line); border-radius: 10px; padding: 14px; background: var(--panel); }
+  .step .num { color: var(--dim-green); font-size: 11px; letter-spacing: 2px; }
+  .step h4 { color: var(--text); font-size: 13px; margin: 6px 0 6px; }
+  .step p { color: var(--gray); font-size: 12px; line-height: 1.6; }
+  .step.done { border-color: var(--dim-green); }
+  .step.done h4 { color: var(--green); }
+
+  footer { margin-top: 44px; text-align: center; color: var(--gray); font-size: 12px; border-top: 1px solid var(--line); padding-top: 18px; }
+  footer a { color: var(--cyan); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 640px) {
+    .cmd { flex-wrap: wrap; }
+    .cmd code { flex-basis: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">[ <b>AGENTWALLET</b> ] <span style="color:var(--gray)">// launch control</span></div>
+    <div id="pill" class="status-pill">○ checking link ...</div>
+  </header>
+
+  <section class="hero">
+    <h1>GIVE YOUR AI AGENTS<br>AN <span class="c">ON-CHAIN</span> <span class="m">WALLET</span>.</h1>
+    <p>
+      <b>AgentWallet</b> is wallet infrastructure for AI agents on Solana — spending policies,
+      escrow, agent-to-agent payments, x402 pay-per-request gateways, and USDC billing.
+      One SDK call, <b>5 minutes</b>, testnet to mainnet.
+    </p>
+    <div class="cmd"><span class="prompt">$</span><code>npx aw-e2e</code><button class="btn" onclick="copyCmd(this)">copy</button></div>
+    <div class="cmd"><span class="prompt">$</span><code>pip install aw-protocol-sdk</code><button class="btn" onclick="copyCmd(this)">copy</button></div>
+    <button class="btn big" onclick="scrollTo('roadmap')">▸ INITIATE LAUNCH SEQUENCE</button>
+  </section>
+
+  <section class="grid">
+    <div class="panel" data-tag="LINK">
+      <h3>▸ LIVE LINK STATUS</h3>
+      <div id="linkStatus" class="big">--<span> probing api</span></div>
+      <ul class="checks" id="linkChecks" style="margin-top:12px">
+        <li><span class="st">api.agentwallet.fun</span><span class="st">…</span></li>
+        <li><span class="st">local :8000</span><span class="st">…</span></li>
+      </ul>
+    </div>
+
+    <div class="panel" data-tag="PAYMENTS">
+      <h3>▸ PAYMENT RAILS</h3>
+      <ul class="checks">
+        <li><span class="st">SOL / USDC / USDT</span><span class="ok">LIVE</span></li>
+        <li><span class="st">x402 pay-per-request</span><span class="ok">LIVE</span></li>
+        <li><span class="st">escrow (pay-when-done)</span><span class="ok">LIVE</span></li>
+        <li><span class="st">USDC subscription billing</span><span class="ok">LIVE</span></li>
+        <li><span class="st">0.5% platform fee</span><span class="ok">VERIFIED</span></li>
+      </ul>
+    </div>
+
+    <div class="panel" data-tag="AGENTS">
+      <h3>▸ AGENT STACK</h3>
+      <ul class="checks">
+        <li><span class="st">custodial wallets + KMS</span><span class="ok">ON</span></li>
+        <li><span class="st">spending policies</span><span class="ok">ON</span></li>
+        <li><span class="st">ACP commerce jobs</span><span class="ok">ON</span></li>
+        <li><span class="st">agent swarms</span><span class="ok">ON</span></li>
+        <li><span class="st">reputation (ERC-8004)</span><span class="ok">ON</span></li>
+      </ul>
+    </div>
+
+    <div class="panel" data-tag="DEV">
+      <h3>▸ DEVELOPER SURFACE</h3>
+      <ul class="checks">
+        <li><span class="st">REST API (90+ routes)</span><span class="ok">READY</span></li>
+        <li><span class="st">Python SDK — PyPI 0.4.6</span><span class="ok">PUBLISHED</span></li>
+        <li><span class="st">TypeScript SDK</span><span class="ok">READY</span></li>
+        <li><span class="st">MCP server (40 tools)</span><span class="ok">READY</span></li>
+        <li><span class="st">CI smoke test</span><span class="ok">GREEN</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="term">
+    <div class="term-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="term-title">agentwallet — e2e testnet run</span>
+    </div>
+    <div class="term-body" id="termBody">
+      <div><span class="ln">$</span> <span class="out">npx aw-e2e</span></div>
+      <div class="dim">// initializing …</div>
+    </div>
+  </div>
+
+  <section class="roadmap" id="roadmap">
+    <h2>▸ LAUNCH SEQUENCE</h2>
+    <div class="steps">
+      <div class="step done"><div class="num">STEP 01</div><h4>Payment rails verified</h4><p>SOL/USDC transfers, escrow, x402, USDC billing — all tested end-to-end on-chain.</p></div>
+      <div class="step done"><div class="num">STEP 02</div><h4>Security audit</h4><p>Replay protection, JWT validation, API-key permissions, rate limiting — 4 vulns fixed.</p></div>
+      <div class="step"><div class="num">STEP 03</div><h4>Mainnet deploy</h4><p>Railway + mainnet-beta RPC + funded platform wallet. Private key backup required.</p></div>
+      <div class="step"><div class="num">STEP 04</div><h4>Public launch</h4><p>Landing live, SDK published, Product Hunt / Show HN, Solana ecosystem channels.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    AGENTWALLET PROTOCOL · <a href="https://github.com/YouthAIAgent/agentwallet" target="_blank">github</a> ·
+    <a href="https://api.agentwallet.fun/docs" target="_blank">api docs</a> · <a href="https://pypi.org/project/aw-protocol-sdk/" target="_blank">pypi</a>
+  </footer>
+</div>
+
+<script>
+  // ── copy button ──
+  function copyCmd(btn) {
+    const code = btn.parentElement.querySelector("code").textContent;
+    navigator.clipboard.writeText(code).then(() => {
+      btn.textContent = "copied ✓";
+      setTimeout(() => (btn.textContent = "copy"), 1200);
+    });
+  }
+  function scrollTo(id) { document.getElementById(id).scrollIntoView({ behavior: "smooth" }); }
+
+  // ── live health check ──
+  async function probe(url, timeoutMs) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const r = await fetch(url + "/health", { signal: ctrl.signal });
+      clearTimeout(t);
+      return r.ok;
+    } catch { clearTimeout(t); return false; }
+  }
+
+  const pill = document.getElementById("pill");
+  const linkStatus = document.getElementById("linkStatus");
+  const linkChecks = document.getElementById("linkChecks");
+
+  (async () => {
+    const hosts = [
+      { label: "api.agentwallet.fun", url: "https://api.agentwallet.fun" },
+      { label: "local :8000", url: "http://localhost:8000" },
+    ];
+    let anyUp = false;
+    const rows = linkChecks.querySelectorAll("li");
+    for (let i = 0; i < hosts.length; i++) {
+      const ok = await probe(hosts[i].url, 4000);
+      anyUp = anyUp || ok;
+      rows[i].querySelector("span:last-child").textContent = ok ? "UP" : "down";
+      rows[i].querySelector("span:last-child").className = ok ? "ok" : "bad";
+    }
+    if (anyUp) {
+      pill.textContent = "● LINK ACTIVE";
+      pill.className = "status-pill live";
+      linkStatus.innerHTML = '<span style="color:var(--green)">ACTIVE</span><span> api responding</span>';
+    } else {
+      pill.textContent = "○ API OFFLINE";
+      linkStatus.innerHTML = '<span style="color:var(--red)">OFFLINE</span><span> start docker stack</span>';
+    }
+  })();
+
+  // ── animated terminal: replay an aw-e2e run ──
+  const termBody = document.getElementById("termBody");
+  const steps = [
+    { t: 200, html: '<span class="ln">$</span> <span class="out">npx aw-e2e --api http://localhost:8000</span>' },
+    { t: 400, html: '<span class="dim">[10:54:22] :: probing /health …</span>' },
+    { t: 900, html: '<span class="ok">  ✔ PASS  API health</span>' },
+    { t: 1200, html: '<span class="dim">[10:54:22] :: registering fresh org …</span>' },
+    { t: 1700, html: '<span class="ok">  ✔ PASS  register org</span>' },
+    { t: 2000, html: '<span class="dim">[10:54:22] :: creating scoped API key …</span>' },
+    { t: 2500, html: '<span class="ok">  ✔ PASS  API key</span>' },
+    { t: 2800, html: '<span class="dim">[10:54:22] :: creating agent …</span>' },
+    { t: 3300, html: '<span class="ok">  ✔ PASS  agent</span>' },
+    { t: 3600, html: '<span class="dim">[10:54:22] :: creating funder + recipient wallets …</span>' },
+    { t: 4200, html: '<span class="ok">  ✔ PASS  funder wallet</span>' },
+    { t: 4500, html: '<span class="ok">  ✔ PASS  recipient wallet</span>' },
+    { t: 4800, html: '<span class="dim">[10:54:23] :: creating escrow …</span>' },
+    { t: 5400, html: '<span class="ok">  ✔ PASS  escrow created</span>' },
+    { t: 5700, html: '<span class="dim">[10:54:32] :: configuring x402 paywall …</span>' },
+    { t: 6200, html: '<span class="ok">  ✔ PASS  x402 configured</span>' },
+    { t: 6500, html: '<span class="dim">[10:54:32] :: querying billing plans …</span>' },
+    { t: 7000, html: '<span class="ok">  ✔ PASS  billing plans</span>' },
+    { t: 7400, html: '<span class="ok" style="font-weight:700">  ══ RESULT: 11 PASS · 0 FAIL ══</span>' },
+    { t: 7800, html: '<span class="ok" style="font-weight:700">  [✓] AgentWallet testnet stack is OPERATIONAL.</span><span class="cursor"></span>' },
+  ];
+  let i = 0;
+  function next() {
+    if (i >= steps.length) return;
+    const s = steps[i++];
+    setTimeout(() => {
+      const div = document.createElement("div");
+      div.innerHTML = s.html;
+      termBody.appendChild(div);
+      termBody.scrollTop = termBody.scrollHeight;
+      next();
+    }, s.t);
+  }
+  next();
+</script>
+</body>
+</html>

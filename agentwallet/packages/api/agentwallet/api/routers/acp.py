@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ...core.database import get_db
 from ...services.acp_service import AcpService
 from ..middleware.auth import AuthContext, get_auth_context
+from ..middleware.rate_limit import rate_limited_auth
 from ..schemas.acp import (
     AcpDeliver,
     AcpEvaluate,
@@ -23,7 +24,11 @@ from ..schemas.acp import (
     ResourceOfferingResponse,
 )
 
-router = APIRouter(prefix="/acp", tags=["Agent Commerce Protocol"])
+router = APIRouter(
+    prefix="/acp",
+    tags=["Agent Commerce Protocol"],
+    dependencies=[Depends(rate_limited_auth)],
+)
 
 
 def _job_to_response(job) -> AcpJobResponse:

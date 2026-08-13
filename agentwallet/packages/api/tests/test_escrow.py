@@ -66,3 +66,125 @@ async def test_escrow_unauthenticated(unauthed_client):
     """Test accessing escrows without auth should fail."""
     resp = await unauthed_client.get("/v1/escrow")
     assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_escrow_release_disburses_from_platform(
+    client, db_session, test_escrow, monkeypatch
+):
+    """Release must disburse FROM the platform custody wallet, NOT the funder.
+
+    Regression test for the double-pay bug where the funder was charged a
+    second time at release (fund pays into custody, then release paid out of
+    the funder's wallet again).
+    """
+    from agentwallet.services import escrow_service as svc
+    from solders.keypair import Keypair
+
+    test_escrow.status = "funded"
+    await db_session.commit()
+
+    platform_kp = Keypair()
+    sent = {}
+
+    async def fake_transfer(client, from_keypair, to_address, lamports, **kw):
+        sent["from"] = str(from_keypair.pubkey())
+        sent["to"] = to_address
+        sent["lamports"] = lamports
+        return "sig-release-1"
+
+    async def fake_confirm(client_, sig):
+        return True
+
+    monkeypatch.setattr(svc, "load_platform_keypair", lambda: platform_kp)
+    monkeypatch.setattr(svc, "transfer_sol", fake_transfer)
+    monkeypatch.setattr(svc, "confirm_transaction", fake_confirm)
+
+    resp = await client.post(
+        f"/v1/escrow/{test_escrow.id}/action", json={"action": "release"}
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "released"
+    assert data["release_signature"] == "sig-release-1"
+    # Funds come from the custody wallet, to the recipient
+    assert sent["from"] == str(platform_kp.pubkey())
+    assert sent["to"] == test_escrow.recipient_address
+    assert sent["lamports"] == test_escrow.amount_lamports
+
+
+@pytest.mark.asyncio
+async def test_escrow_refund_returns_to_funder(
+    client, db_session, test_escrow, test_wallet, monkeypatch
+):
+    """Refund must return custody funds to the funder's wallet address."""
+    from agentwallet.services import escrow_service as svc
+    from solders.keypair import Keypair
+
+    test_escrow.status = "funded"
+    await db_session.commit()
+
+    platform_kp = Keypair()
+    sent = {}
+
+    async def fake_transfer(client, from_keypair, to_address, lamports, **kw):
+        sent["from"] = str(from_keypair.pubkey())
+        sent["to"] = to_address
+        sent["lamports"] = lamports
+        return "sig-refund-1"
+
+    async def fake_confirm(client_, sig):
+        return True
+
+    monkeypatch.setattr(svc, "load_platform_keypair", lambda: platform_kp)
+    monkeypatch.setattr(svc, "transfer_sol", fake_transfer)
+    monkeypatch.setattr(svc, "confirm_transaction", fake_confirm)
+
+    resp = await client.post(
+        f"/v1/escrow/{test_escrow.id}/action", json={"action": "refund"}
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "refunded"
+    assert data["refund_signature"] == "sig-refund-1"
+    # Custody -> funder's wallet address
+    assert sent["from"] == str(platform_kp.pubkey())
+    assert sent["to"] == test_wallet.address
+    assert sent["lamports"] == test_escrow.amount_lamports
+
+
+@pytest.mark.asyncio
+async def test_escrow_release_requires_platform_key(
+    client, db_session, test_escrow, monkeypatch
+):
+    """Release without a configured platform key must fail cleanly (409)."""
+    from agentwallet.services import escrow_service as svc
+
+    test_escrow.status = "funded"
+    await db_session.commit()
+
+    def boom():
+        raise ValueError("Platform private key not configured")
+
+    monkeypatch.setattr(svc, "load_platform_keypair", boom)
+
+    resp = await client.post(
+        f"/v1/escrow/{test_escrow.id}/action", json={"action": "release"}
+    )
+    assert resp.status_code == 409
+
+
+@pytest.mark.asyncio
+async def test_escrow_dispute(client, db_session, test_escrow):
+    """Dispute marks the escrow disputed with a reason (no on-chain move)."""
+    test_escrow.status = "funded"
+    await db_session.commit()
+
+    resp = await client.post(
+        f"/v1/escrow/{test_escrow.id}/action",
+        json={"action": "dispute", "reason": "work not delivered"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "disputed"
+    assert data["dispute_reason"] == "work not delivered"

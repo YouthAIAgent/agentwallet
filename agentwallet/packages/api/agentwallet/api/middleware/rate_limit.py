@@ -3,10 +3,11 @@
 import time
 from collections import defaultdict
 
-from fastapi import HTTPException, Request
+from fastapi import Depends, HTTPException, Request
 
 from ...core.logging import get_logger
 from ...core.redis_client import get_redis
+from .auth import get_auth_context
 
 logger = get_logger(__name__)
 
@@ -75,6 +76,18 @@ async def _check_redis() -> bool:
 
     _redis_last_check = now
     return _redis_available
+
+
+async def rate_limited_auth(
+    request: Request,
+    auth=Depends(get_auth_context),
+) -> None:
+    """Router-level dependency: resolve auth + enforce rate limits.
+
+    Use on routers whose handlers already receive auth via get_auth_context:
+        router = APIRouter(prefix="/acp", tags=["acp"], dependencies=[Depends(rate_limited_auth)])
+    """
+    await check_rate_limit(request, str(auth.org_id), auth.org_tier)
 
 
 async def check_rate_limit(

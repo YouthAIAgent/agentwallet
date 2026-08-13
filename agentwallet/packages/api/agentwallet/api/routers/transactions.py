@@ -13,7 +13,7 @@ from ...core.exceptions import (
     PolicyDeniedError,
 )
 from ...services.transaction_engine import TransactionEngine
-from ..middleware.auth import AuthContext, get_auth_context
+from ..middleware.auth import AuthContext, get_auth_context, require_permission
 from ..middleware.rate_limit import check_rate_limit
 from ..schemas.transactions import (
     BatchTransferRequest,
@@ -51,6 +51,7 @@ async def transfer_sol(
     req: TransferSolRequest,
     request: Request,
     auth: AuthContext = Depends(get_auth_context),
+    _perm: None = Depends(require_permission("wallets", "w")),
     db: AsyncSession = Depends(get_db),
 ):
     """Transfer SOL from a managed wallet."""
@@ -90,6 +91,7 @@ async def batch_transfer(
     req: BatchTransferRequest,
     request: Request,
     auth: AuthContext = Depends(get_auth_context),
+    _perm: None = Depends(require_permission("wallets", "w")),
     db: AsyncSession = Depends(get_db),
 ):
     """Execute multiple SOL transfers in parallel (semaphore-gated).

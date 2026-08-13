@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ...core.database import get_db
 from ...core.exceptions import EscrowStateError, NotFoundError
 from ...services.escrow_service import EscrowService
-from ..middleware.auth import AuthContext, get_auth_context
+from ..middleware.auth import AuthContext, get_auth_context, require_permission
 from ..middleware.rate_limit import check_rate_limit
 from ..schemas.escrow import (
     EscrowActionRequest,
@@ -102,6 +102,7 @@ async def escrow_action(
     req: EscrowActionRequest,
     request: Request,
     auth: AuthContext = Depends(get_auth_context),
+    _perm: None = Depends(require_permission("escrows", "w")),
     db: AsyncSession = Depends(get_db),
 ):
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)

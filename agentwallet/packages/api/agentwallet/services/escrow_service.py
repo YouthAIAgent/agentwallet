@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..core.config import get_settings
 from ..core.exceptions import EscrowStateError, NotFoundError
 from ..core.logging import get_logger
-from ..core.solana import confirm_transaction, transfer_sol
+from ..core.solana import confirm_transaction, load_platform_keypair, transfer_sol
 from ..models.escrow import Escrow
 from .wallet_manager import WalletManager
 
@@ -101,14 +101,18 @@ class EscrowService:
         return escrow
 
     async def release_escrow(self, escrow_id: uuid.UUID, org_id: uuid.UUID) -> Escrow:
-        """Release escrow funds to the recipient on-chain, then update status."""
+        """Release escrow funds to the recipient on-chain, then update status.
+
+        Disburses from the platform custody wallet (where escrow funds are
+        held after funding), NOT from the funder's wallet — the funder pays
+        exactly once (at fund time).
+        """
         escrow = await self._get_escrow(escrow_id, org_id)
         self._validate_transition(escrow.status, "released")
 
-        # Transfer escrowed funds to the recipient on-chain
+        # Transfer escrowed funds from custody to the recipient on-chain
         try:
-            wallet = await self.wallet_mgr.get_wallet(escrow.funder_wallet_id, org_id)
-            keypair = self.wallet_mgr._decrypt_keypair(wallet)
+            keypair = load_platform_keypair()
             async with httpx.AsyncClient(timeout=15) as client:
                 sig = await transfer_sol(
                     client=client,
@@ -153,15 +157,18 @@ class EscrowService:
         )
 
     async def refund_escrow(self, escrow_id: uuid.UUID, org_id: uuid.UUID) -> Escrow:
-        """Refund escrow funds to the funder's wallet on-chain, then update status."""
+        """Refund escrow funds to the funder's wallet on-chain, then update status.
+
+        Returns the escrowed funds held in custody (platform wallet) to the
+        funder's wallet — the funder pays exactly once, at fund time.
+        """
         escrow = await self._get_escrow(escrow_id, org_id)
         self._validate_transition(escrow.status, "refunded")
 
-        # Transfer escrowed funds back to the funder wallet on-chain
+        # Transfer escrowed funds from custody back to the funder wallet
         try:
             wallet = await self.wallet_mgr.get_wallet(escrow.funder_wallet_id, org_id)
-            keypair = self.wallet_mgr._decrypt_keypair(wallet)
-            # Refund goes back to the funder's own wallet address
+            keypair = load_platform_keypair()
             async with httpx.AsyncClient(timeout=15) as client:
                 sig = await transfer_sol(
                     client=client,
