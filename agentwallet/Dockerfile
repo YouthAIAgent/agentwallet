@@ -18,4 +18,4 @@ RUN pip install --no-cache-dir . && python -c "import agentwallet; print('OK')"
 
 EXPOSE 8000
 
-CMD ["uvicorn", "agentwallet.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "alembic upgrade head && uvicorn agentwallet.main:app --host 0.0.0.0 --port 8000"]
