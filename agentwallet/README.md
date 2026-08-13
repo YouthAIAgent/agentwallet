@@ -187,19 +187,19 @@ async def main():
             description="Created via Python SDK",
             capabilities=["analysis"],
         )
-        print(f"Agent: {agent['id']}")
+        print(f"Agent: {agent.id}")
 
         # Create a wallet
         wallet = await aw.wallets.create(
-            agent_id=agent["id"],
+            agent_id=agent.id,
             wallet_type="agent",
             label="SDK Wallet",
         )
-        print(f"Wallet: {wallet['address']}")
+        print(f"Wallet: {wallet.address}")
 
         # Check balance
-        balance = await aw.wallets.get_balance(wallet["id"])
-        print(f"Balance: {balance}")
+        balance = await aw.wallets.get_balance(wallet.id)
+        print(f"Balance: {balance.sol_balance} SOL")
 
 asyncio.run(main())
 ```
@@ -228,7 +228,7 @@ Expected output:
 ```
 Agent: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 Wallet: 8xJ3mZk9...
-Balance: {'sol_balance': 0.0, 'tokens': []}
+Balance: 0.0 SOL
 ```
 
 ---
