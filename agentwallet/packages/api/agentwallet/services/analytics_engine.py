@@ -3,7 +3,7 @@
 import uuid
 from datetime import date, timedelta
 
-from sqlalchemy import func, select
+from sqlalchemy import Integer, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.logging import get_logger
@@ -142,7 +142,7 @@ class AnalyticsEngine:
                 func.coalesce(func.sum(Transaction.amount_lamports), 0),
                 func.coalesce(func.sum(Transaction.platform_fee_lamports), 0),
                 func.count(func.distinct(Transaction.to_address)),
-                func.sum(func.cast(Transaction.status == "failed", type_=func.literal(0).type)),
+                func.sum(func.cast(Transaction.status == "failed", Integer)),
             )
             .where(func.date(Transaction.created_at) == target)
             .group_by(Transaction.org_id)

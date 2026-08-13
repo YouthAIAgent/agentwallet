@@ -5,6 +5,14 @@ All notable changes to AgentWallet Protocol will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - 2026-08-13
+
+### Fixed
+- **CLI authentication** — the CLI sent API keys as `Authorization: Bearer` but the API expects the `X-API-Key` header, so every command returned 401. Both `main.py` and `dashboard.py` now send `X-API-Key`.
+- **MCP server crash on startup** — `mcp>=1.0.0` allowed installing mcp 2.x, which removed the `list_tools`/`call_tool` decorators the server uses. Pinned to `mcp>=1.0.0,<2.0.0`; the server now boots and exposes all 40 tools.
+- **TypeScript SDK build** — `tsconfig.json` was missing the `DOM` lib, so `fetch`, `setTimeout`, `URLSearchParams`, and `AbortController` failed typecheck/build. Added `DOM`; typecheck, CJS/ESM, and DTS builds now pass.
+- **Analytics aggregator worker** — `func.cast(..., type_=func.literal(0).type)` produced a `NullType` cast, crashing every tick with `Can't generate DDL for NullType()`. Replaced with a proper `Integer` cast; the daily rollup now runs.
+
 ## [0.4.1] - 2026-08-13
 
 ### Fixed

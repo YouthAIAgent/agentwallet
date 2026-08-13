@@ -37,7 +37,7 @@ def _headers() -> dict:
     """Build request headers with authentication."""
     h = {"Content-Type": "application/json"}
     if API_KEY:
-        h["Authorization"] = f"Bearer {API_KEY}"
+        h["X-API-Key"] = API_KEY
     return h
 
 
