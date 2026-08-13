@@ -11,14 +11,13 @@ from __future__ import annotations
 
 import json
 import sqlite3
-import hashlib
 import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 try:
-    import numpy as np  # type: ignore
+    import numpy as np  # type: ignore  # noqa: F401  (optional availability check)
 
     HAS_NUMPY = True
 except ImportError:

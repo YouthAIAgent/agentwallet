@@ -6,14 +6,12 @@ Exposes Agent Genesis as native Hermes tools.
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
-import json
-import asyncio
 
 # Core imports
 from agent_genesis.memory import get_memory_fabric
-from agent_genesis.designer.architect import DesignerAgent, OrganizationSpec
-from agent_genesis.breeder.evolution import BreederAgent
-from agent_genesis.deployer.orchestrator import DeployerAgent, RuntimeType
+from agent_genesis.designer.architect import DesignerAgent, OrganizationSpec as OrganizationSpec
+from agent_genesis.breeder.evolution import BreederAgent, Genome
+from agent_genesis.deployer.orchestrator import DeployerAgent, RuntimeType as RuntimeType
 from agent_genesis.finetune.loop import FineTuneLoop
 from agent_genesis.skill_layer.openspace_integration import get_openspace_layer
 
@@ -94,7 +92,7 @@ async def genesis_breed(
                 "status": "error",
                 "message": "Population not initialized. Provide base_prompt or call genesis_init_population first."
             }
-        base_genome = _breeder.Genome(
+        base_genome = Genome(
             agent_id=f"{role}_base",
             role=role,
             system_prompt=base_prompt,
@@ -118,7 +116,7 @@ async def genesis_init_population(
     size: int = 20,
 ) -> Dict[str, Any]:
     """Initialize population for a role with a base prompt."""
-    base_genome = _breeder.Genome(
+    base_genome = Genome(
         agent_id=f"{role}_base",
         role=role,
         system_prompt=base_prompt,

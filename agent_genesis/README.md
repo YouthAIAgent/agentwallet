@@ -65,9 +65,21 @@ genesis finetune
 ### 6. Telegram Bot
 ```bash
 export TELEGRAM_BOT_TOKEN=your_token
-export TELEGRAM_ALLOWED_USERS=123456789
+export TELEGRAM_ALLOWED_USERS=123456789  # optional allow-list
+# Console script (installed by pip install -e . / pip install .):
+genesis-bot
+# Or without installing:
 python -m agent_genesis.cli.telegram_bot
 ```
+
+### 7. Tests & CI
+```bash
+pip install -e . pytest pytest-asyncio ruff
+python -m pytest          # 40+ tests: memory, designer, breeder, CLI, plugins, telegram bot
+ruff check --select F .   # undefined names / unused imports (the real bugs)
+```
+CI (`.github/workflows/agent-genesis.yml`) runs lint + tests + console-script
+smoke checks on every push to `agent_genesis/**`.
 
 ---
 

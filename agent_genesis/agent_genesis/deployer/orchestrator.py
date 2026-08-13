@@ -13,10 +13,9 @@ from __future__ import annotations
 import asyncio
 import json
 import uuid
-import shlex
 import os
-from dataclasses import dataclass, field
-from typing import Dict, List, Any, Optional
+from dataclasses import dataclass
+from typing import Dict, Any, Optional
 from enum import Enum
 from pathlib import Path
 
@@ -265,7 +264,7 @@ class DeployerAgent:
             return {"status": "failed", "error": "No Box token configured", "runtime": "box"}
 
         try:
-            import aiohttp
+            import aiohttp  # noqa: F401  (lazy availability check)
         except ImportError:
             return {"status": "failed", "error": "aiohttp not installed", "runtime": "box"}
 

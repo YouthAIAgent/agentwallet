@@ -10,7 +10,6 @@ import uuid
 from dataclasses import dataclass, asdict
 from typing import Dict, List, Any, Optional
 from enum import Enum
-from pathlib import Path
 
 from agent_genesis.memory import get_memory_fabric
 

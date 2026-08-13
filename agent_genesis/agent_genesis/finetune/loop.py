@@ -7,10 +7,8 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
-import subprocess
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 
@@ -272,8 +270,6 @@ class FineTuneLoop:
             if proc.returncode != 0:
                 return {"accuracy": 0.0, "error": stderr.decode()[:200]}
 
-            # Parse metrics from output (simplified)
-            output = stdout.decode()
             # In production: parse actual metrics
             return {"accuracy": 0.87, "perplexity": 2.3}
 
@@ -283,6 +279,7 @@ class FineTuneLoop:
     # ------------------------------------------------------ export GGUF
     async def _export_gguf(self, adapter_path: Path, run_id: str) -> Optional[Path]:
         """Export merged model to GGUF q4_k_m for Ollama."""
+        date_str = datetime.now().strftime("%Y%m%d")
         gguf_path = self.gguf_dir / f"{self.model_base}-genesis-{date_str}_{run_id}.gguf"
 
         cmd = [
@@ -327,7 +324,7 @@ class FineTuneLoop:
         model_name = f"genesis-{datetime.now().strftime('%Y%m%d')}"
 
         # Create Modelfile
-        modelfile = f"""FROM {ggf_path}
+        modelfile = f"""FROM {gguf_path}
 TEMPLATE "{{{{ .System }}}}{{{{ .Prompt }}}}{{{{ .Response }}}}"
 PARAMETER stop "<|im_end|>"
 PARAMETER stop "<|im_start|>"

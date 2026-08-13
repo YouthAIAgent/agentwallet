@@ -1,0 +1,58 @@
+"""Tests for agent_genesis.cli.genesis.GenesisCLI."""
+
+from __future__ import annotations
+
+import pytest
+
+from agent_genesis.cli.genesis import GenesisCLI
+
+
+@pytest.fixture()
+def cli(plugin_env):
+    return GenesisCLI()
+
+
+@pytest.mark.asyncio
+async def test_no_args_prints_help(cli, capsys):
+    await cli.run([])
+    out = capsys.readouterr().out
+    assert "Agent Genesis CLI" in out
+    assert "design" in out
+
+
+@pytest.mark.asyncio
+async def test_design_command_prints_spec(cli, capsys):
+    await cli.run(["design", "monitor tenders and draft a proposal"])
+    out = capsys.readouterr().out
+    assert '"agents"' in out
+    assert '"id"' in out
+
+
+@pytest.mark.asyncio
+async def test_design_without_task_shows_usage(cli, capsys):
+    await cli.run(["design"])
+    out = capsys.readouterr().out
+    assert "Usage: genesis design" in out
+
+
+@pytest.mark.asyncio
+async def test_unknown_command(cli, capsys):
+    await cli.run(["frobnicate"])
+    out = capsys.readouterr().out
+    assert "Unknown command" in out
+
+
+@pytest.mark.asyncio
+async def test_memory_command(cli, capsys, isolated_memory):
+    isolated_memory.remember("agent-a", "observation", "hello world")
+    await cli.run(["memory", "hello"])
+    out = capsys.readouterr().out
+    assert '"episodic"' in out
+
+
+@pytest.mark.asyncio
+async def test_status_command(cli, capsys):
+    await cli.run(["status"])
+    out = capsys.readouterr().out
+    assert "Memory:" in out
+    assert "Runtimes:" in out

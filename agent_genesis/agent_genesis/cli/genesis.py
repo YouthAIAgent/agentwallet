@@ -9,8 +9,6 @@ import asyncio
 import json
 import os
 import sys
-from pathlib import Path
-from typing import Dict, Any, Optional
 
 from agent_genesis.memory import get_memory_fabric
 from agent_genesis.designer.architect import DesignerAgent
@@ -21,9 +19,9 @@ from agent_genesis.skill_layer.openspace_integration import get_openspace_layer
 from agent_genesis.plugins.hermes_genesis import (
     genesis_design, genesis_breed, genesis_deploy,
     genesis_finetune, genesis_memory, genesis_check_runtimes,
-    genesis_list_champions, genesis_get_champion, genesis_load_golden,
-    genesis_init_population, genesis_load_org, genesis_list_orgs,
-    openspace_local_search, openspace_local_skill, openspace_local_record,
+    genesis_list_champions, genesis_load_golden,
+    genesis_init_population, genesis_list_orgs,
+    openspace_local_search, openspace_local_skill,
 )
 
 
@@ -52,7 +50,6 @@ class GenesisTelegramBot:
 
     async def start(self):
         """Start the bot."""
-        from telegram import Update
         from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
         app = Application.builder().token(self.token).build()
@@ -329,7 +326,7 @@ class GenesisTelegramBot:
             
             msg = "📊 *Agent Genesis Status*\n\n"
             msg += f"💾 Memory: {stats.get('episodic', 0)} episodic, {stats.get('semantic', 0)} semantic, {stats.get('procedural', 0)} skills, {stats.get('orgs', 0)} orgs\n"
-            msg += f"⚙️ Runtimes: " + ", ".join([f"{k}={'✅' if v else '❌'}" for k,v in runtimes.items()]) + "\n"
+            msg += "⚙️ Runtimes: " + ", ".join([f"{k}={'✅' if v else '❌'}" for k,v in runtimes.items()]) + "\n"
             msg += f"🏆 Champions: {len(champs.get('champions', {}))}\n"
             
             await update.message.reply_text(msg, parse_mode="Markdown")
@@ -508,10 +505,32 @@ Examples:
 """)
 
 
+def _ensure_utf8_stdout() -> None:
+    """Make the CLI safe on consoles with non-UTF-8 encodings (e.g. cp1252).
+
+    The help text and bot output include emoji; without this, printing on
+    Windows (or any redirected stream) raises UnicodeEncodeError.
+    """
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
+
 def main():
     """Synchronous entry point for console script."""
+    _ensure_utf8_stdout()
     cli = GenesisCLI()
-    asyncio.run(cli.run(sys.argv[1:]))
+    try:
+        asyncio.run(cli.run(sys.argv[1:]))
+    except BrokenPipeError:
+        # stdout closed early (e.g. `genesis | head`); exit quietly
+        try:
+            devnull = os.open(os.devnull, os.O_WRONLY)
+            os.dup2(devnull, sys.stdout.fileno())
+        except Exception:
+            pass
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

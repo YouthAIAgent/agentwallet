@@ -8,10 +8,8 @@ from __future__ import annotations
 import json
 import random
 import copy
-import uuid
 from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Any, Optional
-from pathlib import Path
 
 from agent_genesis.memory import get_memory_fabric
 
@@ -333,7 +331,9 @@ class BreederAgent:
         """Get current champion genome for a role."""
         skill = self.memory.get_skill(f"champion_{role}")
         if skill and skill["steps"]:
-            return Genome.from_dict(skill["steps"][0].get("genome", {}))
+            steps = json.loads(skill["steps"])
+            if steps:
+                return Genome.from_dict(steps[0].get("genome", {}))
         return None
 
     def list_champions(self) -> Dict[str, Genome]:

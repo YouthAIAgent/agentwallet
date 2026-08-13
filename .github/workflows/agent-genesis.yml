@@ -1,0 +1,59 @@
+name: Agent Genesis
+
+# CI for the Agent Genesis subproject (agent_genesis/), a self-evolving
+# agent organization platform. Runs on every push/PR that touches it:
+#   - ruff F check (undefined names, unused imports — the real bugs)
+#   - full pytest suite (memory, designer, breeder, deployer, finetune,
+#     skill layer, plugins, CLI, telegram bot entry point)
+#   - console-script smoke checks: `genesis` and `genesis-bot` resolve
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "agent_genesis/**"
+      - ".github/workflows/agent-genesis.yml"
+  pull_request:
+    paths:
+      - "agent_genesis/**"
+
+jobs:
+  test:
+    name: Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    defaults:
+      run:
+        working-directory: agent_genesis
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package and test deps
+        run: |
+          pip install -e .
+          pip install pytest pytest-asyncio ruff
+
+      - name: Lint (undefined names / unused imports)
+        run: ruff check --select F .
+
+      - name: Run tests
+        run: python -m pytest -v
+
+      - name: Verify console scripts
+        run: |
+          # `genesis` with no args prints the help screen and exits 0
+          genesis | grep -q "Agent Genesis CLI"
+          # `genesis-bot` guards against a missing token
+          genesis-bot 2>&1 | grep -q "TELEGRAM_BOT_TOKEN"
+          # `genesis design` produces an organization spec
+          genesis design "monitor tenders and draft a proposal" | grep -q '"agents"'
