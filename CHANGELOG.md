@@ -5,6 +5,11 @@ All notable changes to AgentWallet Protocol will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-08-13
+
+### Fixed
+- **docker-compose setup works out of the box on a fresh clone** — `.env.example` now points `DATABASE_URL`/`REDIS_URL` at the compose `postgres`/`redis` services (was `localhost`, which the API container could not reach), and the API `Dockerfile` now runs `alembic upgrade head` before starting uvicorn so the schema is created automatically (previously only Railway's start command ran migrations, so `register` returned 500).
+
 ## [0.3.0] - 2026-02-14
 
 ### Added
