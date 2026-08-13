@@ -1332,3 +1332,15 @@ MIT — see [LICENSE](LICENSE).
   <strong>Built for the agentic economy.</strong><br>
   <sub>Every agent deserves a wallet. Every wallet deserves limits. Every transaction deserves a trail.</sub>
 </p>
+---
+
+## 📦 Projects in this repository
+
+This repository hosts **two separate projects** as top-level folders:
+
+| Folder | Project | What it is |
+|--------|---------|------------|
+| [`agentwallet/`](agentwallet/) | **AgentWallet Protocol** | Wallet-as-a-service for AI agents on Solana — wallets, escrow, USDC billing, x402 pay-per-use, swarms/ACP, AGX terminal agent |
+| [`agent_genesis/`](agent_genesis/) | **Agent Genesis MVP** | Self-evolving agent organization platform — designer, breeder (genetic algorithm), deployer, memory fabric, fine-tune loop (local/Mac mini) |
+
+Each project has its own README, tests, and tooling. See [`agentwallet/README.md`](agentwallet/README.md) and [`agent_genesis/README.md`](agent_genesis/README.md) for details.
