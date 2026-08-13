@@ -119,11 +119,12 @@ start_validator() {
     docker run -d --name "$VALIDATOR_CONTAINER" --network "$net" -p 8899:8899 \
       "$VALIDATOR_IMAGE" solana-test-validator >/dev/null 2>&1 || {
       fail "could not start $VALIDATOR_CONTAINER (first run pulls the image — may take a while)"
+      FAILED=1
       return 1
     }
   fi
   local ready=""
-  for i in $(seq 1 30); do
+  for i in $(seq 1 60); do
     if curl -sf --max-time 5 -X POST "$VALIDATOR_RPC" -H "Content-Type: application/json" \
       -d '{"jsonrpc":"2.0","id":1,"method":"getHealth"}' 2>/dev/null | grep -q '"ok"'; then
       ready=1
@@ -132,7 +133,9 @@ start_validator() {
     sleep 5
   done
   if [ -z "$ready" ]; then
-    fail "solana-test-validator did not become ready"
+    fail "solana-test-validator did not become ready (waited 300s)"
+    docker logs --tail 15 "$VALIDATOR_CONTAINER" 2>/dev/null | tail -8 || true
+    FAILED=1
     return 1
   fi
   # Point the API container at the validator. The override file uses compose
@@ -253,14 +256,24 @@ if [ -n "$HEALTH" ]; then
     if [ -n "$WALLET_ID" ] && [ -n "$RECIPIENT_ADDR" ]; then
       if [ "$VALIDATOR_MODE" = "1" ]; then
         info "Validator mode: starting local solana-test-validator..."
-        start_validator
-      fi
-      info "Requesting devnet airdrop for $WALLET_ADDR..."
-      if BAL="$(airdrop_devnet_sol "$WALLET_ADDR")"; then
-        FUNDED=1
-        pass "devnet airdrop received ($BAL lamports)"
+        if start_validator; then
+          info "Requesting airdrop from local validator for $WALLET_ADDR..."
+          if BAL="$(airdrop_devnet_sol "$WALLET_ADDR")"; then
+            FUNDED=1
+            pass "airdrop received ($BAL lamports)"
+          else
+            fail "local validator airdrop failed"
+            FAILED=1
+          fi
+        fi
       else
-        warn "devnet airdrop failed ($SOLANA_RPC) — on-chain checks skipped"
+        info "Requesting devnet airdrop for $WALLET_ADDR..."
+        if BAL="$(airdrop_devnet_sol "$WALLET_ADDR")"; then
+          FUNDED=1
+          pass "devnet airdrop received ($BAL lamports)"
+        else
+          warn "devnet airdrop failed ($SOLANA_RPC) — on-chain checks skipped"
+        fi
       fi
     fi
 
