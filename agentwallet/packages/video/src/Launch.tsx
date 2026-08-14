@@ -533,6 +533,78 @@ function Outro() {
   );
 }
 
+// ---------- captions (synced per scene) ----------
+const CAPS: { text: string; start: number; dur: number }[] = [
+  { text: "agentwallet — the payment rail for the agent economy", start: 20, dur: 90 },
+  { text: "wallets · escrow · x402 · USDC · swarms", start: 120, dur: 110 },
+  { text: "a public landing built to convert", start: 255, dur: 75 },
+  { text: "hero · features · pricing · devnet CTA", start: 340, dur: 80 },
+  { text: "launch dashboard → register in minutes", start: 430, dur: 90 },
+  { text: "register in seconds", start: 555, dur: 75 },
+  { text: "org → email → password → on-chain keys", start: 640, dur: 80 },
+  { text: "your API token, issued on devnet", start: 730, dur: 90 },
+  { text: "the dashboard — real data, live", start: 855, dur: 75 },
+  { text: "agents create wallets. agents pay.", start: 940, dur: 110 },
+  { text: "every spend visible, on-chain", start: 1060, dur: 120 },
+  { text: "per-agent autonomy", start: 1215, dur: 75 },
+  { text: "each agent gets its own wallet + policy", start: 1300, dur: 80 },
+  { text: "pause · delete · audit — full control", start: 1390, dur: 90 },
+  { text: "PDA custody", start: 1515, dur: 75 },
+  { text: "treasury · escrow · agent wallets on Solana", start: 1600, dur: 80 },
+  { text: "keys isolated, spend limited", start: 1690, dur: 90 },
+  { text: "every move on-chain", start: 1815, dur: 75 },
+  { text: "transactions · daily spend · audit trail", start: 1900, dur: 80 },
+  { text: "built for compliance from day one", start: 1990, dur: 90 },
+  { text: "USDC subscriptions", start: 2115, dur: 75 },
+  { text: "free $0 · pro $49 · enterprise $299", start: 2200, dur: 120 },
+  { text: "dark or light", start: 2355, dur: 75 },
+  { text: "one toggle, the whole app re-themes", start: 2440, dur: 120 },
+  { text: "everything agents need to move money", start: 2595, dur: 105 },
+  { text: "escrow · x402 · USDC · swarms — all Solana programs", start: 2710, dur: 150 },
+  { text: "the terminal. every flow.", start: 2895, dur: 75 },
+  { text: "escrow funded · paid · subscribed — exit 0", start: 2980, dur: 180 },
+  { text: "launch free on devnet", start: 3195, dur: 105 },
+  { text: "agentwallet-devnet-two.vercel.app", start: 3310, dur: 90 },
+  { text: "built for the agent economy · solana", start: 3410, dur: 170 },
+];
+
+function Caption({ text, start, dur }: { text: string; start: number; dur: number }) {
+  const frame = useCurrentFrame();
+  if (frame < start || frame > start + dur) return null;
+  const s = spring({ frame: frame - start, fps: 30, config: { damping: 200 } });
+  const out = interpolate(frame, [start + dur - 12, start + dur], [1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  return (
+    <div
+      style={{
+        ...MONO,
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 250,
+        textAlign: "center",
+        opacity: s * out,
+        transform: `translateY(${interpolate(s, [0, 1], [20, 0])}px)`,
+        zIndex: 10,
+      }}
+    >
+      <span
+        style={{
+          fontSize: 40,
+          fontWeight: 800,
+          color: "#ffffff",
+          textShadow:
+            "0 2px 0 #000000, 0 4px 0 rgba(0,0,0,0.9), 0 6px 20px rgba(0,0,0,0.85)",
+        }}
+      >
+        {text}
+      </span>
+    </div>
+  );
+}
+
 // ---------- main composition ----------
 export function Launch() {
   const frame = useCurrentFrame();
@@ -656,6 +728,9 @@ export function Launch() {
           <Outro />
         </Fade>
       </Sequence>
+      {CAPS.map((c) => (
+        <Caption key={c.start} text={c.text} start={c.start} dur={c.dur} />
+      ))}
     </AbsoluteFill>
   );
 }
