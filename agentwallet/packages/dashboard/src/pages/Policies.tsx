@@ -182,7 +182,7 @@ export default function Policies() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Policies</h1>
-          <p className="text-slate-400 mt-1 text-sm">
+          <p className="text-ink-400 mt-1 text-sm">
             Define spending limits, whitelists, and approval rules for agents
           </p>
         </div>
@@ -198,7 +198,7 @@ export default function Policies() {
           <Loader2 className="w-6 h-6 text-brand-500 animate-spin" />
         </div>
       ) : policyList.length === 0 ? (
-        <div className="card flex flex-col items-center justify-center py-16 text-slate-500">
+        <div className="card flex flex-col items-center justify-center py-16 text-ink-500">
           <ShieldCheck className="w-10 h-10 mb-3" />
           <p className="text-sm font-medium">No policies yet</p>
           <p className="text-xs mt-1">
@@ -212,7 +212,7 @@ export default function Policies() {
               {/* Policy Header */}
               <button
                 onClick={() => toggleExpand(policy.id)}
-                className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-800/30 transition-colors text-left"
+                className="w-full flex items-center justify-between px-6 py-4 hover:bg-ink-800/30 transition-colors text-left"
               >
                 <div className="flex items-center gap-4 min-w-0">
                   <div className="w-10 h-10 bg-brand-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -223,12 +223,12 @@ export default function Policies() {
                       <h3 className="font-semibold text-white text-sm">
                         {policy.name}
                       </h3>
-                      <code className="text-[10px] font-mono text-slate-600 bg-slate-800 px-1.5 py-0.5 rounded">
+                      <code className="text-[10px] font-mono text-ink-600 bg-ink-800 px-1.5 py-0.5 rounded">
                         {policy.id}
                       </code>
                     </div>
                     {policy.description && (
-                      <p className="text-xs text-slate-500 mt-0.5 truncate">
+                      <p className="text-xs text-ink-500 mt-0.5 truncate">
                         {policy.description}
                       </p>
                     )}
@@ -246,25 +246,25 @@ export default function Policies() {
                     })}
                   </div>
                   {expandedId === policy.id ? (
-                    <ChevronDown className="w-4 h-4 text-slate-500" />
+                    <ChevronDown className="w-4 h-4 text-ink-500" />
                   ) : (
-                    <ChevronRight className="w-4 h-4 text-slate-500" />
+                    <ChevronRight className="w-4 h-4 text-ink-500" />
                   )}
                 </div>
               </button>
 
               {/* Expanded Rules */}
               {expandedId === policy.id && (
-                <div className="border-t border-slate-800 px-6 py-4">
+                <div className="border-t border-ink-800 px-6 py-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    <h4 className="text-xs font-semibold text-ink-400 uppercase tracking-wider">
                       Rules ({policy.rules.length})
                     </h4>
                     <div className="flex gap-1">
-                      <button className="p-1.5 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-colors">
+                      <button className="p-1.5 rounded text-ink-500 hover:text-ink-300 hover:bg-ink-800 transition-colors">
                         <Edit3 className="w-3.5 h-3.5" />
                       </button>
-                      <button className="p-1.5 rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                      <button className="p-1.5 rounded text-ink-500 hover:text-red-400 hover:bg-red-500/10 transition-colors">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -273,7 +273,7 @@ export default function Policies() {
                     {policy.rules.map((rule, idx) => (
                       <div
                         key={idx}
-                        className="bg-slate-800/50 rounded-lg p-4 border border-slate-800"
+                        className="bg-ink-800/50 rounded-lg p-4 border border-ink-800"
                       >
                         <div className="flex items-center gap-2 mb-2">
                           <span
@@ -284,13 +284,13 @@ export default function Policies() {
                             {ruleTypeLabels[rule.type]?.label || rule.type}
                           </span>
                         </div>
-                        <pre className="text-xs font-mono text-slate-400 overflow-x-auto">
+                        <pre className="text-xs font-mono text-ink-400 overflow-x-auto">
                           {JSON.stringify(rule.params, null, 2)}
                         </pre>
                       </div>
                     ))}
                   </div>
-                  <div className="mt-3 pt-3 border-t border-slate-800 flex justify-between text-xs text-slate-600">
+                  <div className="mt-3 pt-3 border-t border-ink-800 flex justify-between text-xs text-ink-600">
                     <span>
                       Created{" "}
                       {new Date(policy.created_at).toLocaleDateString()}
@@ -310,14 +310,14 @@ export default function Policies() {
       {/* Create Modal */}
       {showCreate && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
+          <div className="bg-ink-900 border border-ink-800 rounded-xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-ink-800 sticky top-0 bg-ink-900 z-10">
               <h2 className="text-lg font-semibold text-white">
                 Create New Policy
               </h2>
               <button
                 onClick={closeModal}
-                className="p-1 text-slate-500 hover:text-slate-300"
+                className="p-1 text-ink-500 hover:text-ink-300"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -371,7 +371,7 @@ export default function Policies() {
                 {jsonError && (
                   <p className="text-xs text-red-400 mt-1.5">{jsonError}</p>
                 )}
-                <div className="mt-2 text-[10px] text-slate-600 space-y-0.5">
+                <div className="mt-2 text-[10px] text-ink-600 space-y-0.5">
                   <p>
                     Supported rule types: spending_limit, whitelist,
                     time_window, approval_required, chain_restriction

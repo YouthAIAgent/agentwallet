@@ -35,9 +35,9 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-60 bg-slate-900 border-r border-slate-800 flex flex-col z-40">
+    <aside className="fixed left-0 top-0 bottom-0 w-60 bg-ink-900 border-r border-ink-800 flex flex-col z-40">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-800">
+      <div className="flex items-center gap-3 px-5 py-5 border-b border-ink-800">
         <div className="w-9 h-9 bg-brand-600 rounded-lg flex items-center justify-center">
           <Hexagon className="w-5 h-5 text-white" />
         </div>
@@ -45,7 +45,7 @@ export default function Sidebar() {
           <h1 className="text-sm font-bold text-white tracking-tight">
             AgentWallet
           </h1>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest font-medium">
+          <p className="text-[10px] text-ink-500 uppercase tracking-widest font-medium">
             Protocol
           </p>
         </div>
@@ -62,7 +62,7 @@ export default function Sidebar() {
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-brand-600/10 text-brand-400 border border-brand-500/20"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent"
+                  : "text-ink-400 hover:text-ink-200 hover:bg-ink-800/60 border border-transparent"
               }`
             }
           >
@@ -73,10 +73,10 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-3 py-4 border-t border-slate-800">
+      <div className="px-3 py-4 border-t border-ink-800">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-slate-500 hover:text-red-400 hover:bg-red-500/5 transition-colors"
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-ink-500 hover:text-red-400 hover:bg-red-500/5 transition-colors"
         >
           <LogOut className="w-[18px] h-[18px]" />
           Sign Out

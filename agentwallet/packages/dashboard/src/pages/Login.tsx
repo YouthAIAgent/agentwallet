@@ -38,7 +38,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-ink-950 px-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
@@ -46,7 +46,7 @@ export default function Login() {
             <Hexagon className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white">AgentWallet Protocol</h1>
-          <p className="text-slate-400 mt-1 text-sm">
+          <p className="text-ink-400 mt-1 text-sm">
             {isRegister
               ? "Create your account to get started"
               : "Sign in to your dashboard"}
@@ -120,7 +120,7 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-slate-800 text-center">
+          <div className="mt-6 pt-5 border-t border-ink-800 text-center">
             <button
               onClick={() => {
                 setIsRegister(!isRegister);

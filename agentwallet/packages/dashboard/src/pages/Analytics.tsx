@@ -130,7 +130,7 @@ export default function Analytics() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Analytics</h1>
-          <p className="text-slate-400 mt-1 text-sm">
+          <p className="text-ink-400 mt-1 text-sm">
             Spend analysis and agent performance metrics
           </p>
         </div>
@@ -142,7 +142,7 @@ export default function Analytics() {
               className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                 period === d
                   ? "bg-brand-600 text-white"
-                  : "bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700"
+                  : "bg-ink-800 text-ink-400 hover:text-ink-200 hover:bg-ink-700"
               }`}
             >
               {d}D
@@ -175,7 +175,7 @@ export default function Analytics() {
               </div>
             </div>
             <p className="text-2xl font-bold text-white">{card.value}</p>
-            <p className="text-xs text-slate-500 mt-1">{card.label}</p>
+            <p className="text-xs text-ink-500 mt-1">{card.label}</p>
           </div>
         ))}
       </div>
@@ -187,7 +187,7 @@ export default function Analytics() {
           <h2 className="text-base font-semibold text-white mb-1">
             Daily Spend Trend
           </h2>
-          <p className="text-xs text-slate-500 mb-6">
+          <p className="text-xs text-ink-500 mb-6">
             USD value of all transactions per day
           </p>
           <div className="h-80">
@@ -272,7 +272,7 @@ export default function Analytics() {
           <h2 className="text-base font-semibold text-white mb-1">
             Agent Spend Breakdown
           </h2>
-          <p className="text-xs text-slate-500 mb-6">
+          <p className="text-xs text-ink-500 mb-6">
             Total spend per agent over the selected period
           </p>
           <div className="h-80">
@@ -326,14 +326,14 @@ export default function Analytics() {
 
       {/* Agent Details Table */}
       <div className="card p-0 overflow-hidden mt-6">
-        <div className="px-6 py-4 border-b border-slate-800">
+        <div className="px-6 py-4 border-b border-ink-800">
           <h2 className="text-base font-semibold text-white">
             Agent Performance Details
           </h2>
         </div>
         <table className="w-full">
           <thead>
-            <tr className="border-b border-slate-800">
+            <tr className="border-b border-ink-800">
               <th className="table-header">Agent</th>
               <th className="table-header text-right">Total Spend</th>
               <th className="table-header text-right">Transactions</th>
@@ -341,27 +341,27 @@ export default function Analytics() {
               <th className="table-header text-right">Share</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60">
+          <tbody className="divide-y divide-ink-800/60">
             {agentBreakdown.map((agent) => (
               <tr
                 key={agent.agent_id}
-                className="hover:bg-slate-800/30 transition-colors"
+                className="hover:bg-ink-800/30 transition-colors"
               >
-                <td className="table-cell font-medium text-slate-100">
+                <td className="table-cell font-medium text-ink-100">
                   {agent.agent_name}
                 </td>
-                <td className="table-cell text-right font-mono text-slate-200">
+                <td className="table-cell text-right font-mono text-ink-200">
                   {formatUSD(agent.total_usd)}
                 </td>
-                <td className="table-cell text-right text-slate-400">
+                <td className="table-cell text-right text-ink-400">
                   {agent.tx_count.toLocaleString()}
                 </td>
-                <td className="table-cell text-right text-slate-400">
+                <td className="table-cell text-right text-ink-400">
                   ${(agent.total_usd / agent.tx_count).toFixed(2)}
                 </td>
                 <td className="table-cell text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <div className="w-16 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div className="w-16 h-1.5 bg-ink-800 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-brand-500 rounded-full"
                         style={{
@@ -369,7 +369,7 @@ export default function Analytics() {
                         }}
                       />
                     </div>
-                    <span className="text-xs text-slate-500 w-10 text-right">
+                    <span className="text-xs text-ink-500 w-10 text-right">
                       {((agent.total_usd / s.total_spend_usd) * 100).toFixed(1)}%
                     </span>
                   </div>

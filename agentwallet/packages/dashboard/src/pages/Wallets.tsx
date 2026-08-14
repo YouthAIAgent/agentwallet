@@ -154,7 +154,7 @@ export default function Wallets() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Wallets</h1>
-          <p className="text-slate-400 mt-1 text-sm">
+          <p className="text-ink-400 mt-1 text-sm">
             Manage custodial wallets across chains
           </p>
         </div>
@@ -167,17 +167,17 @@ export default function Wallets() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
         <div className="card">
-          <p className="text-sm text-slate-400">Total Wallets</p>
+          <p className="text-sm text-ink-400">Total Wallets</p>
           <p className="text-2xl font-bold text-white mt-1">{walletList.length}</p>
         </div>
         <div className="card">
-          <p className="text-sm text-slate-400">ETH Balance</p>
+          <p className="text-sm text-ink-400">ETH Balance</p>
           <p className="text-2xl font-bold text-white mt-1">
             {totalBalance.toFixed(4)} ETH
           </p>
         </div>
         <div className="card">
-          <p className="text-sm text-slate-400">Stablecoin Balance</p>
+          <p className="text-sm text-ink-400">Stablecoin Balance</p>
           <p className="text-2xl font-bold text-white mt-1">
             ${stablecoinBalance.toLocaleString()}
           </p>
@@ -191,7 +191,7 @@ export default function Wallets() {
             <Loader2 className="w-6 h-6 text-brand-500 animate-spin" />
           </div>
         ) : walletList.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+          <div className="flex flex-col items-center justify-center py-16 text-ink-500">
             <WalletIcon className="w-10 h-10 mb-3" />
             <p className="text-sm font-medium">No wallets yet</p>
             <p className="text-xs mt-1">Create your first wallet to get started</p>
@@ -199,7 +199,7 @@ export default function Wallets() {
         ) : (
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-800">
+              <tr className="border-b border-ink-800">
                 <th className="table-header">Label</th>
                 <th className="table-header">Chain</th>
                 <th className="table-header">Address</th>
@@ -209,26 +209,26 @@ export default function Wallets() {
                 <th className="table-header">Created</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-ink-800/60">
               {walletList.map((wallet) => (
                 <tr
                   key={wallet.id}
-                  className="hover:bg-slate-800/30 transition-colors"
+                  className="hover:bg-ink-800/30 transition-colors"
                 >
                   <td className="table-cell">
-                    <span className="font-medium text-slate-100">
+                    <span className="font-medium text-ink-100">
                       {wallet.label || wallet.id}
                     </span>
                   </td>
                   <td className="table-cell">{chainBadge(wallet.chain)}</td>
                   <td className="table-cell">
                     <div className="flex items-center gap-2">
-                      <code className="text-xs font-mono text-slate-400">
+                      <code className="text-xs font-mono text-ink-400">
                         {truncateAddress(wallet.address)}
                       </code>
                       <button
                         onClick={() => copyAddress(wallet.address)}
-                        className="p-1 text-slate-600 hover:text-slate-400 transition-colors"
+                        className="p-1 text-ink-600 hover:text-ink-400 transition-colors"
                       >
                         {copiedAddr === wallet.address ? (
                           <span className="text-emerald-400 text-[10px] font-medium">
@@ -240,7 +240,7 @@ export default function Wallets() {
                       </button>
                       <a
                         href="#"
-                        className="p-1 text-slate-600 hover:text-slate-400 transition-colors"
+                        className="p-1 text-ink-600 hover:text-ink-400 transition-colors"
                         title="View on explorer"
                       >
                         <ExternalLink className="w-3 h-3" />
@@ -248,7 +248,7 @@ export default function Wallets() {
                     </div>
                   </td>
                   <td className="table-cell">
-                    <span className="font-mono text-sm text-slate-200">
+                    <span className="font-mono text-sm text-ink-200">
                       {parseFloat(wallet.balance).toLocaleString()}
                     </span>
                   </td>
@@ -259,10 +259,10 @@ export default function Wallets() {
                         {wallet.agent_id}
                       </span>
                     ) : (
-                      <span className="text-xs text-slate-600">Unassigned</span>
+                      <span className="text-xs text-ink-600">Unassigned</span>
                     )}
                   </td>
-                  <td className="table-cell text-xs text-slate-500">
+                  <td className="table-cell text-xs text-ink-500">
                     {new Date(wallet.created_at).toLocaleDateString()}
                   </td>
                 </tr>
@@ -275,14 +275,14 @@ export default function Wallets() {
       {/* Create Modal */}
       {showCreate && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-lg shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+          <div className="bg-ink-900 border border-ink-800 rounded-xl w-full max-w-lg shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-ink-800">
               <h2 className="text-lg font-semibold text-white">
                 Create New Wallet
               </h2>
               <button
                 onClick={closeModal}
-                className="p-1 text-slate-500 hover:text-slate-300"
+                className="p-1 text-ink-500 hover:text-ink-300"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -319,7 +319,7 @@ export default function Wallets() {
                   <option value="treasury">Treasury (Solana)</option>
                   <option value="escrow">Escrow (Solana)</option>
                 </select>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-ink-500 mt-1">
                   All wallets are on Solana (devnet).
                 </p>
               </div>

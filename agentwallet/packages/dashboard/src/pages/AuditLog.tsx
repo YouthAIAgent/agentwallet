@@ -164,7 +164,7 @@ const actionColor = (action: string) => {
     return "text-red-400";
   if (action.includes("update") || action.includes("pause") || action.includes("rotate"))
     return "text-amber-400";
-  return "text-slate-300";
+  return "text-ink-300";
 };
 
 export default function AuditLog() {
@@ -221,7 +221,7 @@ export default function AuditLog() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white">Audit Log</h1>
-        <p className="text-slate-400 mt-1 text-sm">
+        <p className="text-ink-400 mt-1 text-sm">
           Complete history of all actions and system events
         </p>
       </div>
@@ -231,7 +231,7 @@ export default function AuditLog() {
         <div className="flex flex-wrap items-center gap-4">
           {/* Search */}
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Search className="absolute left-3 top-1/2 -tranink-y-1/2 w-4 h-4 text-ink-500" />
             <input
               type="text"
               value={searchTerm}
@@ -246,8 +246,8 @@ export default function AuditLog() {
 
           {/* Actor Type Filter */}
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-slate-500" />
-            <span className="text-xs text-slate-500">Actor:</span>
+            <Filter className="w-4 h-4 text-ink-500" />
+            <span className="text-xs text-ink-500">Actor:</span>
             <div className="flex gap-1">
               {["all", "user", "agent", "system"].map((t) => (
                 <button
@@ -259,7 +259,7 @@ export default function AuditLog() {
                   className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
                     actorFilter === t
                       ? "bg-brand-600 text-white"
-                      : "bg-slate-800 text-slate-400 hover:text-slate-200"
+                      : "bg-ink-800 text-ink-400 hover:text-ink-200"
                   }`}
                 >
                   {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -270,7 +270,7 @@ export default function AuditLog() {
 
           {/* Resource Type Filter */}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500">Resource:</span>
+            <span className="text-xs text-ink-500">Resource:</span>
             <div className="flex gap-1">
               {["all", "agent", "wallet", "transaction", "policy", "user"].map(
                 (t) => (
@@ -283,7 +283,7 @@ export default function AuditLog() {
                     className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
                       resourceFilter === t
                         ? "bg-brand-600 text-white"
-                        : "bg-slate-800 text-slate-400 hover:text-slate-200"
+                        : "bg-ink-800 text-ink-400 hover:text-ink-200"
                     }`}
                   >
                     {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -302,7 +302,7 @@ export default function AuditLog() {
             <Loader2 className="w-6 h-6 text-brand-500 animate-spin" />
           </div>
         ) : pagedEvents.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+          <div className="flex flex-col items-center justify-center py-16 text-ink-500">
             <ScrollText className="w-10 h-10 mb-3" />
             <p className="text-sm font-medium">No events found</p>
             <p className="text-xs mt-1">
@@ -313,7 +313,7 @@ export default function AuditLog() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-800">
+                <tr className="border-b border-ink-800">
                   <th className="table-header">Time</th>
                   <th className="table-header">Actor</th>
                   <th className="table-header">Action</th>
@@ -322,13 +322,13 @@ export default function AuditLog() {
                   <th className="table-header">IP Address</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-ink-800/60">
                 {pagedEvents.map((evt) => (
                   <tr
                     key={evt.id}
-                    className="hover:bg-slate-800/30 transition-colors"
+                    className="hover:bg-ink-800/30 transition-colors"
                   >
-                    <td className="table-cell text-xs text-slate-500 whitespace-nowrap">
+                    <td className="table-cell text-xs text-ink-500 whitespace-nowrap">
                       {new Date(evt.created_at).toLocaleString("en-US", {
                         month: "short",
                         day: "numeric",
@@ -340,7 +340,7 @@ export default function AuditLog() {
                     <td className="table-cell">
                       <div className="flex items-center gap-2">
                         {actorBadge(evt.actor_type)}
-                        <code className="text-[10px] font-mono text-slate-500">
+                        <code className="text-[10px] font-mono text-ink-500">
                           {evt.actor_id}
                         </code>
                       </div>
@@ -356,21 +356,21 @@ export default function AuditLog() {
                     </td>
                     <td className="table-cell">
                       <div className="text-xs">
-                        <span className="text-slate-500">
+                        <span className="text-ink-500">
                           {evt.resource_type}/
                         </span>
-                        <code className="font-mono text-slate-300">
+                        <code className="font-mono text-ink-300">
                           {evt.resource_id}
                         </code>
                       </div>
                     </td>
                     <td className="table-cell max-w-[200px]">
-                      <code className="text-[10px] font-mono text-slate-500 truncate block">
+                      <code className="text-[10px] font-mono text-ink-500 truncate block">
                         {JSON.stringify(evt.details)}
                       </code>
                     </td>
                     <td className="table-cell">
-                      <code className="text-xs font-mono text-slate-600">
+                      <code className="text-xs font-mono text-ink-600">
                         {evt.ip_address}
                       </code>
                     </td>
@@ -383,8 +383,8 @@ export default function AuditLog() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-800">
-            <p className="text-xs text-slate-500">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-ink-800">
+            <p className="text-xs text-ink-500">
               Showing {page * pageSize + 1}-
               {Math.min((page + 1) * pageSize, filteredEvents.length)} of{" "}
               {filteredEvents.length} events
@@ -393,17 +393,17 @@ export default function AuditLog() {
               <button
                 onClick={() => setPage(Math.max(0, page - 1))}
                 disabled={page === 0}
-                className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded text-ink-400 hover:text-white hover:bg-ink-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-ink-500">
                 Page {page + 1} of {totalPages}
               </span>
               <button
                 onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
                 disabled={page >= totalPages - 1}
-                className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded text-ink-400 hover:text-white hover:bg-ink-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

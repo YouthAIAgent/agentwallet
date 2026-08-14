@@ -213,7 +213,7 @@ export default function Dashboard() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-slate-400 mt-1 text-sm">
+        <p className="text-ink-400 mt-1 text-sm">
           Overview of your AgentWallet Protocol activity
         </p>
       </div>
@@ -224,7 +224,7 @@ export default function Dashboard() {
           <div key={card.label} className="card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-400 font-medium">
+                <p className="text-sm text-ink-400 font-medium">
                   {card.label}
                 </p>
                 <p className="text-2xl font-bold text-white mt-1">
@@ -250,7 +250,7 @@ export default function Dashboard() {
               <h2 className="text-base font-semibold text-white">
                 Daily Spend
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">Last 14 days</p>
+              <p className="text-xs text-ink-500 mt-0.5">Last 14 days</p>
             </div>
             <div className="flex items-center gap-1.5 text-emerald-400 text-sm font-medium">
               <TrendingUp className="w-4 h-4" />
@@ -342,16 +342,16 @@ export default function Dashboard() {
             {d.recent_transactions.slice(0, 5).map((tx) => (
               <div
                 key={tx.id}
-                className="flex items-center justify-between py-2.5 border-b border-slate-800/60 last:border-0"
+                className="flex items-center justify-between py-2.5 border-b border-ink-800/60 last:border-0"
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-slate-200 truncate">
+                    <span className="text-sm font-medium text-ink-200 truncate">
                       {tx.amount} {tx.token}
                     </span>
                     {statusBadge(tx.status)}
                   </div>
-                  <p className="text-xs text-slate-500 mt-0.5 truncate">
+                  <p className="text-xs text-ink-500 mt-0.5 truncate">
                     {tx.type} on {tx.chain} &middot; {formatTime(tx.created_at)}
                   </p>
                 </div>

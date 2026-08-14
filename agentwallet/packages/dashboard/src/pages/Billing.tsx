@@ -112,9 +112,9 @@ const tierIcons: Record<string, typeof Zap> = {
 
 const tierColors: Record<string, { bg: string; border: string; text: string }> = {
   free: {
-    bg: "bg-slate-800",
-    border: "border-slate-700",
-    text: "text-slate-300",
+    bg: "bg-ink-800",
+    border: "border-ink-700",
+    text: "text-ink-300",
   },
   starter: {
     bg: "bg-brand-600/10",
@@ -159,18 +159,18 @@ function UsageMeter({
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm text-slate-300 font-medium">{label}</span>
+        <span className="text-sm text-ink-300 font-medium">{label}</span>
         <span className={`text-sm font-mono font-medium ${textColor}`}>
           {used.toLocaleString()} / {limit.toLocaleString()}
         </span>
       </div>
-      <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-ink-800 rounded-full overflow-hidden">
         <div
           className={`h-full ${color} rounded-full transition-all duration-500`}
           style={{ width: `${Math.min(pct, 100)}%` }}
         />
       </div>
-      <p className="text-[10px] text-slate-600 mt-1 text-right">
+      <p className="text-[10px] text-ink-600 mt-1 text-right">
         {pct.toFixed(1)}% used
       </p>
     </div>
@@ -225,7 +225,7 @@ export default function Billing() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white">Billing & Usage</h1>
-        <p className="text-slate-400 mt-1 text-sm">
+        <p className="text-ink-400 mt-1 text-sm">
           Manage your subscription and monitor resource usage
         </p>
       </div>
@@ -236,7 +236,7 @@ export default function Billing() {
           <div className="flex items-center gap-4">
             <div
               className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
-                tierColors[info.tier]?.bg || "bg-slate-800"
+                tierColors[info.tier]?.bg || "bg-ink-800"
               }`}
             >
               {(() => {
@@ -244,7 +244,7 @@ export default function Billing() {
                 return (
                   <Icon
                     className={`w-7 h-7 ${
-                      tierColors[info.tier]?.text || "text-slate-400"
+                      tierColors[info.tier]?.text || "text-ink-400"
                     }`}
                   />
                 );
@@ -257,15 +257,15 @@ export default function Billing() {
                 </h2>
                 <span
                   className={`badge ${
-                    tierColors[info.tier]?.border || "border-slate-700"
-                  } ${tierColors[info.tier]?.text || "text-slate-400"} ${
-                    tierColors[info.tier]?.bg || "bg-slate-800"
+                    tierColors[info.tier]?.border || "border-ink-700"
+                  } ${tierColors[info.tier]?.text || "text-ink-400"} ${
+                    tierColors[info.tier]?.bg || "bg-ink-800"
                   }`}
                 >
                   Current
                 </span>
               </div>
-              <p className="text-sm text-slate-500 mt-0.5">
+              <p className="text-sm text-ink-500 mt-0.5">
                 {info.amount_due > 0 ? (
                   <>
                     ${info.amount_due}/month &middot; Renews{" "}
@@ -337,8 +337,8 @@ export default function Billing() {
           return (
             <div
               key={tier.name}
-              className={`bg-slate-900 rounded-xl border ${
-                isCurrent ? colors.border : "border-slate-800"
+              className={`bg-ink-900 rounded-xl border ${
+                isCurrent ? colors.border : "border-ink-800"
               } p-6 flex flex-col ${
                 isCurrent ? "ring-1 ring-brand-500/20" : ""
               }`}
@@ -364,7 +364,7 @@ export default function Billing() {
                     <span className="text-2xl font-bold text-white">
                       ${tier.price_monthly}
                     </span>
-                    <span className="text-sm text-slate-500">/month</span>
+                    <span className="text-sm text-ink-500">/month</span>
                   </div>
                 )}
               </div>
@@ -375,7 +375,7 @@ export default function Billing() {
                     <Check
                       className={`w-4 h-4 flex-shrink-0 mt-0.5 ${colors.text}`}
                     />
-                    <span className="text-slate-400">{feature}</span>
+                    <span className="text-ink-400">{feature}</span>
                   </li>
                 ))}
               </ul>

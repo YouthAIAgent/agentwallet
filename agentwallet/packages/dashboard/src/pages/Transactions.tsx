@@ -213,7 +213,7 @@ export default function Transactions() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Transactions</h1>
-          <p className="text-slate-400 mt-1 text-sm">
+          <p className="text-ink-400 mt-1 text-sm">
             View and filter all transaction activity
           </p>
         </div>
@@ -222,26 +222,26 @@ export default function Transactions() {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div className="card py-4">
-          <p className="text-xs text-slate-500 uppercase font-medium">Confirmed</p>
+          <p className="text-xs text-ink-500 uppercase font-medium">Confirmed</p>
           <p className="text-xl font-bold text-emerald-400 mt-1">
             {statusCounts["confirmed"] || 0}
           </p>
         </div>
         <div className="card py-4">
-          <p className="text-xs text-slate-500 uppercase font-medium">Pending</p>
+          <p className="text-xs text-ink-500 uppercase font-medium">Pending</p>
           <p className="text-xl font-bold text-amber-400 mt-1">
             {statusCounts["pending"] || 0}
           </p>
         </div>
         <div className="card py-4">
-          <p className="text-xs text-slate-500 uppercase font-medium">Failed</p>
+          <p className="text-xs text-ink-500 uppercase font-medium">Failed</p>
           <p className="text-xl font-bold text-red-400 mt-1">
             {statusCounts["failed"] || 0}
           </p>
         </div>
         <div className="card py-4">
-          <p className="text-xs text-slate-500 uppercase font-medium">Cancelled</p>
-          <p className="text-xl font-bold text-slate-400 mt-1">
+          <p className="text-xs text-ink-500 uppercase font-medium">Cancelled</p>
+          <p className="text-xl font-bold text-ink-400 mt-1">
             {statusCounts["cancelled"] || 0}
           </p>
         </div>
@@ -249,7 +249,7 @@ export default function Transactions() {
 
       {/* Filters */}
       <div className="flex items-center gap-3 mb-4">
-        <Filter className="w-4 h-4 text-slate-500" />
+        <Filter className="w-4 h-4 text-ink-500" />
         <div className="flex gap-2">
           {["all", "confirmed", "pending", "failed", "cancelled"].map((s) => (
             <button
@@ -261,7 +261,7 @@ export default function Transactions() {
               className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                 statusFilter === s
                   ? "bg-brand-600 text-white"
-                  : "bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700"
+                  : "bg-ink-800 text-ink-400 hover:text-ink-200 hover:bg-ink-700"
               }`}
             >
               {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -277,7 +277,7 @@ export default function Transactions() {
             <Loader2 className="w-6 h-6 text-brand-500 animate-spin" />
           </div>
         ) : pagedTx.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+          <div className="flex flex-col items-center justify-center py-16 text-ink-500">
             <ArrowLeftRight className="w-10 h-10 mb-3" />
             <p className="text-sm font-medium">No transactions found</p>
           </div>
@@ -285,7 +285,7 @@ export default function Transactions() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-800">
+                <tr className="border-b border-ink-800">
                   <th className="table-header">Type</th>
                   <th className="table-header">Status</th>
                   <th className="table-header">Amount</th>
@@ -296,34 +296,34 @@ export default function Transactions() {
                   <th className="table-header">Time</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-ink-800/60">
                 {pagedTx.map((tx) => (
                   <tr
                     key={tx.id}
-                    className="hover:bg-slate-800/30 transition-colors"
+                    className="hover:bg-ink-800/30 transition-colors"
                   >
                     <td className="table-cell">{typeBadge(tx.type)}</td>
                     <td className="table-cell">{statusBadge(tx.status)}</td>
                     <td className="table-cell">
-                      <span className="font-mono font-medium text-slate-100">
+                      <span className="font-mono font-medium text-ink-100">
                         {parseFloat(tx.amount).toLocaleString()}
                       </span>
-                      <span className="text-xs text-slate-500 ml-1.5">
+                      <span className="text-xs text-ink-500 ml-1.5">
                         {tx.token}
                       </span>
                     </td>
                     <td className="table-cell">
-                      <span className="text-xs text-slate-400 capitalize">
+                      <span className="text-xs text-ink-400 capitalize">
                         {tx.chain}
                       </span>
                     </td>
                     <td className="table-cell">
                       <div className="text-xs font-mono">
-                        <span className="text-slate-500">
+                        <span className="text-ink-500">
                           {tx.from_address.slice(0, 8)}...
                         </span>
-                        <span className="text-slate-600 mx-1">&rarr;</span>
-                        <span className="text-slate-500">
+                        <span className="text-ink-600 mx-1">&rarr;</span>
+                        <span className="text-ink-500">
                           {tx.to_address.slice(0, 8)}...
                         </span>
                       </div>
@@ -334,16 +334,16 @@ export default function Transactions() {
                           {truncateHash(tx.tx_hash)}
                         </code>
                       ) : (
-                        <span className="text-xs text-slate-600">-</span>
+                        <span className="text-xs text-ink-600">-</span>
                       )}
                     </td>
                     <td className="table-cell">
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-ink-400">
                         {tx.signatures.length} sig
                         {tx.signatures.length !== 1 ? "s" : ""}
                       </span>
                     </td>
-                    <td className="table-cell text-xs text-slate-500">
+                    <td className="table-cell text-xs text-ink-500">
                       {new Date(tx.created_at).toLocaleString("en-US", {
                         month: "short",
                         day: "numeric",
@@ -360,8 +360,8 @@ export default function Transactions() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-800">
-            <p className="text-xs text-slate-500">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-ink-800">
+            <p className="text-xs text-ink-500">
               Showing {page * pageSize + 1}-
               {Math.min((page + 1) * pageSize, filteredTx.length)} of{" "}
               {filteredTx.length}
@@ -370,14 +370,14 @@ export default function Transactions() {
               <button
                 onClick={() => setPage(Math.max(0, page - 1))}
                 disabled={page === 0}
-                className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded text-ink-400 hover:text-white hover:bg-ink-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
                 disabled={page >= totalPages - 1}
-                className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded text-ink-400 hover:text-white hover:bg-ink-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

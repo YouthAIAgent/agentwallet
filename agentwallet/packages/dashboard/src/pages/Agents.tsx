@@ -170,7 +170,7 @@ export default function Agents() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Agents</h1>
-          <p className="text-slate-400 mt-1 text-sm">
+          <p className="text-ink-400 mt-1 text-sm">
             Manage your autonomous agents and their API keys
           </p>
         </div>
@@ -187,7 +187,7 @@ export default function Agents() {
             <Loader2 className="w-6 h-6 text-brand-500 animate-spin" />
           </div>
         ) : agentList.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+          <div className="flex flex-col items-center justify-center py-16 text-ink-500">
             <Bot className="w-10 h-10 mb-3" />
             <p className="text-sm font-medium">No agents yet</p>
             <p className="text-xs mt-1">Create your first agent to get started</p>
@@ -195,7 +195,7 @@ export default function Agents() {
         ) : (
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-800">
+              <tr className="border-b border-ink-800">
                 <th className="table-header">Name</th>
                 <th className="table-header">Status</th>
                 <th className="table-header">API Key</th>
@@ -204,19 +204,19 @@ export default function Agents() {
                 <th className="table-header text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-ink-800/60">
               {agentList.map((agent) => (
                 <tr
                   key={agent.id}
-                  className="hover:bg-slate-800/30 transition-colors"
+                  className="hover:bg-ink-800/30 transition-colors"
                 >
                   <td className="table-cell">
                     <div>
-                      <p className="font-medium text-slate-100">
+                      <p className="font-medium text-ink-100">
                         {agent.name}
                       </p>
                       {agent.description && (
-                        <p className="text-xs text-slate-500 mt-0.5 max-w-xs truncate">
+                        <p className="text-xs text-ink-500 mt-0.5 max-w-xs truncate">
                           {agent.description}
                         </p>
                       )}
@@ -224,7 +224,7 @@ export default function Agents() {
                   </td>
                   <td className="table-cell">{statusBadge(agent.status)}</td>
                   <td className="table-cell">
-                    <code className="text-xs font-mono text-slate-400 bg-slate-800 px-2 py-1 rounded">
+                    <code className="text-xs font-mono text-ink-400 bg-ink-800 px-2 py-1 rounded">
                       {agent.api_key_prefix}...
                     </code>
                   </td>
@@ -234,10 +234,10 @@ export default function Agents() {
                         {agent.policy_id}
                       </span>
                     ) : (
-                      <span className="text-xs text-slate-600">None</span>
+                      <span className="text-xs text-ink-600">None</span>
                     )}
                   </td>
-                  <td className="table-cell text-slate-500 text-xs">
+                  <td className="table-cell text-ink-500 text-xs">
                     {new Date(agent.created_at).toLocaleDateString()}
                   </td>
                   <td className="table-cell text-right">
@@ -245,7 +245,7 @@ export default function Agents() {
                       {agent.status !== "revoked" && (
                         <button
                           onClick={() => handleStatusToggle(agent)}
-                          className="p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-colors"
+                          className="p-1.5 rounded-md text-ink-500 hover:text-ink-300 hover:bg-ink-800 transition-colors"
                           title={
                             agent.status === "active" ? "Pause" : "Resume"
                           }
@@ -258,7 +258,7 @@ export default function Agents() {
                         </button>
                       )}
                       <button
-                        className="p-1.5 rounded-md text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        className="p-1.5 rounded-md text-ink-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                         title="Delete"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -275,14 +275,14 @@ export default function Agents() {
       {/* Create Modal */}
       {showCreate && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-lg shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+          <div className="bg-ink-900 border border-ink-800 rounded-xl w-full max-w-lg shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-ink-800">
               <h2 className="text-lg font-semibold text-white">
                 {createResult ? "Agent Created" : "Create New Agent"}
               </h2>
               <button
                 onClick={closeModal}
-                className="p-1 text-slate-500 hover:text-slate-300 transition-colors"
+                className="p-1 text-ink-500 hover:text-ink-300 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -295,8 +295,8 @@ export default function Agents() {
                     Agent "{createResult.agent.name}" created successfully!
                   </p>
                 </div>
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4">
-                  <p className="text-sm text-slate-300">
+                <div className="bg-ink-800/50 border border-ink-700/50 rounded-lg p-4">
+                  <p className="text-sm text-ink-300">
                     A default Solana wallet was created for this agent. API
                     keys are managed under the auth endpoints ({" "}
                     <code className="font-mono text-xs">/v1/auth/api-keys</code>

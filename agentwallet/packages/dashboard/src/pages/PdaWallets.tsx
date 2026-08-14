@@ -214,7 +214,7 @@ export default function PdaWallets() {
       <div>
         <button
           onClick={backToList}
-          className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition-colors mb-6"
+          className="flex items-center gap-2 text-sm text-ink-400 hover:text-ink-200 transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to PDA Wallets
@@ -223,7 +223,7 @@ export default function PdaWallets() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-white">PDA Wallet Details</h1>
-            <p className="text-slate-400 mt-1 text-sm font-mono">
+            <p className="text-ink-400 mt-1 text-sm font-mono">
               {selectedPda.pda_address}
             </p>
           </div>
@@ -250,28 +250,28 @@ export default function PdaWallets() {
         {/* Details Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="card">
-            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-semibold text-ink-400 uppercase tracking-wider mb-4">
               Wallet Info
             </h3>
             <dl className="space-y-3">
               <div className="flex justify-between">
-                <dt className="text-sm text-slate-500">ID</dt>
-                <dd className="text-sm font-mono text-slate-200">{selectedPda.id}</dd>
+                <dt className="text-sm text-ink-500">ID</dt>
+                <dd className="text-sm font-mono text-ink-200">{selectedPda.id}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-sm text-slate-500">Agent ID Seed</dt>
+                <dt className="text-sm text-ink-500">Agent ID Seed</dt>
                 <dd className="text-sm font-mono text-brand-400">
                   {selectedPda.agent_id_seed}
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-sm text-slate-500">Authority Wallet</dt>
-                <dd className="text-sm font-mono text-slate-200">
+                <dt className="text-sm text-ink-500">Authority Wallet</dt>
+                <dd className="text-sm font-mono text-ink-200">
                   {selectedPda.authority_wallet_id}
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-sm text-slate-500">Status</dt>
+                <dt className="text-sm text-ink-500">Status</dt>
                 <dd>
                   {selectedPda.is_active ? (
                     <span className="badge-green">Active</span>
@@ -281,8 +281,8 @@ export default function PdaWallets() {
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-sm text-slate-500">Created</dt>
-                <dd className="text-sm text-slate-200">
+                <dt className="text-sm text-ink-500">Created</dt>
+                <dd className="text-sm text-ink-200">
                   {new Date(selectedPda.created_at).toLocaleString()}
                 </dd>
               </div>
@@ -290,19 +290,19 @@ export default function PdaWallets() {
           </div>
 
           <div className="card">
-            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-semibold text-ink-400 uppercase tracking-wider mb-4">
               Spending Limits
             </h3>
             <dl className="space-y-3">
               <div className="flex justify-between">
-                <dt className="text-sm text-slate-500">Per Transaction</dt>
-                <dd className="text-sm font-mono text-slate-200">
+                <dt className="text-sm text-ink-500">Per Transaction</dt>
+                <dd className="text-sm font-mono text-ink-200">
                   {parseFloat(selectedPda.spending_limit_per_tx).toFixed(4)} SOL
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-sm text-slate-500">Daily Limit</dt>
-                <dd className="text-sm font-mono text-slate-200">
+                <dt className="text-sm text-ink-500">Daily Limit</dt>
+                <dd className="text-sm font-mono text-ink-200">
                   {parseFloat(selectedPda.daily_limit).toFixed(4)} SOL
                 </dd>
               </div>
@@ -313,7 +313,7 @@ export default function PdaWallets() {
         {/* On-Chain State */}
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-ink-400 uppercase tracking-wider">
               On-Chain State
             </h3>
             <button
@@ -338,20 +338,20 @@ export default function PdaWallets() {
 
           {onChainState ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="bg-slate-800/50 rounded-lg p-4">
-                <p className="text-xs text-slate-500 mb-1">Authority</p>
-                <p className="text-sm font-mono text-slate-200 break-all">
+              <div className="bg-ink-800/50 rounded-lg p-4">
+                <p className="text-xs text-ink-500 mb-1">Authority</p>
+                <p className="text-sm font-mono text-ink-200 break-all">
                   {truncateAddress(onChainState.authority)}
                 </p>
               </div>
-              <div className="bg-slate-800/50 rounded-lg p-4">
-                <p className="text-xs text-slate-500 mb-1">SOL Balance</p>
+              <div className="bg-ink-800/50 rounded-lg p-4">
+                <p className="text-xs text-ink-500 mb-1">SOL Balance</p>
                 <p className="text-lg font-mono font-bold text-emerald-400">
                   {onChainState.sol_balance.toFixed(4)} SOL
                 </p>
               </div>
-              <div className="bg-slate-800/50 rounded-lg p-4">
-                <p className="text-xs text-slate-500 mb-1">Active</p>
+              <div className="bg-ink-800/50 rounded-lg p-4">
+                <p className="text-xs text-ink-500 mb-1">Active</p>
                 <p className="flex items-center gap-2">
                   {onChainState.is_active ? (
                     <>
@@ -366,27 +366,27 @@ export default function PdaWallets() {
                   )}
                 </p>
               </div>
-              <div className="bg-slate-800/50 rounded-lg p-4">
-                <p className="text-xs text-slate-500 mb-1">Daily Spent</p>
-                <p className="text-sm font-mono text-slate-200">
+              <div className="bg-ink-800/50 rounded-lg p-4">
+                <p className="text-xs text-ink-500 mb-1">Daily Spent</p>
+                <p className="text-sm font-mono text-ink-200">
                   {onChainState.daily_spent.toFixed(4)} SOL
                 </p>
               </div>
-              <div className="bg-slate-800/50 rounded-lg p-4">
-                <p className="text-xs text-slate-500 mb-1">Daily Limit</p>
-                <p className="text-sm font-mono text-slate-200">
+              <div className="bg-ink-800/50 rounded-lg p-4">
+                <p className="text-xs text-ink-500 mb-1">Daily Limit</p>
+                <p className="text-sm font-mono text-ink-200">
                   {onChainState.daily_limit.toFixed(4)} SOL
                 </p>
               </div>
-              <div className="bg-slate-800/50 rounded-lg p-4">
-                <p className="text-xs text-slate-500 mb-1">Limit Per TX</p>
-                <p className="text-sm font-mono text-slate-200">
+              <div className="bg-ink-800/50 rounded-lg p-4">
+                <p className="text-xs text-ink-500 mb-1">Limit Per TX</p>
+                <p className="text-sm font-mono text-ink-200">
                   {onChainState.spending_limit_per_tx.toFixed(4)} SOL
                 </p>
               </div>
             </div>
           ) : !stateLoading ? (
-            <div className="flex flex-col items-center justify-center py-10 text-slate-500">
+            <div className="flex flex-col items-center justify-center py-10 text-ink-500">
               <Search className="w-8 h-8 mb-2" />
               <p className="text-sm">
                 Click "Read State" to fetch live on-chain data
@@ -408,7 +408,7 @@ export default function PdaWallets() {
       <div>
         <button
           onClick={backToList}
-          className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition-colors mb-6"
+          className="flex items-center gap-2 text-sm text-ink-400 hover:text-ink-200 transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to PDA Wallets
@@ -416,7 +416,7 @@ export default function PdaWallets() {
 
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-white">Derive PDA Address</h1>
-          <p className="text-slate-400 mt-1 text-sm">
+          <p className="text-ink-400 mt-1 text-sm">
             Compute a Program Derived Address from an organization public key and agent
             seed
           </p>
@@ -470,16 +470,16 @@ export default function PdaWallets() {
           </form>
 
           {derivedAddress && (
-            <div className="mt-6 bg-slate-800/50 border border-slate-700 rounded-lg p-4 space-y-3">
+            <div className="mt-6 bg-ink-800/50 border border-ink-700 rounded-lg p-4 space-y-3">
               <div>
-                <p className="text-xs text-slate-500 mb-1">Derived PDA Address</p>
+                <p className="text-xs text-ink-500 mb-1">Derived PDA Address</p>
                 <div className="flex items-center gap-2">
                   <code className="text-sm font-mono text-brand-400 break-all">
                     {derivedAddress}
                   </code>
                   <button
                     onClick={() => copyAddress(derivedAddress)}
-                    className="p-1 text-slate-600 hover:text-slate-400 transition-colors flex-shrink-0"
+                    className="p-1 text-ink-600 hover:text-ink-400 transition-colors flex-shrink-0"
                   >
                     {copiedAddr === derivedAddress ? (
                       <span className="text-emerald-400 text-[10px] font-medium">
@@ -493,8 +493,8 @@ export default function PdaWallets() {
               </div>
               {derivedBump !== null && (
                 <div>
-                  <p className="text-xs text-slate-500 mb-1">Bump Seed</p>
-                  <code className="text-sm font-mono text-slate-200">
+                  <p className="text-xs text-ink-500 mb-1">Bump Seed</p>
+                  <code className="text-sm font-mono text-ink-200">
                     {derivedBump}
                   </code>
                 </div>
@@ -513,7 +513,7 @@ export default function PdaWallets() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">PDA Wallets</h1>
-          <p className="text-slate-400 mt-1 text-sm">
+          <p className="text-ink-400 mt-1 text-sm">
             Solana Program Derived Address wallets for autonomous agents
           </p>
         </div>
@@ -535,15 +535,15 @@ export default function PdaWallets() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
         <div className="card">
-          <p className="text-sm text-slate-400">Total PDA Wallets</p>
+          <p className="text-sm text-ink-400">Total PDA Wallets</p>
           <p className="text-2xl font-bold text-white mt-1">{pdaList.length}</p>
         </div>
         <div className="card">
-          <p className="text-sm text-slate-400">Active</p>
+          <p className="text-sm text-ink-400">Active</p>
           <p className="text-2xl font-bold text-emerald-400 mt-1">{activeCount}</p>
         </div>
         <div className="card">
-          <p className="text-sm text-slate-400">Total Daily Limit</p>
+          <p className="text-sm text-ink-400">Total Daily Limit</p>
           <p className="text-2xl font-bold text-white mt-1">
             {totalLimit.toFixed(2)} SOL
           </p>
@@ -557,7 +557,7 @@ export default function PdaWallets() {
             <Loader2 className="w-6 h-6 text-brand-500 animate-spin" />
           </div>
         ) : pdaList.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+          <div className="flex flex-col items-center justify-center py-16 text-ink-500">
             <KeyRound className="w-10 h-10 mb-3" />
             <p className="text-sm font-medium">No PDA wallets yet</p>
             <p className="text-xs mt-1">
@@ -567,7 +567,7 @@ export default function PdaWallets() {
         ) : (
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-800">
+              <tr className="border-b border-ink-800">
                 <th className="table-header">PDA Address</th>
                 <th className="table-header">Agent Seed</th>
                 <th className="table-header">Limit / TX</th>
@@ -577,20 +577,20 @@ export default function PdaWallets() {
                 <th className="table-header text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-ink-800/60">
               {pdaList.map((pda) => (
                 <tr
                   key={pda.id}
-                  className="hover:bg-slate-800/30 transition-colors"
+                  className="hover:bg-ink-800/30 transition-colors"
                 >
                   <td className="table-cell">
                     <div className="flex items-center gap-2">
-                      <code className="text-xs font-mono text-slate-400">
+                      <code className="text-xs font-mono text-ink-400">
                         {truncateAddress(pda.pda_address)}
                       </code>
                       <button
                         onClick={() => copyAddress(pda.pda_address)}
-                        className="p-1 text-slate-600 hover:text-slate-400 transition-colors"
+                        className="p-1 text-ink-600 hover:text-ink-400 transition-colors"
                       >
                         {copiedAddr === pda.pda_address ? (
                           <span className="text-emerald-400 text-[10px] font-medium">
@@ -608,12 +608,12 @@ export default function PdaWallets() {
                     </span>
                   </td>
                   <td className="table-cell">
-                    <span className="font-mono text-sm text-slate-200">
+                    <span className="font-mono text-sm text-ink-200">
                       {parseFloat(pda.spending_limit_per_tx).toFixed(2)} SOL
                     </span>
                   </td>
                   <td className="table-cell">
-                    <span className="font-mono text-sm text-slate-200">
+                    <span className="font-mono text-sm text-ink-200">
                       {parseFloat(pda.daily_limit).toFixed(2)} SOL
                     </span>
                   </td>
@@ -624,13 +624,13 @@ export default function PdaWallets() {
                       <span className="badge-red">Inactive</span>
                     )}
                   </td>
-                  <td className="table-cell text-xs text-slate-500">
+                  <td className="table-cell text-xs text-ink-500">
                     {new Date(pda.created_at).toLocaleDateString()}
                   </td>
                   <td className="table-cell text-right">
                     <button
                       onClick={() => openDetail(pda)}
-                      className="p-1.5 rounded-md text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-colors"
+                      className="p-1.5 rounded-md text-ink-500 hover:text-ink-300 hover:bg-ink-800 transition-colors"
                       title="View details"
                     >
                       <Eye className="w-3.5 h-3.5" />
@@ -646,14 +646,14 @@ export default function PdaWallets() {
       {/* Create Modal */}
       {showCreate && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-lg shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+          <div className="bg-ink-900 border border-ink-800 rounded-xl w-full max-w-lg shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-ink-800">
               <h2 className="text-lg font-semibold text-white">
                 Create PDA Wallet
               </h2>
               <button
                 onClick={closeCreateModal}
-                className="p-1 text-slate-500 hover:text-slate-300 transition-colors"
+                className="p-1 text-ink-500 hover:text-ink-300 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -699,7 +699,7 @@ export default function PdaWallets() {
                     required
                   />
                 )}
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-ink-500 mt-1">
                   The Solana wallet that will serve as authority for this PDA
                 </p>
               </div>
@@ -718,7 +718,7 @@ export default function PdaWallets() {
                   placeholder="e.g. trading-bot-alpha"
                   required
                 />
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-ink-500 mt-1">
                   Unique seed string used to derive the PDA address
                 </p>
               </div>
