@@ -460,28 +460,75 @@ if [ ! -x "$MCP_BIN" ]; then
   fail "MCP binary not found in venv"
   FAILED=1
 else
-  MCP_OUT="$( { printf '%s\n%s\n' \
-    '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"smoke-test","version":"1.0"}}}' \
-    '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'; \
-    sleep 3; } | AGENTWALLET_API_KEY="${API_KEY:-}" timeout 25 "$MCP_BIN" 2>/dev/null)"
-  TOOLS="$(echo "$MCP_OUT" | "$PYTHON" -c "
-import sys, json
-for line in sys.stdin.read().splitlines():
-    line = line.strip()
-    if not line:
-        continue
+  # Drive the stdio protocol properly: spawn, wait for the initialize
+  # response, then send tools/list and wait for its response. Retry the
+  # whole spawn up to 3 times — a fresh process (Python imports + first
+  # spawn on CI) can take longer than the old fixed 3s sleep, which caused
+  # a flaky initialize/tools-list race.
+  MCP_OUT="$(AGENTWALLET_API_KEY="${API_KEY:-}" "$VENV_PY" - "$MCP_BIN" 2>/dev/null <<'PYEOF'
+import json, os, subprocess, sys, time
+
+bin_path = os.path.abspath(sys.argv[1])
+
+def recv_response(proc, want_id, deadline):
+    """Read stdout lines until we get a JSON-RPC response for want_id."""
+    while time.time() < deadline:
+        line = proc.stdout.readline()
+        if not line:
+            return None
+        try:
+            msg = json.loads(line)
+        except Exception:
+            continue
+        if msg.get("id") == want_id and "result" in msg:
+            return msg["result"]
+        if msg.get("id") == want_id and "error" in msg:
+            return msg["error"]
+    return None
+
+def attempt():
+    proc = subprocess.Popen(
+        [bin_path],
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL, text=True, bufsize=1,
+        env={**os.environ, "AGENTWALLET_API_KEY": os.environ.get("AGENTWALLET_API_KEY", "")},
+    )
     try:
-        res = json.loads(line).get('result') or {}
-    except Exception:
-        continue
-    if 'tools' in res:
-        print(len(res['tools']))
-        break
-" 2>/dev/null)" || TOOLS=""
+        init = {"jsonrpc":"2.0","id":1,"method":"initialize",
+                "params":{"protocolVersion":"2024-11-05","capabilities":{},
+                          "clientInfo":{"name":"smoke-test","version":"1.0"}}}
+        proc.stdin.write(json.dumps(init) + "\n")
+        proc.stdin.flush()
+        res = recv_response(proc, 1, time.time() + 20)
+        if res is None or "error" in res:
+            return None
+        proc.stdin.write(json.dumps({"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}) + "\n")
+        proc.stdin.flush()
+        res = recv_response(proc, 2, time.time() + 20)
+        if res and "tools" in res:
+            return len(res["tools"])
+        return None
+    finally:
+        try:
+            proc.stdin.close()
+            proc.wait(timeout=5)
+        except Exception:
+            proc.kill()
+
+for i in range(1, 4):
+    n = attempt()
+    if n is not None:
+        print(n)
+        sys.exit(0)
+    time.sleep(1)
+sys.exit(1)
+PYEOF
+)"
+  TOOLS="$(echo "$MCP_OUT" | tail -1 | tr -dc '0-9')"
   if [ -n "$TOOLS" ] && [ "$TOOLS" -ge 30 ] 2>/dev/null; then
-    pass "MCP initialized — $TOOLS tools exposed"
+    pass "MCP initialized — $TOOLS tools exposed (spawn retries: 3)"
   else
-    fail "MCP initialize / tools/list"
+    fail "MCP initialize / tools/list (3 spawn attempts)"
     FAILED=1
   fi
 fi
