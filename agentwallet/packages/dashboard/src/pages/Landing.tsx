@@ -208,27 +208,30 @@ function TypewriterTerminal() {
         setLineIdx(0);
         setChars(0);
         setStatusesShown(0);
-      }, 4200);
+      }, 3500);
       return () => clearTimeout(t);
     }
     const full = heroCmds[lineIdx];
     if (chars < full.length) {
-      const t = setTimeout(() => setChars((c) => c + 1), 26);
+      const t = setTimeout(() => setChars((c) => c + 1), 20);
       return () => clearTimeout(t);
     }
     const t = setTimeout(() => {
       setLineIdx((i) => i + 1);
       setChars(0);
-    }, 380);
+    }, 280);
     return () => clearTimeout(t);
   }, [lineIdx, chars, statusesShown]);
+
+  // copy buttons appear only after the whole demo has typed out
+  const allDone = lineIdx >= heroCmds.length;
 
   return (
     <div className="p-5">
       {heroCmds.map((cmd, i) => {
         if (i > lineIdx) return null;
-        const done = i < lineIdx;
-        const text = done ? cmd : cmd.slice(0, chars);
+        const lineDone = i < lineIdx;
+        const text = lineDone ? cmd : cmd.slice(0, chars);
         return (
           <div
             key={cmd}
@@ -237,9 +240,13 @@ function TypewriterTerminal() {
             <code className="text-xs text-ink-300 truncate">
               <span className="text-brand-400 select-none">$ </span>
               {text}
-              {!done && <span className="aw-cursor text-brand-400">▍</span>}
+              {!lineDone && <span className="aw-cursor text-brand-400">▍</span>}
             </code>
-            {done && <CopyCmd cmd={cmd} />}
+            {allDone && (
+              <span className="aw-fade-in">
+                <CopyCmd cmd={cmd} />
+              </span>
+            )}
           </div>
         );
       })}
