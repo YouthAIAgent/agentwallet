@@ -1,0 +1,147 @@
+name: Devnet Lifecycle
+
+# Runs the three on-chain lifecycles against Solana devnet on every push
+# (and on pull requests):
+#   1. smoke_test.sh            — API + SDK + CLI + MCP + Dashboard, escrow
+#                                 fund/release + SOL transfer
+#   2. escrow_lifecycle_test.sh — release AND refund disbursed from the
+#                                 platform custody wallet (double-pay check)
+#   3. x402_lifecycle_test.sh   — 402 -> pay on-chain -> retry with proof ->
+#                                 verify -> on-chain payer/payee/amount check
+#
+# Requires two repo secrets (the API signs escrow releases/refunds and the
+# deterministic faucet pays with the platform custody wallet):
+#   PLATFORM_WALLET_ADDRESS      (e.g. the address that received devnet SOL)
+#   PLATFORM_PRIVATE_KEY_HEX     (hex-encoded 64-byte secret key)
+# If the wallet runs low on devnet SOL, this job tops it up from the public
+# devnet faucet (best effort — runner IPs are usually not rate-limited).
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  devnet:
+    name: Smoke + Escrow + x402 (devnet)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: agentwallet
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Set up Node 18 (dashboard build fallback)
+        uses: actions/setup-node@v6
+        with:
+          node-version: "18"
+
+      - name: Install faucet + env deps
+        run: |
+          python -m pip install --quiet solders httpx base58 cryptography
+
+      - name: Check platform wallet secrets
+        run: |
+          if [ -z "$PLATFORM_WALLET_ADDRESS" ] || [ -z "$PLATFORM_PRIVATE_KEY_HEX" ]; then
+            echo "::error::Set PLATFORM_WALLET_ADDRESS and PLATFORM_PRIVATE_KEY_HEX repo secrets (Settings > Secrets > Actions) to run the devnet lifecycles."
+            exit 1
+          fi
+          echo "platform wallet: $PLATFORM_WALLET_ADDRESS"
+        env:
+          PLATFORM_WALLET_ADDRESS: ${{ secrets.PLATFORM_WALLET_ADDRESS }}
+          PLATFORM_PRIVATE_KEY_HEX: ${{ secrets.PLATFORM_PRIVATE_KEY_HEX }}
+
+      - name: Create .env (devnet) with platform secrets
+        run: |
+          cp .env.example .env
+          python - <<'PY'
+          import os, re, secrets
+          from cryptography.fernet import Fernet
+
+          p = ".env"
+          s = open(p).read()
+          s = s.replace("change-me-in-production", secrets.token_hex(32))
+          s = s.replace("ENCRYPTION_KEY=", "ENCRYPTION_KEY=" + Fernet.generate_key().decode())
+          s = re.sub(
+              r"(?m)^PLATFORM_WALLET_ADDRESS=.*",
+              "PLATFORM_WALLET_ADDRESS=" + os.environ["PLATFORM_WALLET_ADDRESS"],
+              s,
+          )
+          s = re.sub(
+              r"(?m)^PLATFORM_PRIVATE_KEY_HEX=.*",
+              "PLATFORM_PRIVATE_KEY_HEX=" + os.environ["PLATFORM_PRIVATE_KEY_HEX"],
+              s,
+          )
+          open(p, "w").write(s)
+          print("  .env created with devnet RPC + platform secrets")
+          PY
+        env:
+          PLATFORM_WALLET_ADDRESS: ${{ secrets.PLATFORM_WALLET_ADDRESS }}
+          PLATFORM_PRIVATE_KEY_HEX: ${{ secrets.PLATFORM_PRIVATE_KEY_HEX }}
+
+      - name: Start API + Postgres + Redis
+        run: docker compose up -d postgres redis api --build
+
+      - name: Wait for API health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:8000/health >/dev/null 2>&1; then
+              echo "API healthy"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "::error::API did not become healthy (see api logs below)"
+          docker compose logs --tail 50 api
+          exit 1
+
+      - name: Fund platform wallet on devnet (top-up if low)
+        run: |
+          ADDR="$PLATFORM_WALLET_ADDRESS"
+          BAL=$(curl -s --max-time 15 -X POST https://api.devnet.solana.com \
+            -H "Content-Type: application/json" \
+            -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getBalance\",\"params\":[\"$ADDR\"]}" \
+            | python -c "import sys,json;print(json.load(sys.stdin).get('result',{}).get('value',0))")
+          echo "platform balance: $BAL lamports"
+          if [ "${BAL:-0}" -lt 30000000 ]; then
+            echo "balance low — requesting devnet airdrop (0.5 SOL)..."
+            curl -s --max-time 20 -X POST https://api.devnet.solana.com \
+              -H "Content-Type: application/json" \
+              -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"requestAirdrop\",\"params\":[\"$ADDR\",500000000]}" || true
+            sleep 5
+            BAL=$(curl -s --max-time 15 -X POST https://api.devnet.solana.com \
+              -H "Content-Type: application/json" \
+              -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getBalance\",\"params\":[\"$ADDR\"]}" \
+              | python -c "import sys,json;print(json.load(sys.stdin).get('result',{}).get('value',0))")
+            echo "after airdrop: $BAL lamports"
+          fi
+          if [ "${BAL:-0}" -lt 30000000 ]; then
+            echo "::error::Platform wallet needs devnet SOL (has ${BAL}). Send devnet SOL to $ADDR, then re-run."
+            exit 1
+          fi
+        env:
+          PLATFORM_WALLET_ADDRESS: ${{ secrets.PLATFORM_WALLET_ADDRESS }}
+
+      - name: Smoke test (devnet, platform faucet fallback)
+        run: bash smoke_test.sh
+        env:
+          SOLANA_RPC: https://api.devnet.solana.com
+          PLATFORM_PRIVATE_KEY_HEX: ${{ secrets.PLATFORM_PRIVATE_KEY_HEX }}
+
+      - name: Escrow lifecycle (devnet) — release + refund from custody
+        run: RPC=https://api.devnet.solana.com AMT1=0.02 AMT2=0.01 FUND_AMT=0.05 bash escrow_lifecycle_test.sh
+        env:
+          PLATFORM_PRIVATE_KEY_HEX: ${{ secrets.PLATFORM_PRIVATE_KEY_HEX }}
+
+      - name: x402 lifecycle (devnet) — pay-per-use gateway
+        run: RPC=https://api.devnet.solana.com bash x402_lifecycle_test.sh
+        env:
+          PLATFORM_PRIVATE_KEY_HEX: ${{ secrets.PLATFORM_PRIVATE_KEY_HEX }}
