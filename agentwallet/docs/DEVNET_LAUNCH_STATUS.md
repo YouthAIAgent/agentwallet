@@ -28,8 +28,24 @@ Fully public devnet launch (webapp ke saath) → users test → feedback → mai
 - master sync, sab pushed
 - Uncommitted (old codex-provider task): agent_genesis/ 5 files — alag kaam, abhi chhod diya
 
+## 🎨 Design skills installed (~/.claude/skills/) — 9 total
+| Skill | Kya karta hai |
+|---|---|
+| frontend-design (Anthropic official) | Design lead approach: token system, type pairing, signature element, critique |
+| taste-skill | Anti-slop frontend: brief se direction infer, audit-first redesigns |
+| brutalist-skill | Industrial/brutalist UI — data dashboards ke liye (rigid grids, extreme type contrast) |
+| minimalist-skill | Editorial minimal — warm monochrome, bento grids, no gradients |
+| soft-skill | High-end agency design: fonts/spacing/shadows that feel expensive |
+| redesign-skill | Existing app ko premium upgrade: audit → fix generic patterns |
+| hallmark | Greenfield pages + audits + design extraction from URL/screenshot |
+| nothing-design | Nothing (tech brand) style — sirf explicit request pe |
+| landing-page-design | Conversion landing pages: intake, structure, copy, visual rules |
+
+**Reference sites (user ne diya):** mobbin, godly, awwwards, saaspo, ui.shadcn, 21st.dev, reactbits, fontshare, uncut.wtf — full list user message mein.
+
 ## ⏭️ Kal kya karna hai (user ne bola)
 - **Frontend design overhaul**: user design skills/tools + example websites dega → dashboard ko waise hi restyle karna hai
+- Workflow: 1) user describe karega website/component 2) aesthetic direction choose 3) main complete visual system build karoonga
 - Baaki pending ideas: escrow UI, USDC billing devnet test, audit trail wiring, mainnet runbook
 
 ## 🐛 Known gaps
