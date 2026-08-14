@@ -1,0 +1,21 @@
+{
+  "name": "agentwallet-video",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "shots": "node scripts/screenshots.mjs",
+    "render": "remotion render src/index.ts AgentWalletLaunch out/launch.mp4"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@remotion/cli": "^4.0.0",
+    "@remotion/bundler": "^4.0.0",
+    "@types/react": "^18.3.0",
+    "puppeteer-core": "^23.0.0"
+  }
+}
