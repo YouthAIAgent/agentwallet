@@ -64,17 +64,13 @@ export interface LoginRequest {
 export interface RegisterRequest {
   email: string;
   password: string;
-  organization_name: string;
+  org_name: string;
 }
 
 export interface AuthResponse {
   access_token: string;
   token_type: string;
-  user: {
-    id: string;
-    email: string;
-    organization_id: string;
-  };
+  org_id: string;
 }
 
 export const auth = {
@@ -104,13 +100,51 @@ export interface Agent {
   created_at: string;
   updated_at: string;
   metadata: Record<string, unknown>;
+  default_wallet_id?: string | null;
+  reputation_score?: number;
+  is_public?: boolean;
+}
+
+// The API returns the agent directly (no {agent, api_key} wrapper) and
+// has no per-agent API key — keys live under /auth/api-keys. Map the wire
+// shape to the UI shape.
+
+export interface ApiAgent {
+  id: string;
+  org_id: string;
+  name: string;
+  description: string | null;
+  status: string;
+  capabilities: string[];
+  default_wallet_id: string | null;
+  reputation_score: number;
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface CreateAgentRequest {
   name: string;
   description?: string;
-  policy_id?: string;
+  capabilities?: string[];
   metadata?: Record<string, unknown>;
+}
+
+export function mapAgent(a: ApiAgent): Agent {
+  return {
+    id: a.id,
+    name: a.name,
+    description: a.description || "",
+    status: (a.status as Agent["status"]) || "active",
+    api_key_prefix: "",
+    policy_id: null,
+    created_at: a.created_at,
+    updated_at: a.updated_at,
+    metadata: {},
+    default_wallet_id: a.default_wallet_id,
+    reputation_score: a.reputation_score,
+    is_public: a.is_public,
+  };
 }
 
 export interface CreateAgentResponse {
@@ -125,26 +159,43 @@ export const agents = {
     if (params?.limit) qs.set("limit", String(params.limit));
     if (params?.offset) qs.set("offset", String(params.offset));
     const q = qs.toString();
-    return request<{ agents: Agent[]; total: number }>(
+    return request<{ data: ApiAgent[]; total: number }>(
       `/agents${q ? `?${q}` : ""}`
-    );
+    ).then((r) => ({ agents: r.data.map(mapAgent), total: r.total }));
   },
-  get: (id: string) => request<Agent>(`/agents/${id}`),
+  get: (id: string) =>
+    request<ApiAgent>(`/agents/${id}`).then(mapAgent),
   create: (data: CreateAgentRequest) =>
-    request<CreateAgentResponse>("/agents", {
+    request<ApiAgent>("/agents", {
       method: "POST",
       body: JSON.stringify(data),
-    }),
+    }).then((a) => ({ agent: mapAgent(a), api_key: "" })),
   update: (id: string, data: Partial<CreateAgentRequest> & { status?: string }) =>
-    request<Agent>(`/agents/${id}`, {
+    request<ApiAgent>(`/agents/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
-    }),
+    }).then(mapAgent),
   delete: (id: string) =>
     request<void>(`/agents/${id}`, { method: "DELETE" }),
 };
 
 // --- Wallets ---
+// The API is Solana-native and returns { id, org_id, agent_id, address,
+// wallet_type, label, is_active, created_at }. Map it to the UI shape
+// (chain/balance/status) so pages don't have to know the wire format.
+// The API takes { agent_id, wallet_type, label } — no chain field.
+
+export interface ApiWallet {
+  id: string;
+  org_id: string;
+  agent_id: string | null;
+  address: string;
+  wallet_type: string;
+  label: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
 export interface Wallet {
   id: string;
   agent_id: string | null;
@@ -156,30 +207,43 @@ export interface Wallet {
   label: string;
 }
 
+export function mapWallet(w: ApiWallet): Wallet {
+  return {
+    id: w.id,
+    agent_id: w.agent_id,
+    chain: w.wallet_type === "pda" ? "pda" : "solana",
+    address: w.address,
+    balance: "0",
+    status: w.is_active ? "active" : "frozen",
+    created_at: w.created_at,
+    label: w.label || "",
+  };
+}
+
 export interface CreateWalletRequest {
-  chain: string;
   agent_id?: string;
+  wallet_type?: string;
   label?: string;
 }
 
 export const wallets = {
-  list: (params?: { chain?: string; agent_id?: string; limit?: number; offset?: number }) => {
+  list: (params?: { agent_id?: string; limit?: number; offset?: number }) => {
     const qs = new URLSearchParams();
-    if (params?.chain) qs.set("chain", params.chain);
     if (params?.agent_id) qs.set("agent_id", params.agent_id);
     if (params?.limit) qs.set("limit", String(params.limit));
     if (params?.offset) qs.set("offset", String(params.offset));
     const q = qs.toString();
-    return request<{ wallets: Wallet[]; total: number }>(
+    return request<{ data: ApiWallet[]; total: number }>(
       `/wallets${q ? `?${q}` : ""}`
-    );
+    ).then((r) => ({ wallets: r.data.map(mapWallet), total: r.total }));
   },
-  get: (id: string) => request<Wallet>(`/wallets/${id}`),
+  get: (id: string) =>
+    request<ApiWallet>(`/wallets/${id}`).then(mapWallet),
   create: (data: CreateWalletRequest) =>
-    request<Wallet>("/wallets", {
+    request<ApiWallet>("/wallets", {
       method: "POST",
       body: JSON.stringify(data),
-    }),
+    }).then(mapWallet),
 };
 
 // --- Transactions ---
@@ -216,9 +280,9 @@ export const transactions = {
     if (params?.limit) qs.set("limit", String(params.limit));
     if (params?.offset) qs.set("offset", String(params.offset));
     const q = qs.toString();
-    return request<{ transactions: Transaction[]; total: number }>(
+    return request<{ data: Transaction[]; total: number }>(
       `/transactions${q ? `?${q}` : ""}`
-    );
+    ).then((r) => ({ transactions: r.data, total: r.total }));
   },
   get: (id: string) => request<Transaction>(`/transactions/${id}`),
 };
@@ -237,6 +301,34 @@ export interface AgentSpend {
   tx_count: number;
 }
 
+// Wire shapes from /analytics (lamports, camelCase)
+interface DailyMetricResponse {
+  date: string;
+  tx_count: number;
+  total_spend_lamports: number;
+  total_fees_lamports: number;
+  unique_destinations: number;
+  failed_tx_count: number;
+}
+
+interface AgentAnalyticsResponse {
+  agent_id: string;
+  agent_name?: string;
+  total_spend_lamports: number;
+  tx_count: number;
+}
+
+interface AnalyticsSummaryResponse {
+  total_spend_lamports: number;
+  total_fees_lamports: number;
+  tx_count: number;
+  failed_tx_count: number;
+  active_agents: number;
+  unique_destinations: number;
+  period_start: string;
+  period_end: string;
+}
+
 export interface AnalyticsSummary {
   total_spend_usd: number;
   total_transactions: number;
@@ -247,12 +339,37 @@ export interface AnalyticsSummary {
 }
 
 export const analytics = {
+  // API returns lamports; the UI shows USD — map on the way in.
   dailySpend: (days = 30) =>
-    request<{ data: DailySpend[] }>(`/analytics/daily-spend?days=${days}`),
+    request<DailyMetricResponse[]>(`/analytics/daily?days=${days}`).then((r) => ({
+      data: (Array.isArray(r) ? r : (r as { data?: DailyMetricResponse[] }).data || []).map(
+        (d) => ({
+          date: d.date,
+          total_usd: d.total_spend_lamports / 1e9,
+          tx_count: d.tx_count,
+        })
+      ),
+    })),
   agentBreakdown: () =>
-    request<{ data: AgentSpend[] }>("/analytics/agent-breakdown"),
+    request<AgentAnalyticsResponse[]>(`/analytics/agents?days=30`).then((r) => ({
+      data: (Array.isArray(r) ? r : (r as { data?: AgentAnalyticsResponse[] }).data || []).map(
+        (a) => ({
+          agent_id: a.agent_id,
+          agent_name: a.agent_name || a.agent_id,
+          total_usd: a.total_spend_lamports / 1e9,
+          tx_count: a.tx_count,
+        })
+      ),
+    })),
   summary: (days = 30) =>
-    request<AnalyticsSummary>(`/analytics/summary?days=${days}`),
+    request<AnalyticsSummaryResponse>(`/analytics/summary?days=${days}`).then((s) => ({
+      total_spend_usd: s.total_spend_lamports / 1e9,
+      total_transactions: s.tx_count,
+      active_agents: s.active_agents,
+      active_wallets: s.unique_destinations,
+      avg_tx_value: s.tx_count ? s.total_spend_lamports / 1e9 / s.tx_count : 0,
+      period_days: days,
+    })),
 };
 
 // --- Policies ---
@@ -277,7 +394,11 @@ export interface CreatePolicyRequest {
 }
 
 export const policies = {
-  list: () => request<{ policies: Policy[]; total: number }>("/policies"),
+  list: () =>
+    request<{ data: Policy[]; total: number }>("/policies").then((r) => ({
+      policies: r.data,
+      total: r.total,
+    })),
   get: (id: string) => request<Policy>(`/policies/${id}`),
   create: (data: CreatePolicyRequest) =>
     request<Policy>("/policies", {
@@ -409,9 +530,9 @@ export const pdaWallets = {
     if (params?.limit) qs.set("limit", String(params.limit));
     if (params?.offset) qs.set("offset", String(params.offset));
     const q = qs.toString();
-    return request<{ pda_wallets: PdaWallet[]; total: number }>(
+    return request<{ data: PdaWallet[]; total: number }>(
       `/pda-wallets${q ? `?${q}` : ""}`
-    );
+    ).then((r) => ({ pda_wallets: r.data, total: r.total }));
   },
   get: (id: string) => request<PdaWallet>(`/pda-wallets/${id}`),
   create: (data: CreatePdaWalletRequest) =>

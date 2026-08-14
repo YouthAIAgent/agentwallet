@@ -99,7 +99,6 @@ export default function Agents() {
   const [formData, setFormData] = useState<CreateAgentRequest>({
     name: "",
     description: "",
-    policy_id: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -120,7 +119,7 @@ export default function Agents() {
       const payload: CreateAgentRequest = {
         name: formData.name,
         description: formData.description || undefined,
-        policy_id: formData.policy_id || undefined,
+        capabilities: ["analysis"],
       };
       const res = await agents.create(payload);
       setCreateResult(res);
@@ -161,7 +160,7 @@ export default function Agents() {
     setShowCreate(false);
     setCreateResult(null);
     setCopied(false);
-    setFormData({ name: "", description: "", policy_id: "" });
+    setFormData({ name: "", description: "" });
     setError("");
   };
 
@@ -296,25 +295,13 @@ export default function Agents() {
                     Agent "{createResult.agent.name}" created successfully!
                   </p>
                 </div>
-                <div>
-                  <label className="label">
-                    API Key (save this - it won't be shown again)
-                  </label>
-                  <div className="flex gap-2">
-                    <code className="flex-1 input font-mono text-xs break-all">
-                      {createResult.api_key}
-                    </code>
-                    <button
-                      onClick={copyApiKey}
-                      className="btn-secondary flex-shrink-0"
-                    >
-                      {copied ? (
-                        <Check className="w-4 h-4 text-emerald-400" />
-                      ) : (
-                        <Copy className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
+                <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4">
+                  <p className="text-sm text-slate-300">
+                    A default Solana wallet was created for this agent. API
+                    keys are managed under the auth endpoints ({" "}
+                    <code className="font-mono text-xs">/v1/auth/api-keys</code>
+                    ).
+                  </p>
                 </div>
                 <button onClick={closeModal} className="btn-primary w-full">
                   Done
@@ -351,21 +338,6 @@ export default function Agents() {
                     }
                     className="input"
                     placeholder="Automated DeFi trading on Ethereum"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="agentPolicy" className="label">
-                    Policy ID (optional)
-                  </label>
-                  <input
-                    id="agentPolicy"
-                    type="text"
-                    value={formData.policy_id || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, policy_id: e.target.value })
-                    }
-                    className="input"
-                    placeholder="pol_..."
                   />
                 </div>
 

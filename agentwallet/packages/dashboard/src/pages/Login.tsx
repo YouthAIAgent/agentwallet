@@ -23,7 +23,7 @@ export default function Login() {
         res = await auth.register({
           email,
           password,
-          organization_name: orgName,
+          org_name: orgName,
         });
       } else {
         res = await auth.login({ email, password });

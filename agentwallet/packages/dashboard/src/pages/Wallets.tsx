@@ -93,7 +93,7 @@ export default function Wallets() {
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [formData, setFormData] = useState<CreateWalletRequest & { label: string }>({
-    chain: "ethereum",
+    wallet_type: "agent",
     agent_id: "",
     label: "",
   });
@@ -115,7 +115,7 @@ export default function Wallets() {
     setError("");
     try {
       const wallet = await wallets.create({
-        chain: formData.chain,
+        wallet_type: formData.wallet_type,
         agent_id: formData.agent_id || undefined,
         label: formData.label || undefined,
       });
@@ -136,7 +136,7 @@ export default function Wallets() {
 
   const closeModal = () => {
     setShowCreate(false);
-    setFormData({ chain: "ethereum", agent_id: "", label: "" });
+    setFormData({ wallet_type: "agent", agent_id: "", label: "" });
     setError("");
   };
 
@@ -305,22 +305,23 @@ export default function Wallets() {
               </div>
               <div>
                 <label htmlFor="walletChain" className="label">
-                  Blockchain
+                  Wallet Type
                 </label>
                 <select
                   id="walletChain"
-                  value={formData.chain}
+                  value={formData.wallet_type}
                   onChange={(e) =>
-                    setFormData({ ...formData, chain: e.target.value })
+                    setFormData({ ...formData, wallet_type: e.target.value })
                   }
                   className="input"
                 >
-                  <option value="ethereum">Ethereum</option>
-                  <option value="polygon">Polygon</option>
-                  <option value="arbitrum">Arbitrum</option>
-                  <option value="base">Base</option>
-                  <option value="solana">Solana</option>
+                  <option value="agent">Agent (Solana)</option>
+                  <option value="treasury">Treasury (Solana)</option>
+                  <option value="escrow">Escrow (Solana)</option>
                 </select>
+                <p className="text-xs text-slate-500 mt-1">
+                  All wallets are on Solana (devnet).
+                </p>
               </div>
               <div>
                 <label htmlFor="walletAgent" className="label">
