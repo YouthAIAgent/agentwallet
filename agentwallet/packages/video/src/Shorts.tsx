@@ -30,6 +30,54 @@ import vBilling from "../public/shots-v/v-billing.png";
 
 const MONO = { fontFamily: FONT } as React.CSSProperties;
 
+/** Big bold caption so shorts are watchable on mute. */
+function Caption({
+  text,
+  start,
+  dur,
+}: {
+  text: string;
+  start: number;
+  dur: number;
+}) {
+  const frame = useCurrentFrame();
+  const s = spring({ frame: frame - start, fps: 30, config: { damping: 200 } });
+  const out = interpolate(frame, [start + dur - 12, start + dur], [1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const visible = frame >= start && frame <= start + dur;
+  if (!visible) return null;
+  return (
+    <div
+      style={{
+        ...MONO,
+        position: "absolute",
+        left: 40,
+        right: 40,
+        bottom: 70,
+        textAlign: "center",
+        opacity: s * out,
+        transform: `translateY(${interpolate(s, [0, 1], [24, 0])}px)`,
+        zIndex: 10,
+      }}
+    >
+      <span
+        style={{
+          fontSize: 44,
+          fontWeight: 800,
+          lineHeight: 1.25,
+          color: "#ffffff",
+          textShadow:
+            "0 2px 0 #000000, 0 4px 0 rgba(0,0,0,0.9), 0 6px 18px rgba(0,0,0,0.85)",
+        }}
+      >
+        {text}
+      </span>
+    </div>
+  );
+}
+
 function VShot({ src }: { src: string }) {
   const frame = useCurrentFrame();
   const p = interpolate(frame, [0, 240], [0, 1], {
@@ -278,6 +326,14 @@ function VOutro({ compact = false }: { compact?: boolean }) {
 }
 
 // ---------- 15s short (450 frames) ----------
+const C15: { text: string; start: number; dur: number }[] = [
+  { text: "agentwallet — payments for the agent economy", start: 12, dur: 72 },
+  { text: "real wallets · escrow · billing on Solana", start: 100, dur: 62 },
+  { text: "agents create wallets. agents pay. on-chain.", start: 172, dur: 60 },
+  { text: "escrow · x402 · usdc · swarms", start: 248, dur: 74 },
+  { text: "launch free on devnet", start: 345, dur: 72 },
+];
+
 export function Short15() {
   return (
     <AbsoluteFill style={{ background: INK_950, fontFamily: FONT }}>
@@ -302,11 +358,26 @@ export function Short15() {
           <VOutro compact />
         </Fade>
       </Sequence>
+      {C15.map((c) => (
+        <Caption key={c.start} text={c.text} start={c.start} dur={c.dur} />
+      ))}
     </AbsoluteFill>
   );
 }
 
 // ---------- 30s short (900 frames) ----------
+const C30: { text: string; start: number; dur: number }[] = [
+  { text: "agentwallet — payments for the agent economy", start: 15, dur: 100 },
+  { text: "the payment rail for the agent economy", start: 128, dur: 60 },
+  { text: "wallets · escrow · pay-per-call billing", start: 198, dur: 48 },
+  { text: "real data. live on devnet.", start: 262, dur: 70 },
+  { text: "each agent gets its own wallet + policy", start: 345, dur: 68 },
+  { text: "PDA custody — treasury · escrow · agents", start: 428, dur: 95 },
+  { text: "the terminal. every flow.", start: 540, dur: 65 },
+  { text: "escrow funded · paid · subscribed — exit 0", start: 612, dur: 72 },
+  { text: "launch free on devnet →", start: 700, dur: 90 },
+];
+
 export function Short30() {
   return (
     <AbsoluteFill style={{ background: INK_950, fontFamily: FONT }}>
@@ -347,6 +418,9 @@ export function Short30() {
           <VOutro />
         </Fade>
       </Sequence>
+      {C30.map((c) => (
+        <Caption key={c.start} text={c.text} start={c.start} dur={c.dur} />
+      ))}
     </AbsoluteFill>
   );
 }
