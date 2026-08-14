@@ -233,7 +233,7 @@ if [ -n "$HEALTH" ]; then
   if [ -n "$TOKEN" ]; then
     KEYRESP="$(curl -sf --max-time 15 -X POST "$API_BASE/auth/api-keys" \
       -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-      -d '{"name":"smoke-test","permissions":{}}' 2>/dev/null)" || KEYRESP=""
+      -d '{"name":"smoke-test","permissions":{"wallets":"rw","agents":"rw","escrows":"rw"}}' 2>/dev/null)" || KEYRESP=""
     if [ -n "$KEYRESP" ] && API_KEY="$(json_get key "$KEYRESP" 2>/dev/null)"; then
       pass "API key created (${API_KEY:0:12}...)"
     else
