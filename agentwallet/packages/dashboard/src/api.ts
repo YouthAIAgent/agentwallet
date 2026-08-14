@@ -280,9 +280,12 @@ export const transactions = {
     if (params?.limit) qs.set("limit", String(params.limit));
     if (params?.offset) qs.set("offset", String(params.offset));
     const q = qs.toString();
-    return request<{ data: Transaction[]; total: number }>(
+    return request<{ data: ApiTransaction[]; total: number }>(
       `/transactions${q ? `?${q}` : ""}`
-    ).then((r) => ({ transactions: r.data, total: r.total }));
+    ).then((r) => ({
+      transactions: r.data.map(mapTransaction),
+      total: r.total,
+    }));
   },
   get: (id: string) => request<Transaction>(`/transactions/${id}`),
 };
@@ -559,6 +562,65 @@ export interface DashboardOverview {
   daily_spend: DailySpend[];
 }
 
+// Wire shape from /transactions (lamports, tx_type, signature)
+interface ApiTransaction {
+  id: string;
+  org_id: string;
+  agent_id: string | null;
+  wallet_id: string;
+  tx_type: string;
+  status: string;
+  signature: string | null;
+  from_address: string;
+  to_address: string;
+  amount_lamports: number;
+  token_mint: string | null;
+  platform_fee_lamports: number;
+  memo: string | null;
+  error: string | null;
+  created_at: string;
+  confirmed_at: string | null;
+}
+
+export function mapTransaction(t: ApiTransaction): Transaction {
+  return {
+    id: t.id,
+    wallet_id: t.wallet_id,
+    agent_id: t.agent_id || "",
+    type: (t.tx_type as Transaction["type"]) || "transfer",
+    status: (t.status as Transaction["status"]) || "pending",
+    chain: "solana",
+    from_address: t.from_address,
+    to_address: t.to_address,
+    amount: (t.amount_lamports / 1e9).toString(),
+    token: t.token_mint === "USDC" ? "USDC" : "SOL",
+    tx_hash: t.signature,
+    gas_used: null,
+    created_at: t.created_at,
+    confirmed_at: t.confirmed_at,
+    signatures: t.signature ? [t.signature] : [],
+  };
+}
+
+// The home page composes live endpoints instead of a /dashboard/overview
+// route. Each call falls back to zeroed data so a single 404 never blanks
+// the whole page.
 export const dashboard = {
-  overview: () => request<DashboardOverview>("/dashboard/overview"),
+  overview: async () => {
+    const [summary, agentsRes, walletsRes, daily, txs] = await Promise.all([
+      analytics.summary(14).catch(() => null),
+      agents.list({ limit: 1 }).catch(() => null),
+      wallets.list({ limit: 1 }).catch(() => null),
+      analytics.dailySpend(14).catch(() => null),
+      transactions.list({ limit: 5 }).catch(() => null),
+    ]);
+    return {
+      total_agents: agentsRes?.total ?? 0,
+      total_wallets: walletsRes?.total ?? 0,
+      total_transactions: summary?.total_transactions ?? txs?.total ?? 0,
+      total_spend_usd: summary?.total_spend_usd ?? 0,
+      recent_transactions: txs?.transactions ?? [],
+      daily_spend: daily?.data ?? [],
+    };
+  },
 };
