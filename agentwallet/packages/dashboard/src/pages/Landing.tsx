@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import {
   Bot,
@@ -95,6 +95,61 @@ const plans = [
   },
 ];
 
+const heroCmds = [
+  "agentwallet escrow create --from agent --to vendor --amount 50 USDC",
+  "agentwallet x402 pay --endpoint model.api --max 0.002 SOL",
+  "agentwallet wallet create --type agent --label acme-bot",
+  "agentwallet subscribe --plan pro --usdc 49",
+];
+
+const heroStatuses = [
+  "escrow_abc123 funded on devnet",
+  "0.002 SOL paid per call",
+  "wallet created",
+];
+
+/** Scroll-reveal wrapper — fades/slides children in when they enter view. */
+function Reveal({
+  children,
+  delay = 0,
+  className = "",
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.12 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      style={{ transitionDelay: `${delay}ms` }}
+      className={`transition-all duration-700 ease-out ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+      } ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
 function ThemeToggle() {
   const [light, setLight] = useState(
     () => localStorage.getItem("aw-theme") === "light"
@@ -109,11 +164,7 @@ function ThemeToggle() {
       className="p-2 rounded text-ink-400 hover:text-ink-200 hover:bg-ink-800/60 transition-colors"
       title="Toggle theme"
     >
-      {light ? (
-        <Moon className="w-4 h-4" />
-      ) : (
-        <Sun className="w-4 h-4" />
-      )}
+      {light ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
     </button>
   );
 }
@@ -121,26 +172,85 @@ function ThemeToggle() {
 function CopyCmd({ cmd }: { cmd: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-ink-800 last:border-0">
-      <code className="text-xs text-ink-300 truncate">
-        <span className="text-brand-400 select-none">$ </span>
-        {cmd}
-      </code>
-      <button
-        onClick={() => {
-          navigator.clipboard.writeText(cmd);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1200);
-        }}
-        className="text-ink-500 hover:text-brand-400 transition-colors flex-shrink-0"
-        title="Copy command"
-      >
-        {copied ? (
-          <span className="text-[10px] text-brand-400">copied ✓</span>
-        ) : (
-          <Copy className="w-3.5 h-3.5" />
-        )}
-      </button>
+    <button
+      onClick={() => {
+        navigator.clipboard.writeText(cmd);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1200);
+      }}
+      className="text-ink-500 hover:text-brand-400 transition-colors flex-shrink-0"
+      title="Copy command"
+    >
+      {copied ? (
+        <span className="text-[10px] text-brand-400">copied ✓</span>
+      ) : (
+        <Copy className="w-3.5 h-3.5" />
+      )}
+    </button>
+  );
+}
+
+/** Terminal that types the demo commands char-by-char, then shows ✓ statuses and loops. */
+function TypewriterTerminal() {
+  const [lineIdx, setLineIdx] = useState(0);
+  const [chars, setChars] = useState(0);
+  const [statusesShown, setStatusesShown] = useState(0);
+
+  useEffect(() => {
+    if (lineIdx >= heroCmds.length) {
+      // reveal statuses one by one
+      if (statusesShown < heroStatuses.length) {
+        const t = setTimeout(() => setStatusesShown((s) => s + 1), 420);
+        return () => clearTimeout(t);
+      }
+      // pause, then restart the loop
+      const t = setTimeout(() => {
+        setLineIdx(0);
+        setChars(0);
+        setStatusesShown(0);
+      }, 4200);
+      return () => clearTimeout(t);
+    }
+    const full = heroCmds[lineIdx];
+    if (chars < full.length) {
+      const t = setTimeout(() => setChars((c) => c + 1), 26);
+      return () => clearTimeout(t);
+    }
+    const t = setTimeout(() => {
+      setLineIdx((i) => i + 1);
+      setChars(0);
+    }, 380);
+    return () => clearTimeout(t);
+  }, [lineIdx, chars, statusesShown]);
+
+  return (
+    <div className="p-5">
+      {heroCmds.map((cmd, i) => {
+        if (i > lineIdx) return null;
+        const done = i < lineIdx;
+        const text = done ? cmd : cmd.slice(0, chars);
+        return (
+          <div
+            key={cmd}
+            className="flex items-center justify-between gap-3 px-4 py-3 border-b border-ink-800 last:border-0"
+          >
+            <code className="text-xs text-ink-300 truncate">
+              <span className="text-brand-400 select-none">$ </span>
+              {text}
+              {!done && <span className="aw-cursor text-brand-400">▍</span>}
+            </code>
+            {done && <CopyCmd cmd={cmd} />}
+          </div>
+        );
+      })}
+      {/* reserved height so the card never jumps */}
+      <div className="px-4 py-3 h-[84px] space-y-1.5">
+        {heroStatuses.slice(0, statusesShown).map((s) => (
+          <p key={s} className="aw-fade-in text-xs text-ink-500 truncate">
+            <span className="text-brand-400">✓</span> {s}
+          </p>
+        ))}
+      </div>
     </div>
   );
 }
@@ -162,7 +272,8 @@ export default function Landing() {
     <div className="min-h-screen bg-ink-950 text-ink-100 relative overflow-x-hidden">
       {/* backdrop */}
       <div className="absolute inset-0 grid-bg pointer-events-none" />
-      <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-brand-500/5 blur-3xl rounded-full pointer-events-none" />
+      {/* animated gradient glow */}
+      <div className="aw-glow absolute -top-44 left-1/2 -translate-x-1/2 w-[900px] h-[520px] bg-gradient-to-br from-brand-500/10 via-brand-400/5 to-transparent blur-3xl rounded-full pointer-events-none" />
 
       {/* Nav */}
       <header className="relative max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
@@ -188,193 +299,193 @@ export default function Landing() {
 
       {/* Hero */}
       <section className="relative max-w-6xl mx-auto px-6 pt-16 pb-20 grid lg:grid-cols-2 gap-14 items-center">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 border border-brand-500/30 bg-brand-500/5 rounded text-[11px] text-brand-400 mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
-            SOLANA DEVNET · LIVE
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-heading tracking-tight leading-[1.1]">
-            The payment rail
-            <br />
-            for the <span className="text-brand-400">agent economy</span>.
-          </h1>
-          <p className="mt-5 text-ink-300 max-w-lg leading-relaxed">
-            Spin up Solana wallets, escrow and pay-per-call billing for your
-            agents in minutes. No Stripe, no intermediaries — just on-chain
-            money moving automatically when your agents work.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link to="/login" className="btn-primary">
-              Launch Dashboard <ArrowRight className="w-4 h-4" />
-            </Link>
-            <a href="#devnet" className="btn-secondary">
-              Try Devnet — Free
-            </a>
-          </div>
-          <div className="mt-8 flex items-center gap-6 text-[11px] text-ink-500 uppercase tracking-widest">
-            <span>● Escrow</span>
-            <span>● x402</span>
-            <span>● USDC</span>
-            <span>● Swarms</span>
-          </div>
-        </div>
-
-        {/* Terminal demo */}
-        <div className="card !p-0 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-2.5 border-b border-ink-800 bg-ink-900/80">
-            <span className="text-[11px] text-ink-500 uppercase tracking-widest">
-              agentwallet.sh
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-brand-500" />
-              <span className="w-2 h-2 rounded-full bg-amber-500" />
-              <span className="w-2 h-2 rounded-full bg-red-500" />
-            </span>
-          </div>
-          <div className="p-5">
-            <CopyCmd cmd="agentwallet escrow create --from agent --to vendor --amount 50 USDC" />
-            <CopyCmd cmd="agentwallet x402 pay --endpoint model.api --max 0.002 SOL" />
-            <CopyCmd cmd="agentwallet wallet create --type agent --label acme-bot" />
-            <CopyCmd cmd="agentwallet subscribe --plan pro --usdc 49" />
-            <div className="px-4 py-3">
-              <p className="text-xs text-ink-500">
-                <span className="text-brand-400">✓</span> escrow_abc123 funded on
-                devnet · <span className="text-brand-400">✓</span> 0.002 SOL paid
-                per call · <span className="text-brand-400">✓</span> wallet
-                created
-              </p>
+        <Reveal>
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 border border-brand-500/30 bg-brand-500/5 rounded text-[11px] text-brand-400 mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
+              SOLANA DEVNET · LIVE
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-heading tracking-tight leading-[1.1]">
+              The payment rail
+              <br />
+              for the <span className="text-brand-400">agent economy</span>.
+            </h1>
+            <p className="mt-5 text-ink-300 max-w-lg leading-relaxed">
+              Spin up Solana wallets, escrow and pay-per-call billing for your
+              agents in minutes. No Stripe, no intermediaries — just on-chain
+              money moving automatically when your agents work.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <Link to="/login" className="btn-primary">
+                Launch Dashboard <ArrowRight className="w-4 h-4" />
+              </Link>
+              <a href="#devnet" className="btn-secondary">
+                Try Devnet — Free
+              </a>
+            </div>
+            <div className="mt-8 flex items-center gap-6 text-[11px] text-ink-500 uppercase tracking-widest">
+              <span>● Escrow</span>
+              <span>● x402</span>
+              <span>● USDC</span>
+              <span>● Swarms</span>
             </div>
           </div>
-        </div>
+        </Reveal>
+
+        {/* Terminal demo */}
+        <Reveal delay={150}>
+          <div className="card !p-0 overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-ink-800 bg-ink-900/80">
+              <span className="text-[11px] text-ink-500 uppercase tracking-widest">
+                agentwallet.sh
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-brand-500" />
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                <span className="w-2 h-2 rounded-full bg-red-500" />
+              </span>
+            </div>
+            <TypewriterTerminal />
+          </div>
+        </Reveal>
       </section>
 
       {/* Features */}
       <section id="features" className="relative max-w-6xl mx-auto px-6 py-20">
-        <div className="max-w-2xl mb-12">
-          <p className="text-[11px] text-brand-400 uppercase tracking-[0.3em] mb-3">
-            Features
-          </p>
-          <h2 className="text-3xl font-bold text-heading tracking-tight">
-            Everything agents need to move money.
-          </h2>
-          <p className="mt-3 text-ink-300">
-            Built for autonomous systems — every primitive is a Solana program,
-            every action is on-chain.
-          </p>
-        </div>
+        <Reveal>
+          <div className="max-w-2xl mb-12">
+            <p className="text-[11px] text-brand-400 uppercase tracking-[0.3em] mb-3">
+              Features
+            </p>
+            <h2 className="text-3xl font-bold text-heading tracking-tight">
+              Everything agents need to move money.
+            </h2>
+            <p className="mt-3 text-ink-300">
+              Built for autonomous systems — every primitive is a Solana
+              program, every action is on-chain.
+            </p>
+          </div>
+        </Reveal>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {features.map((f) => (
-            <div
-              key={f.title}
-              className="card hover:border-brand-500/40 transition-colors"
-            >
-              <div className="w-9 h-9 rounded flex items-center justify-center bg-brand-500/10 border border-brand-500/20 mb-4">
-                <f.icon className="w-4 h-4 text-brand-400" />
+          {features.map((f, i) => (
+            <Reveal key={f.title} delay={(i % 3) * 90}>
+              <div className="card h-full hover:border-brand-500/40 transition-colors">
+                <div className="w-9 h-9 rounded flex items-center justify-center bg-brand-500/10 border border-brand-500/20 mb-4">
+                  <f.icon className="w-4 h-4 text-brand-400" />
+                </div>
+                <h3 className="text-sm font-bold text-ink-100 mb-1.5">
+                  {f.title}
+                </h3>
+                <p className="text-xs text-ink-400 leading-relaxed">{f.desc}</p>
               </div>
-              <h3 className="text-sm font-bold text-ink-100 mb-1.5">
-                {f.title}
-              </h3>
-              <p className="text-xs text-ink-400 leading-relaxed">{f.desc}</p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* Pricing */}
       <section id="pricing" className="relative max-w-6xl mx-auto px-6 py-20">
-        <div className="max-w-2xl mb-12">
-          <p className="text-[11px] text-brand-400 uppercase tracking-[0.3em] mb-3">
-            Pricing
-          </p>
-          <h2 className="text-3xl font-bold text-heading tracking-tight">
-            Pay in USDC. Settle on-chain.
-          </h2>
-          <p className="mt-3 text-ink-300">
-            No credit card required — subscriptions renew automatically from
-            your agent wallets.
-          </p>
-        </div>
+        <Reveal>
+          <div className="max-w-2xl mb-12">
+            <p className="text-[11px] text-brand-400 uppercase tracking-[0.3em] mb-3">
+              Pricing
+            </p>
+            <h2 className="text-3xl font-bold text-heading tracking-tight">
+              Pay in USDC. Settle on-chain.
+            </h2>
+            <p className="mt-3 text-ink-300">
+              No credit card required — subscriptions renew automatically from
+              your agent wallets.
+            </p>
+          </div>
+        </Reveal>
         <div className="grid md:grid-cols-3 gap-4">
-          {plans.map((p) => (
-            <div
-              key={p.name}
-              className={`card relative flex flex-col ${
-                p.highlight
-                  ? "border-brand-500/60 shadow-[0_0_40px_-12px] shadow-brand-500/20"
-                  : ""
-              }`}
-            >
-              {p.highlight && (
-                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-brand-500 text-ink-950 text-[10px] font-bold uppercase tracking-widest rounded">
-                  Most Popular
-                </span>
-              )}
-              <p className="text-[11px] text-ink-500 uppercase tracking-widest">
-                {p.name}
-              </p>
-              <div className="mt-3 flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-ink-100">
-                  {p.price}
-                </span>
-                <span className="text-[11px] text-ink-500">{p.period}</span>
-              </div>
-              <p className="text-xs text-ink-400 mt-1">{p.tagline}</p>
-              <ul className="mt-5 space-y-2.5 flex-1">
-                {p.features.map((feat) => (
-                  <li
-                    key={feat}
-                    className="flex items-start gap-2 text-xs text-ink-300"
-                  >
-                    <span className="text-brand-400 mt-0.5">›</span>
-                    {feat}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                to="/login"
-                className={
-                  p.highlight ? "btn-primary w-full mt-6" : "btn-secondary w-full mt-6"
-                }
+          {plans.map((p, i) => (
+            <Reveal key={p.name} delay={i * 120}>
+              <div
+                className={`card h-full relative flex flex-col ${
+                  p.highlight
+                    ? "border-brand-500/60 shadow-[0_0_40px_-12px] shadow-brand-500/20"
+                    : ""
+                }`}
               >
-                {p.cta}
-              </Link>
-            </div>
+                {p.highlight && (
+                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-brand-500 text-ink-950 text-[10px] font-bold uppercase tracking-widest rounded">
+                    Most Popular
+                  </span>
+                )}
+                <p className="text-[11px] text-ink-500 uppercase tracking-widest">
+                  {p.name}
+                </p>
+                <div className="mt-3 flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-ink-100">
+                    {p.price}
+                  </span>
+                  <span className="text-[11px] text-ink-500">{p.period}</span>
+                </div>
+                <p className="text-xs text-ink-400 mt-1">{p.tagline}</p>
+                <ul className="mt-5 space-y-2.5 flex-1">
+                  {p.features.map((feat) => (
+                    <li
+                      key={feat}
+                      className="flex items-start gap-2 text-xs text-ink-300"
+                    >
+                      <span className="text-brand-400 mt-0.5">›</span>
+                      {feat}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  to="/login"
+                  className={
+                    p.highlight
+                      ? "btn-primary w-full mt-6"
+                      : "btn-secondary w-full mt-6"
+                  }
+                >
+                  {p.cta}
+                </Link>
+              </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* Devnet CTA */}
       <section id="devnet" className="relative max-w-6xl mx-auto px-6 py-20">
-        <div className="card !p-0 overflow-hidden relative">
-          <div className="absolute inset-0 grid-bg opacity-60 pointer-events-none" />
-          <div className="relative p-8 md:p-12 text-center">
-            <div className="flex justify-center mb-6">
-              <div className="w-12 h-12">
-                <LogoMark />
+        <Reveal>
+          <div className="card !p-0 overflow-hidden relative">
+            <div className="absolute inset-0 grid-bg opacity-60 pointer-events-none" />
+            <div className="relative p-8 md:p-12 text-center">
+              <div className="flex justify-center mb-6">
+                <div className="w-12 h-12">
+                  <LogoMark />
+                </div>
+              </div>
+              <h2 className="text-3xl font-bold text-heading tracking-tight">
+                Deploy your first agent wallet today.
+              </h2>
+              <p className="mt-3 text-ink-300 max-w-xl mx-auto text-sm leading-relaxed">
+                Register free on devnet, fund your wallet from the faucet and
+                run escrow + x402 end to end — real Solana transactions, zero
+                cost.
+              </p>
+              <div className="mt-8 flex flex-wrap justify-center gap-4">
+                <Link to="/login" className="btn-primary">
+                  Register on Devnet — Free
+                </Link>
+                <a
+                  href="https://faucet.solana.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-secondary"
+                >
+                  Get 0.5 Test SOL
+                </a>
               </div>
             </div>
-            <h2 className="text-3xl font-bold text-heading tracking-tight">
-              Deploy your first agent wallet today.
-            </h2>
-            <p className="mt-3 text-ink-300 max-w-xl mx-auto text-sm leading-relaxed">
-              Register free on devnet, fund your wallet from the faucet and run
-              escrow + x402 end to end — real Solana transactions, zero cost.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Link to="/login" className="btn-primary">
-                Register on Devnet — Free
-              </Link>
-              <a
-                href="https://faucet.solana.com"
-                target="_blank"
-                rel="noreferrer"
-                className="btn-secondary"
-              >
-                Get 0.5 Test SOL
-              </a>
-            </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* Footer */}
