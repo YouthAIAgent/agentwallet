@@ -169,7 +169,7 @@ export default function Agents() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Agents</h1>
+          <h1 className="text-2xl font-bold text-heading">Agents</h1>
           <p className="text-ink-400 mt-1 text-sm">
             Manage your autonomous agents and their API keys
           </p>
@@ -277,7 +277,7 @@ export default function Agents() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-ink-900 border border-ink-800 rounded-xl w-full max-w-lg shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-ink-800">
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-semibold text-ink-100">
                 {createResult ? "Agent Created" : "Create New Agent"}
               </h2>
               <button

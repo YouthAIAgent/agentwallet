@@ -229,7 +229,7 @@ export default function Dashboard() {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-heading">Dashboard</h1>
         <p className="text-ink-400 mt-1 text-sm">
           Overview of your AgentWallet Protocol activity
         </p>
@@ -250,7 +250,7 @@ export default function Dashboard() {
               </span>
               <card.icon className="w-4 h-4 text-brand-500/60" />
             </div>
-            <p className="text-3xl font-bold text-white tracking-tight">
+            <p className="text-3xl font-bold text-ink-100 tracking-tight">
               {card.value}
             </p>
             <div className="mt-3 flex items-center gap-1.5">
@@ -286,7 +286,7 @@ export default function Dashboard() {
         <div className="xl:col-span-2 card">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-base font-semibold text-white">
+              <h2 className="text-base font-semibold text-ink-100">
                 Daily Spend
               </h2>
               <p className="text-xs text-ink-500 mt-0.5">Last 14 days</p>
@@ -375,7 +375,7 @@ export default function Dashboard() {
 
         {/* Recent Transactions */}
         <div className="card">
-          <h2 className="text-base font-semibold text-white mb-4">
+          <h2 className="text-base font-semibold text-ink-100 mb-4">
             Recent Transactions
           </h2>
           <div className="space-y-3">

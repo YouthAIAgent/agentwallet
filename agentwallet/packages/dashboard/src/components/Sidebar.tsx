@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -11,6 +12,8 @@ import {
   KeyRound,
   LogOut,
   Hexagon,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { auth } from "../api";
 
@@ -28,6 +31,14 @@ const navItems = [
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const [light, setLight] = useState(
+    () => localStorage.getItem("aw-theme") === "light"
+  );
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("light", light);
+    localStorage.setItem("aw-theme", light ? "light" : "dark");
+  }, [light]);
 
   const handleLogout = () => {
     auth.logout();
@@ -42,7 +53,7 @@ export default function Sidebar() {
           <Hexagon className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h1 className="text-sm font-bold text-white tracking-tight">
+          <h1 className="text-sm font-bold text-heading tracking-tight">
             AgentWallet
           </h1>
           <p className="text-[10px] text-ink-500 uppercase tracking-widest font-medium">
@@ -73,7 +84,19 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-3 py-4 border-t border-ink-800">
+      <div className="px-3 py-4 border-t border-ink-800 space-y-1">
+        <button
+          onClick={() => setLight(!light)}
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-ink-500 hover:text-ink-300 hover:bg-ink-800/60 transition-colors"
+          title="Toggle light/dark theme"
+        >
+          {light ? (
+            <Moon className="w-[18px] h-[18px]" />
+          ) : (
+            <Sun className="w-[18px] h-[18px]" />
+          )}
+          {light ? "dark_mode" : "light_mode"}
+        </button>
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-ink-500 hover:text-red-400 hover:bg-red-500/5 transition-colors"

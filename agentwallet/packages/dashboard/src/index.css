@@ -4,12 +4,70 @@
 
 @layer base {
   :root {
-    --color-brand: 0 187 127;
+    /* dark theme (default) — local.ai warm ink */
+    --ink-950: 15 14 12; /* #0f0e0c */
+    --ink-900: 22 21 19; /* #161513 */
+    --ink-800: 34 32 30; /* #22201e */
+    --ink-700: 39 37 34; /* #272522 */
+    --ink-600: 58 55 51; /* #3a3733 */
+    --ink-500: 107 103 95; /* #6b675f */
+    --ink-400: 138 134 126; /* #8a867e */
+    --ink-300: 201 197 189; /* #c9c5bd */
+    --ink-200: 214 210 202; /* #d6d2ca */
+    --ink-100: 239 238 235; /* #efeeeb */
+    /* emerald brand */
+    --brand-50: 230 251 243;
+    --brand-100: 195 244 226;
+    --brand-200: 139 234 201;
+    --brand-300: 77 220 172;
+    --brand-400: 31 206 149;
+    --brand-500: 0 187 127;
+    --brand-600: 0 151 103;
+    --brand-700: 0 122 84;
+    --brand-800: 0 92 64;
+    --brand-900: 0 61 43;
+    --brand-950: 0 31 22;
+    --heading: 239 238 235;
+    --grid-line: rgba(239, 238, 235, 0.025);
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  /* light theme — white paper, red headings, blue accents */
+  html.light {
+    --ink-950: 255 255 255; /* #ffffff */
+    --ink-900: 246 246 244; /* #f6f6f4 */
+    --ink-800: 231 230 226; /* #e7e6e2 */
+    --ink-700: 214 213 208; /* #d6d5d0 */
+    --ink-600: 179 178 172; /* #b3b2ac */
+    --ink-500: 122 120 115; /* #7a7873 */
+    --ink-400: 85 83 78; /* #55534e */
+    --ink-300: 51 49 45; /* #33312d */
+    --ink-200: 31 30 27; /* #1f1e1b */
+    --ink-100: 15 14 12; /* #0f0e0c */
+    /* blue brand */
+    --brand-50: 239 246 255;
+    --brand-100: 219 234 254;
+    --brand-200: 191 219 254;
+    --brand-300: 147 197 253;
+    --brand-400: 96 165 250;
+    --brand-500: 59 130 246;
+    --brand-600: 37 99 235;
+    --brand-700: 29 78 216;
+    --brand-800: 30 64 175;
+    --brand-900: 30 58 138;
+    --brand-950: 23 37 84;
+    --heading: 220 38 38; /* #dc2626 red */
+    --grid-line: rgba(15, 14, 12, 0.04);
+    color-scheme: light;
   }
 
   body {
-    @apply bg-ink-950 text-[#efeeeb] antialiased;
+    @apply bg-ink-950 text-ink-100 antialiased;
     font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    transition: background-color 200ms ease, color 200ms ease;
   }
 
   * {
@@ -41,8 +99,8 @@
 @layer components {
   .grid-bg {
     background-image:
-      linear-gradient(rgba(239, 238, 235, 0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(239, 238, 235, 0.025) 1px, transparent 1px);
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
     background-size: 44px 44px;
   }
 
@@ -75,7 +133,7 @@
   }
 
   .badge-gray {
-    @apply badge bg-ink-600/40 text-[#9a968f] border border-ink-700;
+    @apply badge bg-ink-600/40 text-ink-400 border border-ink-700;
   }
 
   .btn-primary {
@@ -83,7 +141,7 @@
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-ink-800 hover:bg-ink-700 text-[#efeeeb] text-sm font-medium rounded border border-ink-700 transition-colors focus:outline-none focus:ring-2 focus:ring-ink-600 focus:ring-offset-2 focus:ring-offset-ink-950;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-ink-800 hover:bg-ink-700 text-ink-100 text-sm font-medium rounded border border-ink-700 transition-colors focus:outline-none focus:ring-2 focus:ring-ink-600 focus:ring-offset-2 focus:ring-offset-ink-950;
   }
 
   .btn-danger {
@@ -91,18 +149,18 @@
   }
 
   .input {
-    @apply w-full px-3 py-2.5 bg-ink-950 border border-ink-700 rounded text-[#efeeeb] text-sm placeholder-[#6b675f] focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors;
+    @apply w-full px-3 py-2.5 bg-ink-950 border border-ink-700 rounded text-ink-100 text-sm placeholder-ink-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors;
   }
 
   .label {
-    @apply block text-sm font-medium text-[#c9c5bd] mb-1.5;
+    @apply block text-sm font-medium text-ink-300 mb-1.5;
   }
 
   .table-header {
-    @apply px-4 py-3 text-left text-xs font-semibold text-[#8a867e] uppercase tracking-wider;
+    @apply px-4 py-3 text-left text-xs font-semibold text-ink-400 uppercase tracking-wider;
   }
 
   .table-cell {
-    @apply px-4 py-3.5 text-sm text-[#c9c5bd] whitespace-nowrap;
+    @apply px-4 py-3.5 text-sm text-ink-300 whitespace-nowrap;
   }
 }

@@ -153,7 +153,7 @@ export default function Wallets() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Wallets</h1>
+          <h1 className="text-2xl font-bold text-heading">Wallets</h1>
           <p className="text-ink-400 mt-1 text-sm">
             Manage custodial wallets across chains
           </p>
@@ -168,17 +168,17 @@ export default function Wallets() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
         <div className="card">
           <p className="text-sm text-ink-400">Total Wallets</p>
-          <p className="text-2xl font-bold text-white mt-1">{walletList.length}</p>
+          <p className="text-2xl font-bold text-ink-100 mt-1">{walletList.length}</p>
         </div>
         <div className="card">
           <p className="text-sm text-ink-400">ETH Balance</p>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-ink-100 mt-1">
             {totalBalance.toFixed(4)} ETH
           </p>
         </div>
         <div className="card">
           <p className="text-sm text-ink-400">Stablecoin Balance</p>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-ink-100 mt-1">
             ${stablecoinBalance.toLocaleString()}
           </p>
         </div>
@@ -277,7 +277,7 @@ export default function Wallets() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-ink-900 border border-ink-800 rounded-xl w-full max-w-lg shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-ink-800">
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-semibold text-ink-100">
                 Create New Wallet
               </h2>
               <button

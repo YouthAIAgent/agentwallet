@@ -224,7 +224,7 @@ export default function Billing() {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Billing & Usage</h1>
+        <h1 className="text-2xl font-bold text-heading">Billing & Usage</h1>
         <p className="text-ink-400 mt-1 text-sm">
           Manage your subscription and monitor resource usage
         </p>
@@ -252,7 +252,7 @@ export default function Billing() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-white capitalize">
+                <h2 className="text-xl font-bold text-ink-100 capitalize">
                   {info.tier} Plan
                 </h2>
                 <span
@@ -295,7 +295,7 @@ export default function Billing() {
 
       {/* Usage Meters */}
       <div className="card mb-8">
-        <h2 className="text-base font-semibold text-white mb-6">
+        <h2 className="text-base font-semibold text-ink-100 mb-6">
           Current Usage
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -323,7 +323,7 @@ export default function Billing() {
       </div>
 
       {/* Tier Comparison */}
-      <h2 className="text-base font-semibold text-white mb-4">
+      <h2 className="text-base font-semibold text-ink-100 mb-4">
         Available Plans
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
@@ -349,19 +349,19 @@ export default function Billing() {
                 >
                   <Icon className={`w-5 h-5 ${colors.text}`} />
                 </div>
-                <h3 className="text-sm font-bold text-white capitalize">
+                <h3 className="text-sm font-bold text-ink-100 capitalize">
                   {tier.name}
                 </h3>
               </div>
 
               <div className="mb-5">
                 {tier.price_monthly === 0 ? (
-                  <div className="text-2xl font-bold text-white">Free</div>
+                  <div className="text-2xl font-bold text-ink-100">Free</div>
                 ) : tier.price_monthly < 0 ? (
-                  <div className="text-2xl font-bold text-white">Custom</div>
+                  <div className="text-2xl font-bold text-ink-100">Custom</div>
                 ) : (
                   <div>
-                    <span className="text-2xl font-bold text-white">
+                    <span className="text-2xl font-bold text-ink-100">
                       ${tier.price_monthly}
                     </span>
                     <span className="text-sm text-ink-500">/month</span>

@@ -212,7 +212,7 @@ export default function Transactions() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Transactions</h1>
+          <h1 className="text-2xl font-bold text-heading">Transactions</h1>
           <p className="text-ink-400 mt-1 text-sm">
             View and filter all transaction activity
           </p>
@@ -370,14 +370,14 @@ export default function Transactions() {
               <button
                 onClick={() => setPage(Math.max(0, page - 1))}
                 disabled={page === 0}
-                className="p-1.5 rounded text-ink-400 hover:text-white hover:bg-ink-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded text-ink-400 hover:text-ink-100 hover:bg-ink-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
                 disabled={page >= totalPages - 1}
-                className="p-1.5 rounded text-ink-400 hover:text-white hover:bg-ink-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded text-ink-400 hover:text-ink-100 hover:bg-ink-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

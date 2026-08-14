@@ -50,7 +50,7 @@ export default function Login() {
           <div className="inline-flex items-center justify-center w-12 h-12 border border-brand-500/40 bg-brand-500/10 rounded mb-5">
             <TerminalSquare className="w-6 h-6 text-brand-400" />
           </div>
-          <h1 className="text-xl font-bold text-white tracking-tight">
+          <h1 className="text-xl font-bold text-ink-100 tracking-tight">
             agent<span className="text-brand-400">wallet</span>
           </h1>
           <p className="text-[11px] text-ink-500 uppercase tracking-[0.3em] mt-2 font-medium">

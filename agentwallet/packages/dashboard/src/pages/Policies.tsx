@@ -181,7 +181,7 @@ export default function Policies() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Policies</h1>
+          <h1 className="text-2xl font-bold text-heading">Policies</h1>
           <p className="text-ink-400 mt-1 text-sm">
             Define spending limits, whitelists, and approval rules for agents
           </p>
@@ -220,7 +220,7 @@ export default function Policies() {
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-3">
-                      <h3 className="font-semibold text-white text-sm">
+                      <h3 className="font-semibold text-ink-100 text-sm">
                         {policy.name}
                       </h3>
                       <code className="text-[10px] font-mono text-ink-600 bg-ink-800 px-1.5 py-0.5 rounded">
@@ -312,7 +312,7 @@ export default function Policies() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-ink-900 border border-ink-800 rounded-xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-ink-800 sticky top-0 bg-ink-900 z-10">
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-semibold text-ink-100">
                 Create New Policy
               </h2>
               <button

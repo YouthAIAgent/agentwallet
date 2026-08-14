@@ -222,7 +222,7 @@ export default function PdaWallets() {
 
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white">PDA Wallet Details</h1>
+            <h1 className="text-2xl font-bold text-heading">PDA Wallet Details</h1>
             <p className="text-ink-400 mt-1 text-sm font-mono">
               {selectedPda.pda_address}
             </p>
@@ -415,7 +415,7 @@ export default function PdaWallets() {
         </button>
 
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">Derive PDA Address</h1>
+          <h1 className="text-2xl font-bold text-heading">Derive PDA Address</h1>
           <p className="text-ink-400 mt-1 text-sm">
             Compute a Program Derived Address from an organization public key and agent
             seed
@@ -512,7 +512,7 @@ export default function PdaWallets() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">PDA Wallets</h1>
+          <h1 className="text-2xl font-bold text-heading">PDA Wallets</h1>
           <p className="text-ink-400 mt-1 text-sm">
             Solana Program Derived Address wallets for autonomous agents
           </p>
@@ -536,7 +536,7 @@ export default function PdaWallets() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
         <div className="card">
           <p className="text-sm text-ink-400">Total PDA Wallets</p>
-          <p className="text-2xl font-bold text-white mt-1">{pdaList.length}</p>
+          <p className="text-2xl font-bold text-ink-100 mt-1">{pdaList.length}</p>
         </div>
         <div className="card">
           <p className="text-sm text-ink-400">Active</p>
@@ -544,7 +544,7 @@ export default function PdaWallets() {
         </div>
         <div className="card">
           <p className="text-sm text-ink-400">Total Daily Limit</p>
-          <p className="text-2xl font-bold text-white mt-1">
+          <p className="text-2xl font-bold text-ink-100 mt-1">
             {totalLimit.toFixed(2)} SOL
           </p>
         </div>
@@ -648,7 +648,7 @@ export default function PdaWallets() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-ink-900 border border-ink-800 rounded-xl w-full max-w-lg shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-ink-800">
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-semibold text-ink-100">
                 Create PDA Wallet
               </h2>
               <button

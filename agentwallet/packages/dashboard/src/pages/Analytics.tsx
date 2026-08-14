@@ -129,7 +129,7 @@ export default function Analytics() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Analytics</h1>
+          <h1 className="text-2xl font-bold text-heading">Analytics</h1>
           <p className="text-ink-400 mt-1 text-sm">
             Spend analysis and agent performance metrics
           </p>
@@ -174,7 +174,7 @@ export default function Analytics() {
                 {card.trend}
               </div>
             </div>
-            <p className="text-2xl font-bold text-white">{card.value}</p>
+            <p className="text-2xl font-bold text-ink-100">{card.value}</p>
             <p className="text-xs text-ink-500 mt-1">{card.label}</p>
           </div>
         ))}
@@ -184,7 +184,7 @@ export default function Analytics() {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Daily Spend Line Chart */}
         <div className="card">
-          <h2 className="text-base font-semibold text-white mb-1">
+          <h2 className="text-base font-semibold text-ink-100 mb-1">
             Daily Spend Trend
           </h2>
           <p className="text-xs text-ink-500 mb-6">
@@ -269,7 +269,7 @@ export default function Analytics() {
 
         {/* Agent Breakdown Bar Chart */}
         <div className="card">
-          <h2 className="text-base font-semibold text-white mb-1">
+          <h2 className="text-base font-semibold text-ink-100 mb-1">
             Agent Spend Breakdown
           </h2>
           <p className="text-xs text-ink-500 mb-6">
@@ -327,7 +327,7 @@ export default function Analytics() {
       {/* Agent Details Table */}
       <div className="card p-0 overflow-hidden mt-6">
         <div className="px-6 py-4 border-b border-ink-800">
-          <h2 className="text-base font-semibold text-white">
+          <h2 className="text-base font-semibold text-ink-100">
             Agent Performance Details
           </h2>
         </div>
