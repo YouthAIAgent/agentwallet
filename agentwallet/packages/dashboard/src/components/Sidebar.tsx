@@ -11,10 +11,10 @@ import {
   CreditCard,
   KeyRound,
   LogOut,
-  Hexagon,
   Sun,
   Moon,
 } from "lucide-react";
+import Brand from "./Brand";
 import { auth } from "../api";
 
 const navItems = [
@@ -47,19 +47,9 @@ export default function Sidebar() {
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-60 bg-ink-900 border-r border-ink-800 flex flex-col z-40">
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-ink-800">
-        <div className="w-9 h-9 bg-brand-600 rounded-lg flex items-center justify-center">
-          <Hexagon className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-sm font-bold text-heading tracking-tight">
-            AgentWallet
-          </h1>
-          <p className="text-[10px] text-ink-500 uppercase tracking-widest font-medium">
-            Protocol
-          </p>
-        </div>
+      {/* Brand */}
+      <div className="px-5 py-5 border-b border-ink-800">
+        <Brand />
       </div>
 
       {/* Navigation */}

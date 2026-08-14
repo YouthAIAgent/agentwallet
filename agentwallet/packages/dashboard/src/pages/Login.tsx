@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, TerminalSquare } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import Brand from "../components/Brand";
 import { auth, setToken } from "../api";
 
 export default function Login() {
@@ -46,19 +47,15 @@ export default function Login() {
 
       <div className="relative w-full max-w-md">
         {/* Brand header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 border border-brand-500/40 bg-brand-500/10 rounded mb-5">
-            <TerminalSquare className="w-6 h-6 text-brand-400" />
+        <div className="mb-8">
+          <div className="flex justify-center">
+            <Brand size="lg" tagline="Solana Protocol" center />
           </div>
-          <h1 className="text-xl font-bold text-ink-100 tracking-tight">
-            agent<span className="text-brand-400">wallet</span>
-          </h1>
-          <p className="text-[11px] text-ink-500 uppercase tracking-[0.3em] mt-2 font-medium">
-            Solana Protocol
-          </p>
-          <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 border border-ink-800 bg-ink-900 rounded text-[11px] text-ink-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
-            devnet · api connected
+          <div className="mt-5 flex justify-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 border border-ink-800 bg-ink-900 rounded text-[11px] text-ink-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
+              devnet · api connected
+            </div>
           </div>
         </div>
 
