@@ -4,7 +4,7 @@ import asyncio
 from logging.config import fileConfig
 
 from agentwallet.core.config import get_settings
-from agentwallet.core.database import Base
+from agentwallet.core.database import Base, ensure_async_pg
 from agentwallet.models import *  # noqa: F401, F403 -- ensure all models are imported
 from alembic import context
 from sqlalchemy import pool
@@ -39,7 +39,7 @@ def do_run_migrations(connection) -> None:
 async def run_async_migrations() -> None:
     settings = get_settings()
     configuration = config.get_section(config.config_ini_section, {})
-    configuration["sqlalchemy.url"] = settings.database_url
+    configuration["sqlalchemy.url"] = ensure_async_pg(settings.database_url)
 
     connectable = async_engine_from_config(
         configuration,

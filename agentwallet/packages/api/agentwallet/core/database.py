@@ -30,6 +30,19 @@ _engine = None
 _session_factory = None
 
 
+def ensure_async_pg(url: str) -> str:
+    """Normalize a postgres URL to the asyncpg driver.
+
+    Hosted providers (Railway, Neon, etc.) hand out plain
+    ``postgresql://...`` URLs; SQLAlchemy's async engine requires
+    ``postgresql+asyncpg://...``. Rewrite the scheme when the driver is
+    missing so the same env var works locally and in production.
+    """
+    if url.startswith("postgresql://") and not url.startswith("postgresql+asyncpg://"):
+        return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    return url
+
+
 def get_engine():
     global _engine
     if _engine is None:
@@ -45,7 +58,7 @@ def get_engine():
             )
         else:
             kwargs.update(pool_size=20, max_overflow=10, pool_pre_ping=True)
-        _engine = create_async_engine(settings.database_url, **kwargs)
+        _engine = create_async_engine(ensure_async_pg(settings.database_url), **kwargs)
     return _engine
 
 
