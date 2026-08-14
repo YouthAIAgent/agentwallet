@@ -39,6 +39,13 @@
 }
 
 @layer components {
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(239, 238, 235, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(239, 238, 235, 0.025) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+
   .card {
     @apply bg-ink-900 border border-ink-800 rounded-lg p-6;
   }
