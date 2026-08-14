@@ -177,34 +177,51 @@ export default function Dashboard() {
 
   const d = data!;
 
+  // Real deltas from daily_spend: last 7d vs prior 7d
+  const spend = d.daily_spend ?? [];
+  const sum = (arr: { total_usd: number; tx_count: number }[]) =>
+    arr.reduce((s, x) => s + x.total_usd, 0);
+  const txSum = (arr: { total_usd: number; tx_count: number }[]) =>
+    arr.reduce((s, x) => s + (x.tx_count ?? 0), 0);
+  const recent7 = spend.slice(-7);
+  const prior7 = spend.slice(-14, -7);
+  const spendDelta =
+    sum(prior7) > 0
+      ? Math.round(((sum(recent7) - sum(prior7)) / sum(prior7)) * 100)
+      : null;
+  const txDelta =
+    txSum(prior7) > 0
+      ? Math.round(((txSum(recent7) - txSum(prior7)) / txSum(prior7)) * 100)
+      : null;
+
   const statCards = [
     {
-      label: "Total Agents",
+      label: "agents",
       value: formatNumber(d.total_agents),
       icon: Bot,
-      color: "text-brand-400",
-      bgColor: "bg-brand-500/10",
+      delta: null as number | null,
+      suffix: "live · devnet",
     },
     {
-      label: "Total Wallets",
+      label: "wallets",
       value: formatNumber(d.total_wallets),
       icon: Wallet,
-      color: "text-emerald-400",
-      bgColor: "bg-emerald-500/10",
+      delta: null as number | null,
+      suffix: "live · devnet",
     },
     {
-      label: "Transactions",
+      label: "transactions",
       value: formatNumber(d.total_transactions),
       icon: ArrowLeftRight,
-      color: "text-amber-400",
-      bgColor: "bg-amber-500/10",
+      delta: txDelta,
+      suffix: "vs prev 7d",
     },
     {
-      label: "Total Spend",
+      label: "total spend",
       value: formatUSD(d.total_spend_usd),
       icon: DollarSign,
-      color: "text-sky-400",
-      bgColor: "bg-sky-500/10",
+      delta: spendDelta,
+      suffix: "vs prev 7d",
     },
   ];
 
@@ -218,24 +235,46 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+      {/* Stats Grid — terminal style */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {statCards.map((card) => (
-          <div key={card.label} className="card">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-ink-400 font-medium">
-                  {card.label}
-                </p>
-                <p className="text-2xl font-bold text-white mt-1">
-                  {card.value}
-                </p>
-              </div>
-              <div
-                className={`w-11 h-11 ${card.bgColor} rounded-xl flex items-center justify-center`}
-              >
-                <card.icon className={`w-5 h-5 ${card.color}`} />
-              </div>
+          <div
+            key={card.label}
+            className="card !p-5 hover:border-brand-500/40 transition-colors relative overflow-hidden"
+          >
+            {/* corner accent */}
+            <div className="absolute top-0 right-0 w-10 h-10 border-t border-r border-brand-500/30" />
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] uppercase tracking-[0.2em] text-ink-500 font-medium">
+                {card.label}
+              </span>
+              <card.icon className="w-4 h-4 text-brand-500/60" />
+            </div>
+            <p className="text-3xl font-bold text-white tracking-tight">
+              {card.value}
+            </p>
+            <div className="mt-3 flex items-center gap-1.5">
+              {card.delta !== null ? (
+                <>
+                  <TrendingUp className="w-3.5 h-3.5 text-brand-400" />
+                  <span className="text-xs font-semibold text-brand-400">
+                    {card.delta >= 0 ? "+" : ""}
+                    {card.delta}%
+                  </span>
+                  <span className="text-[11px] text-ink-600">
+                    {card.suffix}
+                  </span>
+                </>
+              ) : card.suffix.includes("live") ? (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
+                  <span className="text-[11px] text-ink-500 uppercase tracking-wider">
+                    {card.suffix}
+                  </span>
+                </>
+              ) : (
+                <span className="text-[11px] text-ink-600">{card.suffix}</span>
+              )}
             </div>
           </div>
         ))}
@@ -270,24 +309,24 @@ export default function Dashboard() {
                   >
                     <stop
                       offset="0%"
-                      stopColor="rgb(99,102,241)"
+                      stopColor="rgb(0,187,127)"
                       stopOpacity={0.3}
                     />
                     <stop
                       offset="100%"
-                      stopColor="rgb(99,102,241)"
+                      stopColor="rgb(0,187,127)"
                       stopOpacity={0}
                     />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke="#1e293b"
+                  stroke="#272522"
                   vertical={false}
                 />
                 <XAxis
                   dataKey="date"
-                  tick={{ fill: "#64748b", fontSize: 11 }}
+                  tick={{ fill: "#8a867e", fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(v) =>
@@ -298,20 +337,21 @@ export default function Dashboard() {
                   }
                 />
                 <YAxis
-                  tick={{ fill: "#64748b", fontSize: 11 }}
+                  tick={{ fill: "#8a867e", fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(v) => `$${v}`}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#0f172a",
-                    border: "1px solid #1e293b",
-                    borderRadius: "8px",
+                    backgroundColor: "#161513",
+                    border: "1px solid #272522",
+                    borderRadius: "2px",
                     fontSize: "12px",
+                    fontFamily: "Geist Mono, monospace",
                   }}
-                  labelStyle={{ color: "#94a3b8" }}
-                  itemStyle={{ color: "#818cf8" }}
+                  labelStyle={{ color: "#c9c5bd" }}
+                  itemStyle={{ color: "#00bb7f" }}
                   formatter={(value: number) => [formatUSD(value), "Spend"]}
                   labelFormatter={(label) =>
                     new Date(label).toLocaleDateString("en-US", {
@@ -324,7 +364,7 @@ export default function Dashboard() {
                 <Area
                   type="monotone"
                   dataKey="total_usd"
-                  stroke="#6366f1"
+                  stroke="#00bb7f"
                   strokeWidth={2}
                   fill="url(#spendGradient)"
                 />
