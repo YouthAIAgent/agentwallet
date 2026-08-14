@@ -18,12 +18,17 @@ from ...services.usdc_billing import PLANS, UsdcBillingService
 from ..middleware.auth import AuthContext, get_auth_context, require_permission
 from ..middleware.rate_limit import check_rate_limit
 from ..schemas.billing import (
+    BillingTier,
+    CurrentBillingResponse,
     Plan,
     PlansResponse,
     RenewRequest,
     SubscribeRequest,
     SubscribeResponse,
     SubscriptionInfo,
+    TierLimits,
+    TiersResponse,
+    UsageItem,
 )
 
 router = APIRouter(prefix="/billing", tags=["billing"])
@@ -44,6 +49,77 @@ async def list_plans(
     """List all tier plans with USDC pricing."""
     await check_rate_limit(request, str(auth.org_id), auth.org_tier)
     return PlansResponse(plans=[Plan(tier=tier, **plan) for tier, plan in PLANS.items()])
+
+
+@router.get("/tiers", response_model=TiersResponse)
+async def list_tiers(
+    request: Request,
+    auth: AuthContext = Depends(get_auth_context),
+):
+    """List all tiers with dashboard pricing cards (USD monthly + limits)."""
+    await check_rate_limit(request, str(auth.org_id), auth.org_tier)
+    return TiersResponse(
+        tiers=[
+            BillingTier(
+                name=plan["name"],
+                price_monthly=plan["price_usdc"],
+                limits=TierLimits(
+                    agents=plan["agents_limit"],
+                    wallets=plan["wallets_limit"],
+                    transactions_monthly=plan["tx_monthly_limit"],
+                    api_calls_monthly=None,
+                ),
+                features=plan["features"],
+            )
+            for plan in PLANS.values()
+        ]
+    )
+
+
+@router.get("/current", response_model=CurrentBillingResponse)
+async def current_billing(
+    request: Request,
+    auth: AuthContext = Depends(get_auth_context),
+    db: AsyncSession = Depends(get_db),
+):
+    """Current tier + usage for the dashboard billing page."""
+    await check_rate_limit(request, str(auth.org_id), auth.org_tier)
+    from sqlalchemy import func, select
+
+    from ...models.agent import Agent
+    from ...models.organization import Organization
+    from ...models.transaction import Transaction
+    from ...models.wallet import Wallet
+
+    org = await db.get(Organization, auth.org_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    agent_count = (
+        await db.execute(select(func.count()).select_from(Agent).where(Agent.org_id == auth.org_id))
+    ).scalar_one()
+    wallet_count = (
+        await db.execute(select(func.count()).select_from(Wallet).where(Wallet.org_id == auth.org_id))
+    ).scalar_one()
+    tx_count = (
+        await db.execute(
+            select(func.count()).select_from(Transaction).where(Transaction.org_id == auth.org_id)
+        )
+    ).scalar_one()
+
+    plan = PLANS.get(org.tier, PLANS["free"])
+    return CurrentBillingResponse(
+        tier=org.tier,
+        usage={
+            "agents": UsageItem(used=int(agent_count), limit=plan["agents_limit"]),
+            "wallets": UsageItem(used=int(wallet_count), limit=plan["wallets_limit"]),
+            "transactions_monthly": UsageItem(
+                used=int(tx_count), limit=plan["tx_monthly_limit"]
+            ),
+            "api_calls_monthly": UsageItem(used=0, limit=None),
+        },
+        amount_due=plan["price_usdc"],
+    )
 
 
 @router.post("/subscribe", response_model=SubscribeResponse, status_code=201)

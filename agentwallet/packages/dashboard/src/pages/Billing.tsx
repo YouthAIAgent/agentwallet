@@ -302,22 +302,22 @@ export default function Billing() {
           <UsageMeter
             label="Agents"
             used={info.usage.agents.used}
-            limit={info.usage.agents.limit}
+            limit={info.usage.agents.limit ?? 0}
           />
           <UsageMeter
             label="Wallets"
             used={info.usage.wallets.used}
-            limit={info.usage.wallets.limit}
+            limit={info.usage.wallets.limit ?? 0}
           />
           <UsageMeter
             label="Monthly Transactions"
             used={info.usage.transactions_monthly.used}
-            limit={info.usage.transactions_monthly.limit}
+            limit={info.usage.transactions_monthly.limit ?? 0}
           />
           <UsageMeter
             label="Monthly API Calls"
             used={info.usage.api_calls_monthly.used}
-            limit={info.usage.api_calls_monthly.limit}
+            limit={info.usage.api_calls_monthly.limit ?? 0}
           />
         </div>
       </div>

@@ -445,20 +445,48 @@ export const auditLog = {
     if (params?.limit) qs.set("limit", String(params.limit));
     if (params?.offset) qs.set("offset", String(params.offset));
     const q = qs.toString();
-    return request<{ events: AuditEvent[]; total: number }>(
+    return request<{ data: ApiAuditEvent[]; total: number }>(
       `/audit-log${q ? `?${q}` : ""}`
-    );
+    ).then((r) => ({ events: r.data.map(mapAuditEvent), total: r.total }));
   },
 };
+
+// Wire shape from /audit-log (event_type, actor_id)
+interface ApiAuditEvent {
+  id: string;
+  org_id: string;
+  event_type: string;
+  actor_id: string;
+  actor_type: string;
+  resource_type: string;
+  resource_id: string;
+  details: Record<string, unknown>;
+  ip_address: string | null;
+  created_at: string;
+}
+
+export function mapAuditEvent(e: ApiAuditEvent): AuditEvent {
+  return {
+    id: e.id,
+    actor_type: (e.actor_type as AuditEvent["actor_type"]) || "system",
+    actor_id: e.actor_id,
+    action: e.event_type,
+    resource_type: e.resource_type,
+    resource_id: e.resource_id,
+    details: e.details || {},
+    ip_address: e.ip_address || "",
+    created_at: e.created_at,
+  };
+}
 
 // --- Billing ---
 export interface BillingInfo {
   tier: "free" | "starter" | "pro" | "enterprise";
   usage: {
-    agents: { used: number; limit: number };
-    wallets: { used: number; limit: number };
-    transactions_monthly: { used: number; limit: number };
-    api_calls_monthly: { used: number; limit: number };
+    agents: { used: number; limit: number | null };
+    wallets: { used: number; limit: number | null };
+    transactions_monthly: { used: number; limit: number | null };
+    api_calls_monthly: { used: number; limit: number | null };
   };
   current_period_end: string;
   amount_due: number;
@@ -477,8 +505,42 @@ export interface BillingTier {
 }
 
 export const billing = {
-  current: () => request<BillingInfo>("/billing"),
-  tiers: () => request<{ tiers: BillingTier[] }>("/billing/tiers"),
+  current: () =>
+    request<{
+      tier: string;
+      usage: Record<
+        string,
+        { used: number; limit: number | null }
+      >;
+      current_period_end?: string | null;
+      amount_due?: number;
+    }>("/billing/current").then((r) => ({
+      tier: (r.tier as BillingInfo["tier"]) || "free",
+      usage: {
+        agents: r.usage["agents"] || { used: 0, limit: 0 },
+        wallets: r.usage["wallets"] || { used: 0, limit: 0 },
+        transactions_monthly:
+          r.usage["transactions_monthly"] || { used: 0, limit: 0 },
+        api_calls_monthly:
+          r.usage["api_calls_monthly"] || { used: 0, limit: 0 },
+      },
+      current_period_end: r.current_period_end || "",
+      amount_due: r.amount_due || 0,
+    })),
+  tiers: () =>
+    request<{ tiers: BillingTier[] }>("/billing/tiers").then((r) => ({
+      tiers: r.tiers.map((t) => ({
+        name: t.name,
+        price_monthly: t.price_monthly,
+        limits: {
+          agents: t.limits?.agents ?? 0,
+          wallets: t.limits?.wallets ?? 0,
+          transactions_monthly: t.limits?.transactions_monthly ?? 0,
+          api_calls_monthly: t.limits?.api_calls_monthly ?? 0,
+        },
+        features: t.features || [],
+      })),
+    })),
   upgrade: (tier: string) =>
     request<{ checkout_url: string }>("/billing/upgrade", {
       method: "POST",

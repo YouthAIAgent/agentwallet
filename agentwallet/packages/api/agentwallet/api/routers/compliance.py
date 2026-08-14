@@ -10,9 +10,12 @@ from ..middleware.rate_limit import check_rate_limit
 from ..schemas.compliance import AuditEventResponse, AuditLogResponse
 
 router = APIRouter(prefix="/compliance", tags=["compliance"])
+# Root-level alias the dashboard calls directly (GET /audit-log).
+audit_router = APIRouter(prefix="/audit-log", tags=["audit-log"])
 
 
 @router.get("/audit-log", response_model=AuditLogResponse)
+@audit_router.get("", response_model=AuditLogResponse)
 async def get_audit_log(
     request: Request,
     event_type: str | None = None,

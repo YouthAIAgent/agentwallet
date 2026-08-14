@@ -24,6 +24,46 @@ class PlansResponse(BaseModel):
     plans: list[Plan] = Field(..., description="Available plans")
 
 
+class TierLimits(BaseModel):
+    """Per-tier resource limits (null = unlimited)."""
+
+    agents: int | None = None
+    wallets: int | None = None
+    transactions_monthly: int | None = None
+    api_calls_monthly: int | None = None
+
+
+class BillingTier(BaseModel):
+    """Tier as shown on the dashboard pricing card."""
+
+    name: str
+    price_monthly: float
+    limits: TierLimits
+    features: list[str]
+
+
+class TiersResponse(BaseModel):
+    """All tiers with display pricing + limits."""
+
+    tiers: list[BillingTier]
+
+
+class UsageItem(BaseModel):
+    """Used/limit pair for one resource."""
+
+    used: int
+    limit: int | None = None
+
+
+class CurrentBillingResponse(BaseModel):
+    """Org's current tier, usage, and period."""
+
+    tier: str
+    usage: dict[str, UsageItem]
+    current_period_end: str | None = None
+    amount_due: float = 0.0
+
+
 class SubscribeRequest(BaseModel):
     """Request to subscribe to a tier, paid in USDC."""
 
