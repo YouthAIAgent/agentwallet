@@ -18,23 +18,23 @@ import shotBilling from "../public/shots/10-billing.png";
 import shotLight from "../public/shots/12-dashboard-light.png";
 
 // ---------- design tokens (local.ai aesthetic) ----------
-const INK_950 = "#0f0e0c";
-const INK_900 = "#161513";
-const INK_800 = "#22201e";
-const INK_100 = "#efeeeb";
-const MUTED = "#8a867e";
-const DIM = "#6b675f";
-const GREEN = "#00bb7f";
-const GREEN_L = "#4ddcac";
-const FONT = "Consolas, 'Courier New', monospace";
+export const INK_950 = "#0f0e0c";
+export const INK_900 = "#161513";
+export const INK_800 = "#22201e";
+export const INK_100 = "#efeeeb";
+export const MUTED = "#8a867e";
+export const DIM = "#6b675f";
+export const GREEN = "#00bb7f";
+export const GREEN_L = "#4ddcac";
+export const FONT = "Consolas, 'Courier New', monospace";
 
-const GRID: React.CSSProperties = {
+export const GRID: React.CSSProperties = {
   backgroundImage:
     "linear-gradient(rgba(239,238,235,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(239,238,235,0.03) 1px, transparent 1px)",
   backgroundSize: "44px 44px",
 };
 
-const MONO = { fontFamily: FONT } as React.CSSProperties;
+export const MONO = { fontFamily: FONT } as React.CSSProperties;
 
 // ---------- helpers ----------
 export function Hex({ size = 120 }: { size?: number }) {
@@ -60,7 +60,7 @@ export function Hex({ size = 120 }: { size?: number }) {
   );
 }
 
-function Fade({
+export function Fade({
   children,
   start,
   dur,
@@ -81,7 +81,7 @@ function Fade({
   return <AbsoluteFill style={{ opacity }}>{children}</AbsoluteFill>;
 }
 
-function Shot({
+export function Shot({
   src,
   scaleFrom = 1.04,
   scaleTo = 1.16,
@@ -114,7 +114,7 @@ function Shot({
   );
 }
 
-function Title({
+export function Title({
   text,
   color = INK_100,
   size = 64,
@@ -159,7 +159,7 @@ function Title({
   );
 }
 
-function Chip({
+export function Chip({
   text,
   x,
   y,
@@ -206,7 +206,7 @@ function Chip({
   );
 }
 
-function Bar({
+export function Bar({
   kicker,
   title,
   sub,
@@ -534,7 +534,7 @@ function Outro() {
 }
 
 // ---------- main composition ----------
-export default function Launch() {
+export function Launch() {
   const frame = useCurrentFrame();
   return (
     <AbsoluteFill style={{ background: INK_950, fontFamily: FONT }}>
@@ -659,3 +659,4 @@ export default function Launch() {
     </AbsoluteFill>
   );
 }
+export default Launch;
