@@ -135,6 +135,17 @@
     animation: aw-glow 9s ease-in-out infinite;
   }
 
+  @keyframes aw-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .aw-spinner {
+    display: inline-block;
+    animation: aw-spin 0.9s linear infinite;
+  }
+
   @keyframes aw-fade-in {
     from {
       opacity: 0;

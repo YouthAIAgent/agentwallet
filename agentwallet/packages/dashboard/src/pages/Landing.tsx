@@ -102,12 +102,6 @@ const heroCmds = [
   "agentwallet subscribe --plan pro --usdc 49",
 ];
 
-const heroStatuses = [
-  "escrow_abc123 funded on devnet",
-  "0.002 SOL paid per call",
-  "wallet created",
-];
-
 /** Scroll-reveal wrapper — fades/slides children in when they enter view. */
 function Reveal({
   children,
@@ -190,74 +184,126 @@ function CopyCmd({ cmd }: { cmd: string }) {
   );
 }
 
-/** Terminal that types the demo commands char-by-char, then shows ✓ statuses and loops. */
+/** Terminal that types the demo commands, runs each with a spinner, and logs realistic success/failure output with exit codes. Loops forever. */
+const runningMsgs = [
+  "creating escrow account…",
+  "signing x402 payment…",
+  "deriving PDA + keypair…",
+  "opening USDC subscription…",
+];
+
+const failMsgs = [
+  "rpc rate limit exceeded — retry",
+  "insufficient funds — fund the wallet first",
+  "simulation failed: instruction error",
+  "network timeout — retry with --retry 3",
+  "signature verification failed",
+];
+
+const sig = () =>
+  Array.from({ length: 4 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join(
+    ""
+  );
+
+const successMsgs = [
+  `escrow_abc123 funded · 50 USDC locked (sig ${sig()}…)`,
+  `paid 0.002 SOL · receipt 8z${sig()}… (confirmed)`,
+  `wallet created · 7xKX…9mNp (agent type)`,
+  `subscribed · pro renews in 30d (USDC 49)`,
+];
+
+type CmdResult = { ok: boolean; text: string };
+
 function TypewriterTerminal() {
   const [lineIdx, setLineIdx] = useState(0);
   const [chars, setChars] = useState(0);
-  const [statusesShown, setStatusesShown] = useState(0);
+  const [phase, setPhase] = useState<"typing" | "running">("typing");
+  const [results, setResults] = useState<CmdResult[]>([]);
 
   useEffect(() => {
     if (lineIdx >= heroCmds.length) {
-      // reveal statuses one by one
-      if (statusesShown < heroStatuses.length) {
-        const t = setTimeout(() => setStatusesShown((s) => s + 1), 420);
-        return () => clearTimeout(t);
-      }
-      // pause, then restart the loop
+      // pause, then restart the whole demo
       const t = setTimeout(() => {
         setLineIdx(0);
         setChars(0);
-        setStatusesShown(0);
+        setPhase("typing");
+        setResults([]);
       }, 3500);
       return () => clearTimeout(t);
     }
-    const full = heroCmds[lineIdx];
-    if (chars < full.length) {
-      const t = setTimeout(() => setChars((c) => c + 1), 20);
+    if (phase === "typing") {
+      const full = heroCmds[lineIdx];
+      if (chars < full.length) {
+        const t = setTimeout(() => setChars((c) => c + 1), 20);
+        return () => clearTimeout(t);
+      }
+      const t = setTimeout(() => setPhase("running"), 200);
       return () => clearTimeout(t);
     }
+    // running — decide the outcome (≈20% failure) after a realistic delay
     const t = setTimeout(() => {
+      const ok = Math.random() > 0.2;
+      const text = ok
+        ? successMsgs[lineIdx]
+        : failMsgs[Math.floor(Math.random() * failMsgs.length)];
+      setResults((r) => [...r, { ok, text }]);
       setLineIdx((i) => i + 1);
       setChars(0);
-    }, 280);
+      setPhase("typing");
+    }, 700 + Math.random() * 600);
     return () => clearTimeout(t);
-  }, [lineIdx, chars, statusesShown]);
+  }, [lineIdx, chars, phase]);
 
-  // copy buttons appear only after the whole demo has typed out
+  // copy buttons appear only after the whole demo has run
   const allDone = lineIdx >= heroCmds.length;
 
   return (
-    <div className="p-5">
-      {heroCmds.map((cmd, i) => {
-        if (i > lineIdx) return null;
-        const lineDone = i < lineIdx;
-        const text = lineDone ? cmd : cmd.slice(0, chars);
-        return (
-          <div
-            key={cmd}
-            className="flex items-center justify-between gap-3 px-4 py-3 border-b border-ink-800 last:border-0"
-          >
+    <div className="p-4 h-[300px] overflow-hidden">
+      {/* completed commands */}
+      {results.map((r, i) => (
+        <div key={i} className="mb-2.5">
+          <div className="flex items-center justify-between gap-3">
             <code className="text-xs text-ink-300 truncate">
               <span className="text-brand-400 select-none">$ </span>
-              {text}
-              {!lineDone && <span className="aw-cursor text-brand-400">▍</span>}
+              {heroCmds[i]}
             </code>
             {allDone && (
               <span className="aw-fade-in">
-                <CopyCmd cmd={cmd} />
+                <CopyCmd cmd={heroCmds[i]} />
               </span>
             )}
           </div>
-        );
-      })}
-      {/* reserved height so the card never jumps */}
-      <div className="px-4 py-3 h-[84px] space-y-1.5">
-        {heroStatuses.slice(0, statusesShown).map((s) => (
-          <p key={s} className="aw-fade-in text-xs text-ink-500 truncate">
-            <span className="text-brand-400">✓</span> {s}
+          <p
+            className={`aw-fade-in text-xs mt-1 truncate ${
+              r.ok ? "text-brand-400" : "text-red-400"
+            }`}
+          >
+            {r.ok ? "✓" : "✗"} {r.text}
           </p>
-        ))}
-      </div>
+          <p className="text-[10px] mt-0.5 text-ink-500">
+            → exit {r.ok ? 0 : 1}
+          </p>
+        </div>
+      ))}
+
+      {/* current command */}
+      {lineIdx < heroCmds.length && (
+        <div className="mb-2.5">
+          <code className="text-xs text-ink-300">
+            <span className="text-brand-400 select-none">$ </span>
+            {heroCmds[lineIdx].slice(0, chars)}
+            {phase === "typing" && (
+              <span className="aw-cursor text-brand-400">▍</span>
+            )}
+          </code>
+          {phase === "running" && (
+            <p className="aw-fade-in text-xs mt-1 text-ink-400">
+              <span className="aw-spinner text-brand-400">⟳</span>{" "}
+              {runningMsgs[lineIdx]}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
