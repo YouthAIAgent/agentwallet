@@ -15,6 +15,7 @@ import {
 import Brand from "../components/Brand";
 import { LogoMark } from "../components/Brand";
 import { isAuthenticated } from "../api";
+import { track } from "../analytics";
 
 const features = [
   {
@@ -344,7 +345,11 @@ export default function Landing() {
         </nav>
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <Link to="/login" className="btn-primary !px-4 !py-2 text-xs">
+          <Link
+            to="/login"
+            className="btn-primary !px-4 !py-2 text-xs"
+            onClick={() => track("click_launch_app")}
+          >
             Launch App
           </Link>
         </div>
@@ -369,10 +374,18 @@ export default function Landing() {
               money moving automatically when your agents work.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Link to="/login" className="btn-primary">
+              <Link
+                to="/login"
+                className="btn-primary"
+                onClick={() => track("click_launch_dashboard")}
+              >
                 Launch Dashboard <ArrowRight className="w-4 h-4" />
               </Link>
-              <a href="#devnet" className="btn-secondary">
+              <a
+                href="#devnet"
+                className="btn-secondary"
+                onClick={() => track("click_try_devnet")}
+              >
                 Try Devnet — Free
               </a>
             </div>
@@ -524,7 +537,11 @@ export default function Landing() {
                 cost.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-4">
-                <Link to="/login" className="btn-primary">
+                <Link
+                  to="/login"
+                  className="btn-primary"
+                  onClick={() => track("click_register_devnet")}
+                >
                   Register on Devnet — Free
                 </Link>
                 <a
