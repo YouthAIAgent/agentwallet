@@ -1,0 +1,188 @@
+[
+ {
+  "file": "00.mp3",
+  "start": 20,
+  "text": "agentwallet, the payment rail for the agent economy.",
+  "dur": 2.82
+ },
+ {
+  "file": "01.mp3",
+  "start": 120,
+  "text": "Wallets, escrow, x402, USDC, and swarms, all on Solana.",
+  "dur": 5.63
+ },
+ {
+  "file": "02.mp3",
+  "start": 255,
+  "text": "A public landing page, built to convert.",
+  "dur": 2.47
+ },
+ {
+  "file": "03.mp3",
+  "start": 340,
+  "text": "Hero, features, pricing, and a devnet call to action.",
+  "dur": 3.7
+ },
+ {
+  "file": "04.mp3",
+  "start": 430,
+  "text": "Launch the dashboard, and register in minutes.",
+  "dur": 2.48
+ },
+ {
+  "file": "05.mp3",
+  "start": 555,
+  "text": "Register in seconds.",
+  "dur": 1.26
+ },
+ {
+  "file": "06.mp3",
+  "start": 640,
+  "text": "Your organization. Your email. Your on-chain keys.",
+  "dur": 4.72
+ },
+ {
+  "file": "07.mp3",
+  "start": 730,
+  "text": "Your API token, issued right on devnet.",
+  "dur": 2.51
+ },
+ {
+  "file": "08.mp3",
+  "start": 855,
+  "text": "The dashboard, real data, live.",
+  "dur": 2.24
+ },
+ {
+  "file": "09.mp3",
+  "start": 940,
+  "text": "Agents create wallets. Agents pay. Automatically.",
+  "dur": 4.47
+ },
+ {
+  "file": "10.mp3",
+  "start": 1060,
+  "text": "Every spend is visible, on-chain.",
+  "dur": 2.01
+ },
+ {
+  "file": "11.mp3",
+  "start": 1215,
+  "text": "Per-agent autonomy.",
+  "dur": 1.09
+ },
+ {
+  "file": "12.mp3",
+  "start": 1300,
+  "text": "Each agent gets its own wallet, and its own policy.",
+  "dur": 2.69
+ },
+ {
+  "file": "13.mp3",
+  "start": 1390,
+  "text": "Pause. Delete. Audit. Full control.",
+  "dur": 4.88
+ },
+ {
+  "file": "14.mp3",
+  "start": 1515,
+  "text": "PDA custody.",
+  "dur": 1.1
+ },
+ {
+  "file": "15.mp3",
+  "start": 1600,
+  "text": "Treasury, escrow, and agent wallets on Solana.",
+  "dur": 3.08
+ },
+ {
+  "file": "16.mp3",
+  "start": 1690,
+  "text": "Keys isolated. Spend limited.",
+  "dur": 2.73
+ },
+ {
+  "file": "17.mp3",
+  "start": 1815,
+  "text": "Every move is on-chain.",
+  "dur": 1.35
+ },
+ {
+  "file": "18.mp3",
+  "start": 1900,
+  "text": "Transactions, daily spend, audit trail.",
+  "dur": 2.74
+ },
+ {
+  "file": "19.mp3",
+  "start": 1990,
+  "text": "Built for compliance, from day one.",
+  "dur": 2.1
+ },
+ {
+  "file": "20.mp3",
+  "start": 2115,
+  "text": "USDC subscriptions.",
+  "dur": 1.71
+ },
+ {
+  "file": "21.mp3",
+  "start": 2200,
+  "text": "Free at zero. Pro at forty-nine. Enterprise at two-ninety-nine.",
+  "dur": 5.39
+ },
+ {
+  "file": "22.mp3",
+  "start": 2355,
+  "text": "Dark or light.",
+  "dur": 0.84
+ },
+ {
+  "file": "23.mp3",
+  "start": 2440,
+  "text": "One toggle re-themes the entire app.",
+  "dur": 2.07
+ },
+ {
+  "file": "24.mp3",
+  "start": 2595,
+  "text": "Everything agents need to move money.",
+  "dur": 1.73
+ },
+ {
+  "file": "25.mp3",
+  "start": 2710,
+  "text": "Escrow, x402, USDC, and swarms, all Solana programs.",
+  "dur": 5.37
+ },
+ {
+  "file": "26.mp3",
+  "start": 2895,
+  "text": "The terminal. Every flow.",
+  "dur": 2.26
+ },
+ {
+  "file": "27.mp3",
+  "start": 2980,
+  "text": "Escrow funded. Paid. Subscribed. Exit zero.",
+  "dur": 5.52
+ },
+ {
+  "file": "28.mp3",
+  "start": 3195,
+  "text": "Launch free on devnet.",
+  "dur": 1.43
+ },
+ {
+  "file": "29.mp3",
+  "start": 3310,
+  "text": "Agent wallet devnet two, on Vercel.",
+  "dur": 2.31
+ },
+ {
+  "file": "30.mp3",
+  "start": 3410,
+  "text": "Built for the agent economy, on Solana.",
+  "dur": 2.29
+ }
+]

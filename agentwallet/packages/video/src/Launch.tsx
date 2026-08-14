@@ -7,6 +7,8 @@ import {
   useCurrentFrame,
 } from "remotion";
 
+import { VoiceTrack } from "./Voice";
+
 // bundled asset imports (reliable across renders)
 import shotLanding from "../public/shots/01-landing.png";
 import shotLogin from "../public/shots/02-login.png";
@@ -731,6 +733,7 @@ export function Launch() {
       {CAPS.map((c) => (
         <Caption key={c.start} text={c.text} start={c.start} dur={c.dur} />
       ))}
+      <VoiceTrack />
     </AbsoluteFill>
   );
 }

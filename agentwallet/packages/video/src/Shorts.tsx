@@ -6,6 +6,7 @@ import {
   spring,
   useCurrentFrame,
 } from "remotion";
+import { VoiceShort15, VoiceShort30 } from "./VoiceShort";
 import {
   FONT,
   GRID,
@@ -361,6 +362,7 @@ export function Short15() {
       {C15.map((c) => (
         <Caption key={c.start} text={c.text} start={c.start} dur={c.dur} />
       ))}
+      <VoiceShort15 />
     </AbsoluteFill>
   );
 }
@@ -421,6 +423,7 @@ export function Short30() {
       {C30.map((c) => (
         <Caption key={c.start} text={c.text} start={c.start} dur={c.dur} />
       ))}
+      <VoiceShort30 />
     </AbsoluteFill>
   );
 }

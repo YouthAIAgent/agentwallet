@@ -1,0 +1,76 @@
+{
+ "s15": [
+  {
+   "file": "s15-00.mp3",
+   "text": "agentwallet, payments for the agent economy.",
+   "dur": 2.02
+  },
+  {
+   "file": "s15-01.mp3",
+   "text": "Real wallets, escrow, and billing on Solana.",
+   "dur": 2.45
+  },
+  {
+   "file": "s15-02.mp3",
+   "text": "Agents create wallets. Agents pay. On-chain.",
+   "dur": 2.55
+  },
+  {
+   "file": "s15-03.mp3",
+   "text": "Escrow, x402, USDC, and swarms.",
+   "dur": 3.26
+  },
+  {
+   "file": "s15-04.mp3",
+   "text": "Launch free on devnet.",
+   "dur": 1.28
+  }
+ ],
+ "s30": [
+  {
+   "file": "s30-00.mp3",
+   "text": "agentwallet, payments for the agent economy.",
+   "dur": 2.42
+  },
+  {
+   "file": "s30-01.mp3",
+   "text": "The payment rail for the agent economy.",
+   "dur": 1.94
+  },
+  {
+   "file": "s30-02.mp3",
+   "text": "Wallets, escrow, and pay-per-call billing.",
+   "dur": 2.56
+  },
+  {
+   "file": "s30-03.mp3",
+   "text": "Real data, live on devnet.",
+   "dur": 1.77
+  },
+  {
+   "file": "s30-04.mp3",
+   "text": "Each agent gets its own wallet and policy.",
+   "dur": 2.18
+  },
+  {
+   "file": "s30-05.mp3",
+   "text": "PDA custody. Treasury, escrow, and agent wallets.",
+   "dur": 4.54
+  },
+  {
+   "file": "s30-06.mp3",
+   "text": "The terminal. Every flow.",
+   "dur": 2.26
+  },
+  {
+   "file": "s30-07.mp3",
+   "text": "Escrow funded. Paid. Subscribed. Exit zero.",
+   "dur": 5.52
+  },
+  {
+   "file": "s30-08.mp3",
+   "text": "Launch free on devnet.",
+   "dur": 1.43
+  }
+ ]
+}
