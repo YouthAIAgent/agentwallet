@@ -32,4 +32,5 @@ mix() { # $1=video  $2=fade-in  $3=fade-out start  $4=fade-out dur
 mix launch 2 112 8
 mix short-30s 1 27 3
 mix short-15s 1 12.5 2.5
+mix mograph 2 60 8
 echo "done — all three videos have music bed + ducking"

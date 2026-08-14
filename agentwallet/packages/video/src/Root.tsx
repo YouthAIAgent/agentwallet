@@ -1,5 +1,6 @@
 import { Composition } from "remotion";
 import Launch from "./Launch";
+import { Mograph } from "./Mograph";
 import { Short15, Short30 } from "./Shorts";
 
 export const RemotionRoot = () => {
@@ -9,6 +10,14 @@ export const RemotionRoot = () => {
         id="AgentWalletLaunch"
         component={Launch}
         durationInFrames={3600}
+        fps={30}
+        width={1920}
+        height={1080}
+      />
+      <Composition
+        id="AgentWalletMograph"
+        component={Mograph}
+        durationInFrames={2040}
         fps={30}
         width={1920}
         height={1080}

@@ -1,0 +1,62 @@
+[
+ {
+  "file": "mo-00.mp3",
+  "start": 0,
+  "text": "Introducing agentwallet.",
+  "dur": 1.39
+ },
+ {
+  "file": "mo-01.mp3",
+  "start": 150,
+  "text": "The payment rail for the agent economy.",
+  "dur": 1.98
+ },
+ {
+  "file": "mo-02.mp3",
+  "start": 330,
+  "text": "Every agent gets its own Solana wallet. Isolated. On-chain. Program-owned.",
+  "dur": 6.9
+ },
+ {
+  "file": "mo-03.mp3",
+  "start": 557,
+  "text": "Escrow with real on-chain guarantees. Fund it. Release it.",
+  "dur": 5.19
+ },
+ {
+  "file": "mo-04.mp3",
+  "start": 750,
+  "text": "x402. Pay per API call. One signature, and the agent is in.",
+  "dur": 6.33
+ },
+ {
+  "file": "mo-05.mp3",
+  "start": 960,
+  "text": "USDC subscriptions. No Stripe. No intermediaries. Pure on-chain billing.",
+  "dur": 7.58
+ },
+ {
+  "file": "mo-06.mp3",
+  "start": 1207,
+  "text": "Swarms of agents, coordinating payments across the network.",
+  "dur": 3.22
+ },
+ {
+  "file": "mo-07.mp3",
+  "start": 1380,
+  "text": "The terminal. Every flow. From wallet to escrow to billing, one command.",
+  "dur": 5.81
+ },
+ {
+  "file": "mo-08.mp3",
+  "start": 1590,
+  "text": "Real data. Real audit trails. Built for compliance, from day one.",
+  "dur": 5.82
+ },
+ {
+  "file": "mo-09.mp3",
+  "start": 1800,
+  "text": "Launch free on devnet today. Agentwallet. Built for the agent economy.",
+  "dur": 5.68
+ }
+]
