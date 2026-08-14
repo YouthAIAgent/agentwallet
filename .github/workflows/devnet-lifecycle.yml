@@ -112,20 +112,25 @@ jobs:
             -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getBalance\",\"params\":[\"$ADDR\"]}" \
             | python -c "import sys,json;print(json.load(sys.stdin).get('result',{}).get('value',0))")
           echo "platform balance: $BAL lamports"
-          if [ "${BAL:-0}" -lt 30000000 ]; then
-            echo "balance low — requesting devnet airdrop (0.5 SOL)..."
-            curl -s --max-time 20 -X POST https://api.devnet.solana.com \
-              -H "Content-Type: application/json" \
-              -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"requestAirdrop\",\"params\":[\"$ADDR\",500000000]}" || true
-            sleep 5
-            BAL=$(curl -s --max-time 15 -X POST https://api.devnet.solana.com \
-              -H "Content-Type: application/json" \
-              -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getBalance\",\"params\":[\"$ADDR\"]}" \
-              | python -c "import sys,json;print(json.load(sys.stdin).get('result',{}).get('value',0))")
-            echo "after airdrop: $BAL lamports"
+          # The three lifecycles consume ~0.12 SOL total (smoke 0.05, escrow
+          # 0.05, x402 0.01 + custody/gas), so keep at least 0.12 SOL ready.
+          if [ "${BAL:-0}" -lt 120000000 ]; then
+            echo "balance low — requesting devnet airdrops (0.5 SOL each)..."
+            for try in 1 2 3; do
+              curl -s --max-time 20 -X POST https://api.devnet.solana.com \
+                -H "Content-Type: application/json" \
+                -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"requestAirdrop\",\"params\":[\"$ADDR\",500000000]}" || true
+              sleep 6
+              BAL=$(curl -s --max-time 15 -X POST https://api.devnet.solana.com \
+                -H "Content-Type: application/json" \
+                -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getBalance\",\"params\":[\"$ADDR\"]}" \
+                | python -c "import sys,json;print(json.load(sys.stdin).get('result',{}).get('value',0))")
+              echo "  try $try -> $BAL lamports"
+              [ "${BAL:-0}" -ge 120000000 ] && break
+            done
           fi
-          if [ "${BAL:-0}" -lt 30000000 ]; then
-            echo "::error::Platform wallet needs devnet SOL (has ${BAL}). Send devnet SOL to $ADDR, then re-run."
+          if [ "${BAL:-0}" -lt 120000000 ]; then
+            echo "::error::Platform wallet needs devnet SOL (has ${BAL}). Send devnet SOL to $ADDR (faucet.solana.com), then re-run."
             exit 1
           fi
         env:
