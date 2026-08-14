@@ -99,6 +99,35 @@ airdrop_devnet_sol() {
       sleep 5
     done
   done
+  # Public devnet faucets are IP rate-limited (429). Fall back to the
+  # platform wallet as a deterministic faucet — a real SOL transfer from
+  # the custody wallet, which the escrow/x402 flows also rely on.
+  if [ "${VALIDATOR_MODE:-0}" != "1" ] && [ -f "$ROOT/devnet_faucet.py" ]; then
+    # devnet_faucet.py needs solders — the smoke-test python may be a
+    # bare interpreter (e.g. Windows Store alias), so probe for one.
+    local faucet_py=""
+    for c in "$PYTHON" python python3; do
+      if command -v "$c" >/dev/null 2>&1 && "$c" -c "import solders" >/dev/null 2>&1; then
+        faucet_py="$c"; break
+      fi
+    done
+    if [ -n "$faucet_py" ]; then
+      info "public devnet airdrop rate-limited — using platform faucet (0.05 SOL)..." >&2
+      if "$faucet_py" "$ROOT/devnet_faucet.py" "$addr" 50000000 >/dev/null 2>&1; then
+        for i in $(seq 1 12); do
+          sleep 5
+          local resp bal
+          resp="$(curl -sf --max-time 10 -X POST "$SOLANA_RPC" -H "Content-Type: application/json" \
+            -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getBalance\",\"params\":[\"$addr\"]}" 2>/dev/null)" || resp=""
+          bal="$(echo "$resp" | "$PYTHON" -c "import sys,json;print(json.load(sys.stdin).get('result',{}).get('value',0))" 2>/dev/null || echo 0)"
+          if [ "${bal:-0}" -gt 0 ] 2>/dev/null; then
+            echo "$bal"
+            return 0
+          fi
+        done
+      fi
+    fi
+  fi
   return 1
 }
 

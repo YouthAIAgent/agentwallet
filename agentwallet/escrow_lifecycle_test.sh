@@ -2,10 +2,23 @@
 # Escrow lifecycle E2E — proves release/refund disburse FROM the platform
 # custody wallet (fixes the double-pay bug). Verifies both balance deltas
 # AND the on-chain transaction source address.
+#
+# Usage:
+#   bash escrow_lifecycle_test.sh                          # local validator (8899)
+#   RPC=https://api.devnet.solana.com bash escrow_lifecycle_test.sh   # devnet
+#   AMT1=0.02 AMT2=0.01 FUND_AMT=0.05 ...                  # smaller amounts (devnet)
 set -u
-API="http://localhost:8000/v1"
-RPC="http://localhost:8899"
+API="${API:-http://localhost:8000/v1}"
+RPC="${RPC:-http://localhost:8899}"
 SOL=1000000000
+AMT1="${AMT1:-0.3}"   # escrow #1 (release) amount in SOL
+AMT2="${AMT2:-0.1}"   # escrow #2 (refund) amount in SOL
+FUND_AMT="${FUND_AMT:-2}"  # devnet funding per address (SOL)
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PY=python
+AMT1_LP=$("$PY" -c "print(int($AMT1*1000000000))")
+AMT2_LP=$("$PY" -c "print(int($AMT2*1000000000))")
+FUND_LP=$("$PY" -c "print(int($FUND_AMT*1000000000))")
 
 J() { python -c "import sys,json;d=json.load(sys.stdin);print(d$1)" 2>/dev/null; }
 BAL() { curl -s --max-time 10 -X POST "$RPC" -H "Content-Type: application/json" -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getBalance\",\"params\":[\"$1\"]}" | J "['result']['value']"; }
@@ -38,6 +51,29 @@ STABLE_BAL() { # STABLE_BAL <addr> <timeout_s> — waits until 2 reads 2s apart 
   done
   echo "${b:-0}"
 }
+fund() { # fund <addr> <lamports> — public airdrop, then platform-faucet fallback
+  local addr=$1 lam=$2 bal=""
+  bal=$(BAL "$addr")
+  [ "${bal:-0}" -gt 0 ] 2>/dev/null && { echo "$bal"; return 0; }  # already funded
+  curl -s --max-time 20 -X POST "$RPC" -H "Content-Type: application/json" \
+    -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"requestAirdrop\",\"params\":[\"$addr\",$lam]}" >/dev/null 2>&1
+  for i in $(seq 1 6); do
+    bal=$(BAL "$addr")
+    [ "${bal:-0}" -gt 0 ] 2>/dev/null && { echo "$bal"; return 0; }
+    sleep 2
+  done
+  # Rate-limited public faucet -> deterministic platform faucet (real transfer)
+  if [ -f "$ROOT/devnet_faucet.py" ]; then
+    echo "  [fund] public airdrop rate-limited — using platform faucet for $addr" >&2
+    "$PY" "$ROOT/devnet_faucet.py" "$addr" "$lam" >/dev/null 2>&1 || true
+    for i in $(seq 1 10); do
+      bal=$(BAL "$addr")
+      [ "${bal:-0}" -gt 0 ] 2>/dev/null && { echo "$bal"; return 0; }
+      sleep 3
+    done
+  fi
+  echo "0"
+}
 
 echo "== 1. register fresh org =="
 STAMP=$(date +%s)
@@ -62,17 +98,16 @@ echo "funder=$FUNDER"
 echo "recip =$RECIP"
 echo "platf =$PLATFORM"
 
-echo "== 3. airdrops (funder 2 SOL, platform 2 SOL) + wait =="
-curl -s --max-time 20 -X POST "$RPC" -H "Content-Type: application/json" -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"requestAirdrop\",\"params\":[\"$FUNDER\",$((2*SOL))]}" >/dev/null
-curl -s --max-time 20 -X POST "$RPC" -H "Content-Type: application/json" -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"requestAirdrop\",\"params\":[\"$PLATFORM\",$((2*SOL))]}" >/dev/null
-FB0=$(WAIT_BAL "$FUNDER" 30)
-PB0=$(WAIT_BAL "$PLATFORM" 30)
+echo "== 3. funding (funder $FUND_AMT SOL, platform if needed) + wait =="
+FB0=$(fund "$FUNDER" "$FUND_LP")
+PB0=$(BAL "$PLATFORM")
+if [ "${PB0:-0}" -eq 0 ] 2>/dev/null; then PB0=$(fund "$PLATFORM" "$FUND_LP"); fi
 RB0=$(BAL "$RECIP")
 echo "funder=$FB0 platform=$PB0 recip=$RB0"
 
-echo "== 4. create escrow 0.3 SOL, wait funded =="
+echo "== 4. create escrow $AMT1 SOL, wait funded =="
 ESC=$(curl -s --max-time 60 -X POST "$API/escrow" -H "X-API-Key: $KEY" -H "Content-Type: application/json" \
-  -d "{\"funder_wallet_id\":\"$FUNDER_ID\",\"recipient_address\":\"$RECIP\",\"amount_sol\":0.3,\"conditions\":{\"task\":\"e2e release\"}}")
+  -d "{\"funder_wallet_id\":\"$FUNDER_ID\",\"recipient_address\":\"$RECIP\",\"amount_sol\":$AMT1,\"conditions\":{\"task\":\"e2e release\"}}")
 ESC_ID=$(echo "$ESC" | J "['id']")
 for i in $(seq 1 10); do
   S1=$(curl -s --max-time 15 "$API/escrow/$ESC_ID" -H "X-API-Key: $KEY" | J "['status']")
@@ -94,9 +129,9 @@ FB2=$(STABLE_BAL "$FUNDER" 20); PB2=$(STABLE_BAL "$PLATFORM" 20); RB2=$(STABLE_B
 echo "after release: funder=$FB2 (delta $((FB2-FB1))) platform=$PB2 (delta $((PB2-PB1))) recip=$RB2 (delta $((RB2-RB0)))"
 echo "release tx source: $SRC"
 
-echo "== 6. escrow2 0.1 SOL + REFUND =="
+echo "== 6. escrow2 $AMT2 SOL + REFUND =="
 ESC2=$(curl -s --max-time 60 -X POST "$API/escrow" -H "X-API-Key: $KEY" -H "Content-Type: application/json" \
-  -d "{\"funder_wallet_id\":\"$FUNDER_ID\",\"recipient_address\":\"$RECIP\",\"amount_sol\":0.1,\"conditions\":{\"task\":\"e2e refund\"}}")
+  -d "{\"funder_wallet_id\":\"$FUNDER_ID\",\"recipient_address\":\"$RECIP\",\"amount_sol\":$AMT2,\"conditions\":{\"task\":\"e2e refund\"}}")
 ESC2_ID=$(echo "$ESC2" | J "['id']")
 for i in $(seq 1 10); do
   S2=$(curl -s --max-time 15 "$API/escrow/$ESC2_ID" -H "X-API-Key: $KEY" | J "['status']")
@@ -123,10 +158,12 @@ chk() { if [ "$2" = "1" ]; then echo "  PASS  $1"; PASS=$((PASS+1)); else echo "
 [ "$REF_STAT" = "refunded" ] && chk "refund -> refunded" 1 || chk "refund -> $REF_STAT" 0
 D1=$((FB2-FB1)); D2=$((PB2-PB1)); D3=$((RB2-RB0))
 [ "$D1" -ge -5000 ] && [ "$D1" -le 5000 ] && chk "release: funder NOT charged (delta $D1)" 1 || chk "release: funder NOT charged (delta $D1)" 0
-[ "$D3" -ge 295000000 ] && chk "release: recipient +0.3 SOL (delta $D3)" 1 || chk "release: recipient +0.3 SOL (delta $D3)" 0
+MIN_RECIP=$((AMT1_LP-5000000))
+[ "$D3" -ge "$MIN_RECIP" ] && chk "release: recipient +$AMT1 SOL (delta $D3)" 1 || chk "release: recipient +$AMT1 SOL (delta $D3)" 0
 [ "$SRC" = "$PLATFORM" ] && chk "release tx signed by PLATFORM" 1 || chk "release tx signed by PLATFORM (got $SRC)" 0
 D4=$((FB4-FB3)); D5=$((PB4-PB3))
-[ "$D4" -ge 95000000 ] && chk "refund: funder got money back (delta $D4)" 1 || chk "refund: funder got money back (delta $D4)" 0
+MIN_REF=$((AMT2_LP-5000000))
+[ "$D4" -ge "$MIN_REF" ] && chk "refund: funder got money back (delta $D4)" 1 || chk "refund: funder got money back (delta $D4)" 0
 [ "$REF_SRC" = "$PLATFORM" ] && chk "refund tx signed by PLATFORM" 1 || chk "refund tx signed by PLATFORM (got $REF_SRC)" 0
 echo "RESULT: $PASS pass, $FAIL fail"
 [ "$FAIL" = "0" ]

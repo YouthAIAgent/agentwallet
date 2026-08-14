@@ -1,5 +1,0 @@
-services:
-  api:
-    environment:
-      SOLANA_RPC_URL: http://aw-solana-test-validator:8899
-      USDC_MINT_ADDRESS: 8PfXucknmwzztCV1tZ34Mc7YvHbEBhWYoLHHjqMMVdzM

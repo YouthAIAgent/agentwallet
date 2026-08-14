@@ -33,6 +33,10 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      # Run the mounted source (packages/api) instead of the image-baked
+      # site-packages copy, so code changes take effect on restart.
+      PYTHONPATH: /app/packages/api
     depends_on:
       postgres:
         condition: service_healthy
@@ -47,6 +51,8 @@ services:
       dockerfile: Dockerfile.worker
     env_file:
       - .env
+    environment:
+      PYTHONPATH: /app/packages/api
     depends_on:
       postgres:
         condition: service_healthy

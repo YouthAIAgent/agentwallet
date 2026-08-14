@@ -155,6 +155,11 @@ async def make_x402_request(
                 )
 
         # Step 4: execute payment via org wallet
+        # Idempotency key must be org-scoped: two different organizations
+        # paying the same amount for the same endpoint are distinct payments
+        # and must not collide.
+        idem = f"x402:{auth.org_id}:{req.wallet_id}:{req.url}:{amount_int}"
+
         engine = TransactionEngine(db)
         if token_symbol == "USDC":
             from ...services.token_service import TokenService
@@ -167,7 +172,7 @@ async def make_x402_request(
                 token_symbol="USDC",
                 amount=amount_int / 1e6,
                 memo=payment_info.get("description", "x402 payment"),
-                idempotency_key=f"x402:{req.url}:{amount_int}",
+                idempotency_key=idem,
             )
         else:
             tx = await engine.transfer_sol(
@@ -177,7 +182,7 @@ async def make_x402_request(
                 to_address=pay_to,
                 amount_lamports=amount_int,
                 memo=payment_info.get("description", "x402 payment"),
-                idempotency_key=f"x402:{req.url}:{amount_int}",
+                idempotency_key=idem,
             )
 
         signature = getattr(tx, "signature", None)
