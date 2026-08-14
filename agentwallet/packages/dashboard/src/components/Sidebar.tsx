@@ -18,7 +18,7 @@ import Brand from "./Brand";
 import { auth } from "../api";
 
 const navItems = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/app", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/agents", icon: Bot, label: "Agents" },
   { to: "/wallets", icon: Wallet, label: "Wallets" },
   { to: "/pda-wallets", icon: KeyRound, label: "PDA Wallets" },
@@ -58,7 +58,7 @@ export default function Sidebar() {
           <NavLink
             key={to}
             to={to}
-            end={to === "/"}
+            end={to === "/app"}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive

@@ -10,6 +10,7 @@ import AuditLog from "./pages/AuditLog";
 import Billing from "./pages/Billing";
 import PdaWallets from "./pages/PdaWallets";
 import Login from "./pages/Login";
+import Landing from "./pages/Landing";
 import { isAuthenticated } from "./api";
 
 function ProtectedLayout() {
@@ -45,7 +46,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/*" element={<ProtectedLayout />} />
+      <Route path="/" element={<Landing />} />
+      <Route path="/app/*" element={<ProtectedLayout />} />
     </Routes>
   );
 }

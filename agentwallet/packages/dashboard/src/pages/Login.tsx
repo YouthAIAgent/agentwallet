@@ -30,7 +30,7 @@ export default function Login() {
         res = await auth.login({ email, password });
       }
       setToken(res.access_token);
-      navigate("/");
+      navigate("/app");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed");
     } finally {
