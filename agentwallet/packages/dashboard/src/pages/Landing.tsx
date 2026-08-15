@@ -421,6 +421,103 @@ function LiveStats() {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* LiveFeed — anonymized recent on-chain actions from GET /v1/public/  */
+/* feed, refreshed every 30s (matches the endpoint's Redis TTL).       */
+/* Graceful: hides itself if the API is down.                          */
+/* ------------------------------------------------------------------ */
+interface FeedItem {
+  type: string;
+  action: string;
+  address: string;
+  amount: string | null;
+  timestamp: string;
+}
+
+function timeAgo(iso: string): string {
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 60) return "just now";
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return `${Math.floor(s / 86400)}d ago`;
+}
+
+function LiveFeed() {
+  const [items, setItems] = useState<FeedItem[]>([]);
+
+  useEffect(() => {
+    let alive = true;
+    const load = async () => {
+      try {
+        const res = await fetch("/api/v1/public/feed", {
+          headers: { Accept: "application/json" },
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: { items?: FeedItem[] } = await res.json();
+        // fresh array reference on every load so relative times re-render
+        if (alive && Array.isArray(data.items)) {
+          setItems(data.items.slice(0, 4));
+        }
+      } catch {
+        // never break the landing page on a feed failure
+      }
+    };
+    load();
+    const id = setInterval(load, 30_000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, []);
+
+  if (items.length === 0) return null;
+
+  return (
+    <div className="mt-4 max-w-md">
+      <div className="flex items-center gap-2 mb-2 text-[9px] uppercase tracking-widest text-ink-500">
+        <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
+        Recent on-chain activity
+      </div>
+      <div className="border border-ink-800 rounded-lg overflow-hidden divide-y divide-ink-800/60 bg-ink-950/60">
+        {items.map((it, i) => {
+          const Icon =
+            it.type === "escrow" ? Lock : it.type === "acp" ? Zap : ArrowRight;
+          const tint =
+            it.type === "escrow"
+              ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
+              : it.type === "acp"
+                ? "bg-sky-500/10 border-sky-500/20 text-sky-400"
+                : "bg-brand-500/10 border-brand-500/20 text-brand-400";
+          return (
+            <div
+              key={`${it.address}-${i}`}
+              className="flex items-center gap-3 px-3.5 py-2.5"
+            >
+              <span
+                className={`w-6 h-6 rounded border flex items-center justify-center shrink-0 ${tint}`}
+              >
+                <Icon className="w-3 h-3" />
+              </span>
+              <span className="font-mono text-[11px] text-ink-300 truncate flex-1">
+                <span className="text-ink-100">{it.address}</span>{" "}
+                <span className="text-ink-500">{it.action}</span>
+              </span>
+              {it.amount && (
+                <span className="font-mono text-[11px] text-brand-400 tabular-nums whitespace-nowrap">
+                  {it.amount}
+                </span>
+              )}
+              <span className="font-mono text-[10px] text-ink-600 whitespace-nowrap">
+                {timeAgo(it.timestamp)}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function Landing() {
   const [light, setLight] = useState(
     () => localStorage.getItem("aw-theme") === "light"
@@ -513,6 +610,7 @@ export default function Landing() {
               <span>● Swarms</span>
             </div>
             <LiveStats />
+            <LiveFeed />
           </div>
         </Reveal>
 
