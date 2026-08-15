@@ -12,6 +12,7 @@ import PdaWallets from "./pages/PdaWallets";
 import Playground from "./pages/Playground";
 import Login from "./pages/Login";
 import Landing from "./pages/Landing";
+import { Terms, Privacy, Support } from "./pages/Legal";
 import { isAuthenticated } from "./api";
 
 function ProtectedLayout() {
@@ -49,6 +50,9 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<Landing />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/support" element={<Support />} />
       <Route path="/app/*" element={<ProtectedLayout />} />
     </Routes>
   );

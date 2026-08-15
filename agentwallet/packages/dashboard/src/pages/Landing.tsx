@@ -614,6 +614,25 @@ export default function Landing() {
               >
                 Dashboard →
               </Link>
+              <span className="w-px h-4 bg-ink-700" />
+              <Link
+                to="/support"
+                className="text-ink-400 hover:text-ink-200 transition-colors"
+              >
+                Support
+              </Link>
+              <Link
+                to="/terms"
+                className="text-ink-400 hover:text-ink-200 transition-colors"
+              >
+                Terms
+              </Link>
+              <Link
+                to="/privacy"
+                className="text-ink-400 hover:text-ink-200 transition-colors"
+              >
+                Privacy
+              </Link>
             </nav>
             <p className="text-[10px] text-ink-600 uppercase tracking-widest">
               Solana devnet · 0.4.x · agent-genesis

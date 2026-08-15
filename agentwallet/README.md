@@ -493,7 +493,8 @@ Clients (SDK / HTTP / Agents)
 
 ## Support
 
-- Bug reports → https://github.com/YouthAIAgent/agentwallet/issues
+- Bug reports → https://github.com/ChiranjibAI/agent-genesis/issues
+- Live playground help → https://agentwallet.fun/support
 - Security issues → web3youth@proton.me (do not post publicly)
 - Full step-by-step guide → [BETA_TEST_GUIDE.txt](BETA_TEST_GUIDE.txt)
 

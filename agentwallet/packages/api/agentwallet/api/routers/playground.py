@@ -56,9 +56,34 @@ FUND_COOLDOWN_SECONDS = 60
 USDC_GRANT = 200.0  # 200 dUSDC per click (pro = 49, enterprise = 299)
 USDC_COOLDOWN_SECONDS = 30
 
+# Per-org daily caps so the funded platform wallet can't be drained:
+#   20 funds/day x 0.01 SOL = 0.2 SOL/org/day (a few SOL funds hundreds of users)
+#   10 USDC grants/day = 2,000 dUSDC/org/day (plenty for demoing billing)
+FUND_DAILY_LIMIT = 20
+USDC_DAILY_LIMIT = 10
+_DAY_WINDOW = 24 * 60 * 60
+
 # per-org cooldown so nobody can drain the funded platform wallet
 _fund_cooldown: dict[str, float] = {}
 _usdc_cooldown: dict[str, float] = {}
+# per-org rolling 24h counters
+_fund_daily: dict[str, list[float]] = {}
+_usdc_daily: dict[str, list[float]] = {}
+
+
+def _within_daily(
+    key: str,
+    counters: dict[str, list[float]],
+    limit: int,
+    now: float,
+) -> bool:
+    """Rolling 24h window check + record. True when under the daily cap."""
+    ts = [t for t in counters.get(key, []) if now - t < _DAY_WINDOW]
+    counters[key] = ts
+    if len(ts) >= limit:
+        return False
+    counters[key].append(now)
+    return True
 
 _platform_address_cache: str | None = None
 
@@ -152,6 +177,16 @@ async def playground_fund(
             status_code=429,
             detail=(f"Devnet SOL is available once per {FUND_COOLDOWN_SECONDS}s — try again in {remaining}s"),
             headers={"Retry-After": str(remaining)},
+        )
+    if not _within_daily(org_key, _fund_daily, FUND_DAILY_LIMIT, now):
+        raise HTTPException(
+            status_code=429,
+            detail=(
+                f"Daily devnet SOL limit reached ({FUND_DAILY_LIMIT} x {FUND_SOL} SOL/24h). "
+                "The playground faucet resets daily — use escrow, transfer and x402 demos "
+                "with the SOL you already have, or contact support."
+            ),
+            headers={"Retry-After": str(_DAY_WINDOW)},
         )
 
     wallet = await _ensure_wallet(db, auth)
@@ -454,6 +489,15 @@ async def playground_usdc(
             status_code=429,
             detail=(f"Devnet USDC is available once per {USDC_COOLDOWN_SECONDS}s — try again in {remaining}s"),
             headers={"Retry-After": str(remaining)},
+        )
+    if not _within_daily(org_key, _usdc_daily, USDC_DAILY_LIMIT, now):
+        raise HTTPException(
+            status_code=429,
+            detail=(
+                f"Daily devnet USDC limit reached ({USDC_DAILY_LIMIT} x {USDC_GRANT} dUSDC/24h). "
+                "This resets daily — you can still test transfers and x402 with the SOL you have."
+            ),
+            headers={"Retry-After": str(_DAY_WINDOW)},
         )
 
     mint = get_settings().usdc_mint_address

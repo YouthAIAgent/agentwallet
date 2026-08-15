@@ -218,6 +218,57 @@ async def test_playground_usdc_cooldown(client, test_wallet, monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_playground_usdc_daily_limit(client, test_wallet, monkeypatch):
+    """USDC grant past the rolling 24h cap is rejected (429) with a daily hint."""
+    import agentwallet.api.routers.playground as pg
+
+    async def fake_mint(client, mint_authority_keypair, mint, owner_address, amount_raw, confirm=False):
+        return FAKE_SIG
+
+    monkeypatch.setattr(pg.solana, "mint_spl_token", fake_mint)
+    monkeypatch.setattr(pg.solana, "load_platform_keypair", _fake_platform_kp)
+    monkeypatch.setattr(pg, "_usdc_cooldown", {})
+    monkeypatch.setattr(pg.time, "monotonic", lambda: 500.0)
+    # Already used the daily allotment in the past hour
+    monkeypatch.setattr(
+        pg, "_usdc_daily", {str(test_wallet.org_id): [100.0] * pg.USDC_DAILY_LIMIT}
+    )
+
+    resp = await client.post("/v1/playground/usdc")
+    assert resp.status_code == 429
+    assert "daily devnet usdc limit" in resp.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_playground_fund_daily_limit(client, test_wallet, monkeypatch):
+    """Fund past the rolling 24h cap is rejected (429) with a daily hint."""
+    import agentwallet.api.routers.playground as pg
+
+    async def fake_transfer(client, from_keypair, to_address, lamports):
+        return FAKE_SIG
+
+    async def fake_confirm(client, sig):
+        return True
+
+    async def fake_balance(client, addr):
+        return 10_000_000_000  # 10 SOL, plenty
+
+    monkeypatch.setattr(pg.solana, "transfer_sol", fake_transfer)
+    monkeypatch.setattr(pg.solana, "confirm_transaction", fake_confirm)
+    monkeypatch.setattr(pg.solana, "get_balance", fake_balance)
+    monkeypatch.setattr(pg.solana, "load_platform_keypair", _fake_platform_kp)
+    monkeypatch.setattr(pg, "_fund_cooldown", {})
+    monkeypatch.setattr(pg.time, "monotonic", lambda: 600.0)
+    monkeypatch.setattr(
+        pg, "_fund_daily", {str(test_wallet.org_id): [100.0] * pg.FUND_DAILY_LIMIT}
+    )
+
+    resp = await client.post("/v1/playground/fund")
+    assert resp.status_code == 429
+    assert "daily devnet sol limit" in resp.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
 async def test_playground_escrow_refund(client, test_wallet, monkeypatch):
     """POST /playground/escrow/{id}/refund refunds escrow funds to the funder wallet."""
     import agentwallet.api.routers.playground as pg
