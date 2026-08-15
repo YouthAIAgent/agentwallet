@@ -6,8 +6,10 @@ from the faucet, run real Solana transactions (escrow + x402 + USDC) in minutes.
 - Demo video: `docs/launch-video/` (2-min mograph + 15s/30s shorts with captions,
   voiceover, music) — attach the 2-min MP4 to the X post and Product Hunt.
 - OG image: `public/_og-1200x630.png` style (brand hexagon + tagline).
-- Screenshots: landing hero, playground fund, escrow explorer tx — grab 2–3 from
-  the live site for the reddit post.
+- Screenshots: `docs/launch-screenshots/` — 3 ready-to-attach compressed images
+  (landing hero 1280×800, playground fund 1280×977, real devnet explorer tx
+  1280×800), all under 100 KB — drop them straight into the X thread, Product
+  Hunt gallery, and reddit post.
 
 ---
 
