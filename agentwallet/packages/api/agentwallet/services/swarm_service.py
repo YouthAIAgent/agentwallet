@@ -5,9 +5,8 @@ from datetime import datetime, timezone
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
-from ..core.exceptions import NotFoundError, ValidationError, ConflictError
+from ..core.exceptions import ConflictError, NotFoundError, ValidationError
 from ..models.swarm import AgentSwarm, SwarmMember, SwarmTask
 
 
@@ -66,9 +65,9 @@ class SwarmService:
     async def list_swarms(
         self, org_id: uuid.UUID, is_public: bool | None = None, limit: int = 20, offset: int = 0
     ) -> tuple[list[AgentSwarm], int]:
-        query = select(AgentSwarm).where(AgentSwarm.org_id == org_id, AgentSwarm.is_active == True)
+        query = select(AgentSwarm).where(AgentSwarm.org_id == org_id, AgentSwarm.is_active)
         count_query = select(func.count()).select_from(AgentSwarm).where(
-            AgentSwarm.org_id == org_id, AgentSwarm.is_active == True
+            AgentSwarm.org_id == org_id, AgentSwarm.is_active
         )
         if is_public is not None:
             query = query.where(AgentSwarm.is_public == is_public)
@@ -94,7 +93,7 @@ class SwarmService:
         # Check max members
         count_result = await self.db.execute(
             select(func.count()).select_from(SwarmMember).where(
-                SwarmMember.swarm_id == swarm_id, SwarmMember.is_active == True
+                SwarmMember.swarm_id == swarm_id, SwarmMember.is_active
             )
         )
         current_count = count_result.scalar() or 0
@@ -104,11 +103,11 @@ class SwarmService:
         # Check duplicate
         existing = await self.db.execute(
             select(SwarmMember).where(
-                SwarmMember.swarm_id == swarm_id, SwarmMember.agent_id == agent_id, SwarmMember.is_active == True
+                SwarmMember.swarm_id == swarm_id, SwarmMember.agent_id == agent_id, SwarmMember.is_active
             )
         )
         if existing.scalar_one_or_none():
-            raise ConflictError(f"Agent is already a member of this swarm")
+            raise ConflictError("Agent is already a member of this swarm")
 
         member = SwarmMember(
             swarm_id=swarm_id,
@@ -125,7 +124,7 @@ class SwarmService:
     async def list_members(self, swarm_id: uuid.UUID, org_id: uuid.UUID) -> list[SwarmMember]:
         await self.get_swarm(swarm_id, org_id)
         result = await self.db.execute(
-            select(SwarmMember).where(SwarmMember.swarm_id == swarm_id, SwarmMember.is_active == True)
+            select(SwarmMember).where(SwarmMember.swarm_id == swarm_id, SwarmMember.is_active)
         )
         return list(result.scalars().all())
 
@@ -133,7 +132,7 @@ class SwarmService:
         await self.get_swarm(swarm_id, org_id)
         result = await self.db.execute(
             select(SwarmMember).where(
-                SwarmMember.swarm_id == swarm_id, SwarmMember.agent_id == agent_id, SwarmMember.is_active == True
+                SwarmMember.swarm_id == swarm_id, SwarmMember.agent_id == agent_id, SwarmMember.is_active
             )
         )
         member = result.scalar_one_or_none()
