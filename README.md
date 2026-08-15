@@ -22,6 +22,7 @@
 [![API Live](https://img.shields.io/badge/API-Live-0B0D0E?style=for-the-badge&logo=railway)](https://api.agentwallet.fun/docs)
 [![Security Audit](https://img.shields.io/badge/Security-Audited-00c853?style=for-the-badge&logo=shieldsdotio)](SECURITY_AUDIT.md)
 [![Tests](https://img.shields.io/badge/Tests-110%20Passed-00c853?style=for-the-badge&logo=pytest)](packages/api/tests/)
+[![Changelog](https://img.shields.io/badge/Changelog-Release%20History-00ff41?style=for-the-badge&logo=git)](CHANGELOG.md)
 [![Try in Browser](https://img.shields.io/badge/Try_in_Browser-Codespaces-181717?style=for-the-badge&logo=github)](https://github.com/codespaces/new)
 
 > _"Your agents don't need permission. They need a wallet."_
