@@ -57,4 +57,4 @@ __all__ = [
     "X402Response",
 ]
 
-__version__ = "0.4.0"
+__version__ = "0.4.7"
