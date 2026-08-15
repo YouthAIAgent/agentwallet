@@ -112,7 +112,12 @@ See `.env.example` for the full list.
   security-architect agent", "reality-checker" for critique.
 - **OpenSandbox** (opensandbox-group/OpenSandbox): sandbox runtime for agent code execution.
   - CLI: `osb` (`pip install opensandbox-cli`) · server: `opensandbox-server --config ~/.sandbox.toml`
-  - Server runs on `http://127.0.0.1:8080` (needs Docker Desktop running)
+  - **Production host = VPS** `srv1425290` (187.77.185.34, root, Ubuntu 24.04, 4 vCPU/16GB):
+    - SSH: `ssh -i ~/.ssh/codex_hostinger_ed25519 root@187.77.185.34`
+    - Server: systemd service `opensandbox`, venv at `/opt/osb/bin`, config `/root/.sandbox.toml`
+    - Binds `0.0.0.0:8080` with API key auth (key in `~/.opensandbox/config.toml` local CLI config)
+    - Local CLI points at `187.77.185.34:8080` — remote sandboxes run on the VPS, not locally
   - Flow: `osb sandbox create --image python:3.12 -o json` → `osb command run <id> -o raw -- <cmd>`
   - Config: `~/.opensandbox/config.toml` (CLI) + `~/.sandbox.toml` (server, docker example)
   - Windows note: set `PYTHONIOENCODING=utf-8 PYTHONUTF8=1` before `osb` (charmap emoji bug)
+  - Local fallback: for local testing run server on 127.0.0.1:8080 with Docker Desktop running
