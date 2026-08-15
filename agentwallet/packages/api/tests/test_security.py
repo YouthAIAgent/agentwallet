@@ -3,10 +3,9 @@
 import base64
 import json
 import time
-
-import pytest
 from unittest.mock import AsyncMock, patch
 
+import pytest
 from agentwallet.services.x402_server import get_pricing_config
 
 
@@ -139,7 +138,6 @@ async def test_api_key_without_wallet_permission_cannot_transfer(
     """An API key with no 'wallets' permission must be denied transfers."""
     from agentwallet.api.middleware.auth import hash_api_key
     from agentwallet.models.api_key import ApiKey
-    from sqlalchemy import select
 
     raw_key = f"aw_live_{'x' * 40}"
     api_key = ApiKey(
@@ -240,7 +238,6 @@ async def test_api_key_without_x402_permission_cannot_configure(client, test_org
 async def test_disabled_user_token_rejected(client, test_user, test_org, db_session):
     """A JWT for a disabled user must be rejected."""
     from agentwallet.api.middleware.auth import create_access_token
-    from agentwallet.models.user import User
 
     test_user.is_active = False
     await db_session.commit()
@@ -253,10 +250,9 @@ async def test_disabled_user_token_rejected(client, test_user, test_org, db_sess
 @pytest.mark.asyncio
 async def test_user_org_mismatch_token_rejected(client, test_org, db_session):
     """A token whose user belongs to a different org must be rejected."""
-    from agentwallet.api.middleware.auth import create_access_token
+    from agentwallet.api.middleware.auth import create_access_token, hash_password
     from agentwallet.models.organization import Organization
     from agentwallet.models.user import User
-    from agentwallet.api.middleware.auth import hash_password
 
     other_org = Organization(name="Other Org", email="other@example.com", is_active=True)
     db_session.add(other_org)

@@ -1,7 +1,5 @@
 """Tests for public (unauthenticated) endpoints."""
 
-import uuid
-from datetime import datetime, timezone
 
 import pytest
 

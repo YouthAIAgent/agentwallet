@@ -5,7 +5,6 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 import pytest
-
 from agentwallet.core.database import get_session_factory
 from agentwallet.core.exceptions import InsufficientBalanceError
 from agentwallet.models import Organization

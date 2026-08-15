@@ -2,10 +2,9 @@
 
 import base64
 import json
-
-import pytest
 from unittest.mock import AsyncMock, patch
 
+import pytest
 from agentwallet.services.x402_server import get_pricing_config
 
 

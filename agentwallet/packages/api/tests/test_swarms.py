@@ -1,9 +1,7 @@
 """Tests for Agent Swarm endpoints."""
 
-import uuid
 
 import pytest
-
 from agentwallet.models import Agent
 
 
