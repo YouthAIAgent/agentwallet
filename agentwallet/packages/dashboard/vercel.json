@@ -2,6 +2,10 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "proxy": {
+    "entrypoint": "proxy.ts",
+    "matcher": "/api/:path*"
+  },
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ],

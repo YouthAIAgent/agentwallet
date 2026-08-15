@@ -41,6 +41,16 @@ def _truncate_address(addr: str) -> str:
     return f"{addr[:4]}...{addr[-4:]}"
 
 
+def _client_ip(request: Request) -> str:
+    """Best-effort client IP from X-Forwarded-For, else the socket peer."""
+    fwd = request.headers.get("x-forwarded-for")
+    if fwd:
+        first = fwd.split(",")[0].strip()
+        if first:
+            return first
+    return request.client.host if request.client else "unknown"
+
+
 @router.get("/stats", response_model=PublicStats)
 async def get_public_stats(
     request: Request,
@@ -109,7 +119,8 @@ async def post_presence(
     count of people on the site right now, broken down by country (from CDN
     geo headers, best-effort). Fail-open: returns a best-effort snapshot even
     if Redis is down."""
-    await check_rate_limit(request, "public_presence", "free")
+    # per-IP bucket so N real visitors never share one global quota
+    await check_rate_limit(request, f"presence:{_client_ip(request)}", "free")
     country = country_from_request(request)
     total, tally = await presence.heartbeat(body.visitor_id, country)
     countries = [
