@@ -247,14 +247,28 @@ export function Bar({
   );
 }
 
-// ---------- scene 1: intro ----------
+// ---------- scene 1: intro — punchy 5s hook ----------
+// Everything lands inside the first ~4.5s (frame ~135) for retention;
+// scene boundary stays 0-240 so voiceover + captions keep their sync.
 function Intro() {
   const frame = useCurrentFrame();
-  const inS = spring({ frame, fps: 30, config: { damping: 200 } });
-  const typeP = interpolate(frame, [25, 95], [0, 1], {
+  // crisp slam with a slight overshoot — hexagon in by ~0.5s
+  const inS = spring({ frame, fps: 30, config: { damping: 16, stiffness: 150 } });
+  // wordmark snaps in right behind the hexagon
+  const wordS = spring({ frame: frame - 4, fps: 30, config: { damping: 14, stiffness: 160 } });
+  // fast tagline typing — done by ~1.7s
+  const typeP = interpolate(frame, [14, 52], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
+  // punch hook slams in at ~1.3s and holds
+  const hookS = spring({ frame: frame - 40, fps: 30, config: { damping: 13, stiffness: 170 } });
+  // attention sweep line right at the top
+  const sweep = interpolate(frame, [8, 34], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const CHIPS = ["ESCROW", "X402", "USDC", "SWARMS"];
   return (
     <AbsoluteFill style={{ background: INK_950 }}>
       <AbsoluteFill style={GRID} />
@@ -270,43 +284,85 @@ function Intro() {
         <div
           style={{
             opacity: inS,
-            transform: `scale(${interpolate(inS, [0, 1], [0.6, 1])})`,
+            transform: `scale(${interpolate(inS, [0, 1], [0.5, 1])})`,
           }}
         >
           <Hex size={170} />
         </div>
-        <div style={{ ...MONO, color: INK_100, fontSize: 110, fontWeight: 700, marginTop: 46 }}>
+        <div
+          style={{
+            ...MONO,
+            color: INK_100,
+            fontSize: 110,
+            fontWeight: 700,
+            marginTop: 46,
+            opacity: wordS,
+            transform: `translateY(${interpolate(wordS, [0, 1], [30, 0])}px)`,
+          }}
+        >
           agent<span style={{ color: GREEN }}>wallet</span>
         </div>
+        <div
+          style={{
+            position: "relative",
+            height: 6,
+            width: 340,
+            marginTop: 26,
+            background: GREEN,
+            opacity: sweep * wordS,
+            transform: `scaleX(${sweep})`,
+            boxShadow: "0 0 30px rgba(0,187,127,0.8)",
+          }}
+        />
         <div
           style={{
             ...MONO,
             color: MUTED,
             fontSize: 30,
             letterSpacing: 18,
-            marginTop: 30,
+            marginTop: 26,
             opacity: typeP,
           }}
         >
           THE PAYMENT RAIL FOR THE AGENT ECONOMY
         </div>
-        <div style={{ display: "flex", gap: 22, marginTop: 56, opacity: typeP }}>
-          {["ESCROW", "X402", "USDC", "SWARMS"].map((t) => (
-            <div
-              key={t}
-              style={{
-                ...MONO,
-                color: GREEN_L,
-                fontSize: 24,
-                letterSpacing: 4,
-                padding: "10px 22px",
-                border: `1px solid ${INK_800}`,
-                borderRadius: 6,
-              }}
-            >
-              ● {t}
-            </div>
-          ))}
+        <div style={{ display: "flex", gap: 22, marginTop: 44 }}>
+          {CHIPS.map((t, i) => {
+            const s = spring({ frame: frame - (30 + i * 11), fps: 30, config: { damping: 13, stiffness: 170 } });
+            return (
+              <div
+                key={t}
+                style={{
+                  ...MONO,
+                  color: GREEN_L,
+                  fontSize: 24,
+                  letterSpacing: 4,
+                  padding: "10px 22px",
+                  border: `1px solid ${INK_800}`,
+                  borderRadius: 6,
+                  opacity: s,
+                  transform: `translateY(${interpolate(s, [0, 1], [26, 0])}px)`,
+                }}
+              >
+                ● {t}
+              </div>
+            );
+          })}
+        </div>
+        {/* punch hook — slam in and hold for the rest of the intro */}
+        <div
+          style={{
+            ...MONO,
+            color: GREEN,
+            fontSize: 26,
+            letterSpacing: 5,
+            marginTop: 54,
+            opacity: hookS,
+            transform: `scale(${interpolate(hookS, [0, 1], [0.9, 1])})`,
+            textShadow: "0 0 40px rgba(0,187,127,0.55)",
+          }}
+        >
+          NO STRIPE · NO MIDDLEMEN · REAL SOLANA TX
         </div>
       </AbsoluteFill>
     </AbsoluteFill>
