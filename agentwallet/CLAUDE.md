@@ -26,8 +26,10 @@ AI agent wallet infrastructure SaaS on Solana. Wallet-as-a-service for autonomou
   Vercel's `x-vercel-ip-country` through as `cf-ipcountry` — the presence tracker
   (`services/presence.py`, `country_from_request`) then records real country codes.
 - DNS: `agentwallet.fun` nameservers are Vercel's (`ns1.vercel-dns.com`, `ns2.vercel-dns.com`).
-  Note: `api.agentwallet.fun` currently CNAMEs to `a70gs6rx.up.railway.app` which is DEAD
-  ("Application not found") — repoint or delete it during migration.
+  `api.agentwallet.fun` CNAME now points at the live API (`api-production-6421a.up.railway.app`,
+  fixed 2026-08-15 via Vercel API). It still 404s on Railway's edge because the domain is
+  attached to another Railway account's dead service — release it there before attaching to
+  ours (or leave it; the dashboard uses same-origin `/api/*` via the Vercel middleware).
 
 ### Cloudflare full-proxy migration (optional, when ready)
 Why: Cloudflare's free plan only supports full-zone (no CNAME/partial setup), so moving to Cloudflare
