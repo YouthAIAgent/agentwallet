@@ -4,10 +4,13 @@ Every endpoint signs and submits an actual Solana devnet transaction, so
 each result carries a signature linkable on the devnet explorer:
 
     GET  /playground          -> org wallet + balance + platform address
-    POST /playground/fund     -> platform wallet -> org wallet (0.05 SOL)
-    POST /playground/escrow   -> create + fund an escrow (0.02 SOL)
+    POST /playground/fund     -> platform wallet -> org wallet (0.01 SOL)
+    POST /playground/escrow   -> create + fund an escrow (0.0001 SOL)
     POST /playground/escrow/{escrow_id}/release -> release escrow on-chain
-    POST /playground/transfer -> org wallet -> platform (0.01 SOL)
+    POST /playground/transfer -> org wallet -> platform (0.0001 SOL)
+
+    Amounts stay microscopic on purpose so the platform fund is never
+    drained (see FUND_SOL / ESCROW_SOL / TRANSFER_SOL below).
 """
 
 import time
@@ -30,9 +33,15 @@ from ..middleware.rate_limit import check_rate_limit
 
 router = APIRouter(prefix="/playground", tags=["playground"])
 
-FUND_SOL = 0.05
-ESCROW_SOL = 0.02
-TRANSFER_SOL = 0.01
+# ----------------------------------------------------------------
+# Amounts are intentionally TINY so the platform fund never runs out
+# (user-funded: ~5 SOL should serve hundreds of users). Escrow/transfer
+# spends are microscopic (0.0001 SOL) — the only real per-user cost is
+# the faucet grant (0.01 SOL). Do NOT raise these casually.
+# ----------------------------------------------------------------
+FUND_SOL = 0.01
+ESCROW_SOL = 0.0001
+TRANSFER_SOL = 0.0001
 FUND_COOLDOWN_SECONDS = 60
 
 # per-org cooldown so nobody can drain the funded platform wallet

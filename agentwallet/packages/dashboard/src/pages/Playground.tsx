@@ -223,7 +223,7 @@ export default function Playground() {
               <Zap className="w-5 h-5 text-brand-400" />
             </div>
             <div>
-              <div className="font-semibold text-ink-100">Get 0.05 SOL</div>
+              <div className="font-semibold text-ink-100">Get 0.01 SOL</div>
               <div className="text-xs text-ink-400 mt-0.5">Platform wallet se free devnet SOL</div>
             </div>
           </div>
@@ -233,7 +233,7 @@ export default function Playground() {
           </p>
           <button onClick={doFund} disabled={funding} className="btn-primary w-full">
             {funding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-            {funding ? "Submitting…" : "Get 0.05 SOL"}
+            {funding ? "Submitting…" : "Get 0.01 SOL"}
           </button>
           {fundRes && (
             <TxLink
@@ -253,7 +253,7 @@ export default function Playground() {
             <div>
               <div className="font-semibold text-ink-100">Escrow Demo</div>
               <div className="text-xs text-ink-400 mt-0.5">
-                0.02 SOL · create → fund → release
+                0.0001 SOL · create → fund → release
               </div>
             </div>
           </div>
@@ -308,7 +308,7 @@ export default function Playground() {
               <ArrowRight className="w-5 h-5 text-brand-400" />
             </div>
             <div>
-              <div className="font-semibold text-ink-100">Send 0.01 SOL</div>
+              <div className="font-semibold text-ink-100">Send 0.0001 SOL</div>
               <div className="text-xs text-ink-400 mt-0.5">Apne wallet se platform ko</div>
             </div>
           </div>
@@ -322,7 +322,7 @@ export default function Playground() {
             ) : (
               <ArrowRight className="w-4 h-4" />
             )}
-            {transferring ? "Sending…" : "Send 0.01 SOL → platform"}
+            {transferring ? "Sending…" : "Send 0.0001 SOL → platform"}
           </button>
           {transferRes && (
             <TxLink

@@ -37,7 +37,7 @@ async def test_playground_fund(client, test_wallet, monkeypatch):
         return 100_000_000_000  # 100 SOL
 
     async def fake_transfer(client, from_keypair, to_address, lamports, fee_lamports=0, fee_recipient=None):
-        assert lamports == int(0.05 * 1e9)
+        assert lamports == int(0.01 * 1e9)
         return FAKE_SIG
 
     async def fake_confirm(_client, sig: str) -> bool:
@@ -56,7 +56,7 @@ async def test_playground_fund(client, test_wallet, monkeypatch):
     assert data["signature"] == FAKE_SIG
     assert data["confirmed"] is True
     assert "explorer.solana.com/tx/" in data["explorer_url"]
-    assert data["amount_sol"] == 0.05
+    assert data["amount_sol"] == 0.01
 
 
 @pytest.mark.asyncio
