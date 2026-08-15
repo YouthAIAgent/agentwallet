@@ -11,7 +11,7 @@
 
 **Autonomous financial infrastructure for AI agents on Solana.**
 
-[![CI](https://github.com/YouthAIAgent/agentwallet/actions/workflows/ci.yml/badge.svg)](https://github.com/YouthAIAgent/agentwallet/actions/workflows/ci.yml)
+[![CI](https://github.com/ChiranjibAI/agent-genesis/actions/workflows/ci.yml/badge.svg)](https://github.com/ChiranjibAI/agent-genesis/actions/workflows/ci.yml)
 [![Solana Devnet](https://img.shields.io/badge/Solana-Devnet%20Deployed-9945FF?style=for-the-badge&logo=solana)](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet)
 [![PyPI Package](https://img.shields.io/pypi/v/aw-protocol-sdk?style=for-the-badge&logo=pypi&logoColor=white&label=PyPI)](https://pypi.org/project/aw-protocol-sdk/)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
@@ -70,7 +70,7 @@ Your AI agents need money. Not _your_ money — **their own wallets**, with prog
 | **API Health** | [Live API](https://api.agentwallet.fun/health) |
 | **Solana Explorer** | [View on Devnet](https://explorer.solana.com/address/CEQLGCWkpUjbsh5kZujTaCkFB59EKxmnhsqydDzpt6r6?cluster=devnet) |
 | **SDK (Python)** | `pip install aw-protocol-sdk==0.4.0` |
-| **SDK (TypeScript)** | `npm install github:YouthAIAgent/agentwallet#master` |
+| **SDK (TypeScript)** | `npm install github:ChiranjibAI/agent-genesis#master` |
 | **MCP Server** | `pip install agentwallet-mcp` |
 
 ---
@@ -83,7 +83,7 @@ You don't need to install anything. Just open a free GitHub Codespace and paste 
 
 Go to **[github.com/codespaces/new](https://github.com/codespaces/new)** and create a codespace for this repo:
 
-> **Repository:** `YouthAIAgent/agentwallet` → Click **"Create codespace"**
+> **Repository:** `ChiranjibAI/agent-genesis` → Click **"Create codespace"**
 
 A VS Code editor opens in your browser with a terminal at the bottom. No downloads, no setup.
 
@@ -152,7 +152,7 @@ Your session saves automatically — close and reopen, you're still logged in.
 If you prefer your own terminal (Mac, Linux, Windows Git Bash):
 
 ```bash
-git clone https://github.com/YouthAIAgent/agentwallet.git
+git clone https://github.com/ChiranjibAI/agent-genesis.git
 cd agentwallet/agentwallet
 AW_API=https://api.agentwallet.fun bash aw
 ```
@@ -767,7 +767,7 @@ pip install aw-protocol-sdk==0.4.0
 
 ### SDK (TypeScript)
 ```bash
-npm install github:YouthAIAgent/agentwallet#master
+npm install github:ChiranjibAI/agent-genesis#master
 ```
 
 ### MCP Server (AI-Native Tools)
@@ -784,7 +784,7 @@ pip install agentwallet-mcp
 ### 1. Clone & Boot
 
 ```bash
-git clone git@github.com:YouthAIAgent/agentwallet.git
+git clone git@github.com:ChiranjibAI/agent-genesis.git
 cd agentwallet/agentwallet
 
 cp .env.example .env
@@ -823,7 +823,7 @@ curl -X POST http://localhost:8000/v1/auth/register \
 
 - ✅ **Core Protocol** — Wallets, escrow, policies, analytics
 - ✅ **Python SDK** — Published on PyPI (`pip install aw-protocol-sdk`)
-- ✅ **TypeScript SDK** — Install from GitHub (`npm install github:YouthAIAgent/agentwallet#master`)
+- ✅ **TypeScript SDK** — Install from GitHub (`npm install github:ChiranjibAI/agent-genesis#master`)
 - ✅ **Devnet Deployment** — Live on Solana devnet
 - ✅ **Security Audit & Hardening** — 25 findings, 13 fixes applied, 110/110 tests passing
 - ✅ **MCP Integration** — 33 AI-native tools via Model Context Protocol
@@ -1288,7 +1288,7 @@ AgentWallet is live on **Solana Devnet** right now. We need developers and AI ag
 5. **Tell us what's missing** — What features would make this 10x better?
 
 ### Give Feedback:
-- **GitHub Issues:** [github.com/YouthAIAgent/agentwallet/issues](https://github.com/YouthAIAgent/agentwallet/issues)
+- **GitHub Issues:** [github.com/ChiranjibAI/agent-genesis/issues](https://github.com/ChiranjibAI/agent-genesis/issues)
 - **Twitter:** [@Web3__Youth](https://twitter.com/Web3__Youth)
 
 ---
@@ -1298,7 +1298,7 @@ AgentWallet is live on **Solana Devnet** right now. We need developers and AI ag
 See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ```bash
-git clone https://github.com/yourusername/agentwallet.git
+git clone https://github.com/yourusername/agent-genesis.git
 cd agentwallet
 pip install -e ".[dev]"
 docker compose up -d postgres redis
@@ -1322,9 +1322,9 @@ MIT — see [LICENSE](LICENSE).
 
 🔗 **Website:** [agentwallet.fun](https://agentwallet.fun)
 🔗 **API:** [api.agentwallet.fun](https://api.agentwallet.fun)
-🔗 **GitHub:** [github.com/YouthAIAgent/agentwallet](https://github.com/YouthAIAgent/agentwallet)
+🔗 **GitHub:** [github.com/ChiranjibAI/agent-genesis](https://github.com/ChiranjibAI/agent-genesis)
 🔗 **SDK (Python):** `pip install aw-protocol-sdk==0.4.0`
-🔗 **SDK (TypeScript):** `npm install github:YouthAIAgent/agentwallet#master`
+🔗 **SDK (TypeScript):** `npm install github:ChiranjibAI/agent-genesis#master`
 🔗 **MCP:** `pip install agentwallet-mcp`
 
 ---
