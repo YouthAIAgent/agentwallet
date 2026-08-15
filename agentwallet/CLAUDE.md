@@ -104,3 +104,15 @@ See `.env.example` for the full list.
 
 ## Related Project
 - moltfarm: Solana utilities reused in this project (transfer_sol, confirm_transaction, retry decorator)
+
+## Installed Agent & Sandbox Tooling
+- **Agency Agents** (msitarzewski/agency-agents): 270 specialist agents installed into
+  `~/.claude/agents/`, `~/.codex/agents/`, `~/.gemini/agents/`, and `.opencode/` (project,
+  gitignored). Activate by name, e.g. "activate Frontend Developer mode", "use the
+  security-architect agent", "reality-checker" for critique.
+- **OpenSandbox** (opensandbox-group/OpenSandbox): sandbox runtime for agent code execution.
+  - CLI: `osb` (`pip install opensandbox-cli`) · server: `opensandbox-server --config ~/.sandbox.toml`
+  - Server runs on `http://127.0.0.1:8080` (needs Docker Desktop running)
+  - Flow: `osb sandbox create --image python:3.12 -o json` → `osb command run <id> -o raw -- <cmd>`
+  - Config: `~/.opensandbox/config.toml` (CLI) + `~/.sandbox.toml` (server, docker example)
+  - Windows note: set `PYTHONIOENCODING=utf-8 PYTHONUTF8=1` before `osb` (charmap emoji bug)
