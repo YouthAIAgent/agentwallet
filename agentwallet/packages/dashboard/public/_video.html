@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  html, body { margin: 0; background: #000; height: 100%; font-family: monospace; color: #efeeeb; }
+  body { display: flex; align-items: center; justify-content: center; }
+  #wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  #tabs { display: flex; gap: 10px; }
+  #tabs button { background: #161513; color: #8a867e; border: 1px solid #22201e; padding: 8px 18px; cursor: pointer; font-family: monospace; font-size: 13px; }
+  #tabs button.active { color: #00bb7f; border-color: #00bb7f; }
+  video { max-width: 96vw; max-height: 88vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="tabs">
+    <button data-v="mograph" class="active">MOTION · 68s</button>
+    <button data-v="2min">2 MIN · FULL</button>
+    <button data-v="30s">30s · VERTICAL</button>
+    <button data-v="15s">15s · VERTICAL</button>
+  </div>
+  <video id="v" src="_mograph.mp4" controls autoplay muted loop></video>
+</div>
+<script>
+  const v = document.getElementById('v');
+  const map = { 'mograph': '_mograph.mp4', '2min': '_launch.mp4', '30s': '_short30.mp4', '15s': '_short15.mp4' };
+  document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#tabs button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    v.src = map[b.dataset.v];
+    v.play();
+  });
+</script>
+</body>
+</html>
