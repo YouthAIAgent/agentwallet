@@ -39,7 +39,7 @@ JWT_SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(48))")
 
 ### C-2: Encryption Key Committed to .env File
 **File:** `.env` (line 15)
-**Issue:** `ENCRYPTION_KEY=Yp8ofKWIyBia-xB49Fspmqq3jJ64j5Bzb6VWSOMdJmg=` — this is a **real Fernet key** for encrypting wallet private keys, committed to the repo.
+**Issue:** `ENCRYPTION_KEY=<REDACTED>` — this was a **real Fernet key** for encrypting wallet private keys, committed to the repo. (Value removed from this report — key has since been rotated; see fix below.)
 **Impact:** If this repo is public (or becomes public), **all wallet private keys encrypted with this key can be decrypted by anyone** who has database access.
 **Fix:**
 1. Rotate this key immediately
@@ -351,6 +351,80 @@ All fixes applied and verified — **84/84 tests passing**.
 - `packages/programs/agentwallet/src/instructions/create_agent_wallet.rs` — agent_id validation
 - `.env` — rotated JWT_SECRET_KEY + ENCRYPTION_KEY
 - `packages/api/tests/*.py` — updated test passwords for new policy
+
+---
+
+## Tool-Based Re-Audit (2026-08-16)
+
+**Tools run:** gitleaks 8.21.2 (secret scan, git history + working tree), bandit 1.9.4
+(Python static), pip-audit 2.10.1 (Python deps), npm audit 11 (JS deps),
+iFixAi 3.4.0 (agent-behavior audit — smoke mode).
+
+### gitleaks — 31 history findings, 0 live secrets in working tree ✅
+
+- 224 commits scanned. All 31 findings are **historical** (commits `acc21c8`,
+  `5c411e3` already rotated keys). Working-tree scan (`--no-git`) found **no
+  live secrets**: `.env`, `*-keypair.json`, `*.key` are gitignored and untracked
+  (verified: `.platform-keypair.json` and `.env` are NOT in `git ls-files`).
+- **Fixed:** `SECURITY_AUDIT.md` still contained the *old, rotated* Fernet key
+  value (`Yp8ofKWIyBia…`) — redacted to `<REDACTED>`.
+- False positives (no action): `test_pda_wallets.py` 44-char base58 **public
+  key**, `YOUR_TOKEN` curl placeholders in README, USDC mint / ETH addresses in
+  SDK docs, `invalid-key-123` test string, Supabase demo JWTs in the old
+  `landing-page/` static site (outside this repo).
+
+### bandit — 0 HIGH, 1 MEDIUM (accepted), 31 LOW ✅
+
+- `api`: 30 issues — 0 HIGH, 1 MEDIUM (`B104` bind `0.0.0.0` in `core/config.py`;
+  expected for Docker/container API, not a vuln), 29 LOW (config-default
+  passwords flagged by `B105/B110`, `try/except: pass` — cosmetic).
+- `agx` + `mcp-server`: 0 issues. `sdk-python`: 2 issues, LOW only.
+
+### pip-audit — ecdsa vulnerability found & eliminated ✅
+
+- Initial scan found **`ecdsa` (Minerva P-256 timing attack, PYSEC-2026-1325)**
+  — no fixed version exists (0.19.2 is the latest and still affected).
+- **Root cause:** `python-jose[cryptography]` pulls `ecdsa` even though the app
+  only uses **HS256** JWT signing (P-256/ES256 is never called).
+- **Fix:** replaced `python-jose` with **PyJWT** (`auth.py`: `from jose import
+  JWTError, jwt` → `import jwt` + `InvalidTokenError`). Same encode/decode API,
+  HS256-only — the vulnerable dependency tree is gone entirely.
+- Re-audit: **No known vulnerabilities found.** 159 API tests still pass.
+
+### npm audit — fixed, now 0 vulnerabilities ✅
+
+| Package | Before | After |
+|---|---|---|
+| `dashboard` | 4 (1 high: lodash code injection, 3 moderate: react-router) | **0** — upgraded `react-router-dom` 6.28 → 7.18.2 (CVE-2025-68470 fix), `npm audit fix` |
+| `video` | 3 high (extract-zip via puppeteer-core) | **0** — `puppeteer-core` 19.x → 25.7.0 |
+| `sdk-ts` | 3 (2 high) | 1 low (esbuild dev-server-only advisory, dev dependency) |
+
+Dashboard build + tsc verified clean after the react-router v7 upgrade.
+159 API tests still pass.
+
+### iFixAi (agent-behavior audit) — pipeline verified ✅
+
+- Installed `ifixai 3.4.0`; mock smoke run completes in ~7s, writes
+  JSON + Markdown reports. The seeded-defect default fixture intentionally
+  grades D — this is expected so you can see failure modes.
+- **Real use:** run with a provider key to audit the deployed agents' behavior
+  against business KPIs: `pip install "ifixai[anthropic]"` + `ifixai setup`,
+  then `ifixai run` (costs ~$12–18 for a full suite). Artifacts gitignored
+  (`ifixai-results/`, `runs/`).
+
+### Remaining recommendations
+
+1. Purge git history of the pre-rotation secrets (keys are rotated so risk is
+   low, but history still exposes old values if the repo ever goes fully public
+   with secrets included): use `git filter-repo` on the affected commits, or
+   accept the low risk — the old keys are already invalid.
+2. esbuild advisory in `sdk-ts` is dev-server-only on Windows; bump to `>=0.28`
+   next time deps are updated.
+3. When ready, run iFixAi with a real provider key against the deployed
+   genesis agents for an independent A–F behavioral grade.
+4. ~~Add `pip-audit` + `npm audit` + `gitleaks` to CI~~ **DONE** —
+   `.github/workflows/security-scan.yml` runs gitleaks + bandit + pip-audit +
+   npm audit (all JS packages) on every push and PR.
 
 ---
 

@@ -1,0 +1,104 @@
+name: Security Scan
+
+# Runs automated security scanning on every push and pull request:
+#   1. gitleaks    — secret detection (working tree; history secrets are
+#                    already rotated, see SECURITY_AUDIT.md)
+#   2. bandit      — Python static analysis (api, agx, mcp-server, sdk-python)
+#   3. pip-audit   — known-vulnerability check of the Python dependency set
+#   4. npm audit   — production + dev dependency check for every JS package
+#
+# Secrets that leak into the working tree fail the build immediately so a
+# fresh clone / deploy never ships with credentials.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  secrets:
+    name: gitleaks (secrets)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: gitleaks — secret detection
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  python:
+    name: Python (bandit + pip-audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: agentwallet
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install audit tools
+        run: |
+          pip install --quiet bandit pip-audit
+
+      - name: bandit — static analysis
+        run: |
+          bandit -r packages/api/agentwallet packages/agx packages/mcp-server packages/sdk-python -q
+
+      - name: pip-audit — dependency vulnerabilities
+        run: |
+          # Audit the declared dependency set from the root pyproject.toml.
+          python - <<'EOF'
+          import tomllib
+          d = tomllib.load(open('pyproject.toml', 'rb'))
+          with open('/tmp/audit_deps.txt', 'w') as f:
+              f.write('\n'.join(d.get('project', {}).get('dependencies', [])))
+          EOF
+          pip-audit -r /tmp/audit_deps.txt
+
+  npm:
+    name: npm audit (all JS packages)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+
+      - name: npm audit — every package
+        run: |
+          set -e
+          failed=0
+          for pkg in \
+            agentwallet/packages/dashboard \
+            agentwallet/packages/sdk-ts \
+            agentwallet/packages/video \
+            agentwallet/packages/landing \
+            agentwallet/packages/dashboard-launch
+          do
+            if [ -f "$pkg/package.json" ]; then
+              echo "==> npm audit $pkg"
+              # installs are expensive; audit against the lockfile where present
+              if [ -f "$pkg/package-lock.json" ]; then
+                (cd "$pkg" && npm ci --ignore-scripts --silent && npm audit --audit-level=high) || failed=1
+              else
+                (cd "$pkg" && npm audit --audit-level=high --package-lock-only) || failed=1
+              fi
+            fi
+          done
+          exit $failed

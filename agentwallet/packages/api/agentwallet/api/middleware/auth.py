@@ -8,7 +8,8 @@ from datetime import datetime, timedelta, timezone
 import bcrypt
 from fastapi import Depends, HTTPException, Request, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
+import jwt
+from jwt import InvalidTokenError as JWTError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
