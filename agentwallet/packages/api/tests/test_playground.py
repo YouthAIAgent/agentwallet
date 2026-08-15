@@ -15,6 +15,7 @@ def _fake_platform_kp() -> Keypair:
 @pytest.mark.asyncio
 async def test_playground_status(client, test_wallet, monkeypatch):
     """GET /playground returns the org wallet + a balance."""
+
     async def fake_balance(_client, address: str) -> int:
         return 5_000_000_000  # 5 SOL
 

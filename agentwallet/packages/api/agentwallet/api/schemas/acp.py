@@ -54,18 +54,21 @@ class AcpJobResponse(BaseModel):
 
 class AcpNegotiate(BaseModel):
     """Submit negotiation terms to advance from request → negotiation."""
+
     agreed_terms: Dict[str, Any] = Field(..., description="Agreed scope, price, timeline")
     agreed_price_usdc: Optional[float] = Field(None, gt=0)
 
 
 class AcpDeliver(BaseModel):
     """Submit deliverables to advance from transaction → evaluation."""
+
     result_data: Dict[str, Any] = Field(..., description="Job output/deliverables")
     notes: Optional[str] = None
 
 
 class AcpEvaluate(BaseModel):
     """Evaluator approves or rejects deliverables."""
+
     approved: bool
     evaluation_notes: Optional[str] = None
     rating: Optional[int] = Field(None, ge=1, le=5)

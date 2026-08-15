@@ -105,9 +105,7 @@ async def current_billing(
         await db.execute(select(func.count()).select_from(Wallet).where(Wallet.org_id == auth.org_id))
     ).scalar_one()
     tx_count = (
-        await db.execute(
-            select(func.count()).select_from(Transaction).where(Transaction.org_id == auth.org_id)
-        )
+        await db.execute(select(func.count()).select_from(Transaction).where(Transaction.org_id == auth.org_id))
     ).scalar_one()
 
     plan = PLANS.get(org.tier, PLANS["free"])
@@ -116,9 +114,7 @@ async def current_billing(
         usage={
             "agents": UsageItem(used=int(agent_count), limit=plan["agents_limit"]),
             "wallets": UsageItem(used=int(wallet_count), limit=plan["wallets_limit"]),
-            "transactions_monthly": UsageItem(
-                used=int(tx_count), limit=plan["tx_monthly_limit"]
-            ),
+            "transactions_monthly": UsageItem(used=int(tx_count), limit=plan["tx_monthly_limit"]),
             "api_calls_monthly": UsageItem(used=0, limit=None),
         },
         amount_due=plan["price_usdc"],

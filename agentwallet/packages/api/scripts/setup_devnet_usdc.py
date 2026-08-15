@@ -43,8 +43,7 @@ def _platform_keypair():
                     break
     if not hex_key:
         raise SystemExit(
-            "No platform keypair found -- set PLATFORM_PRIVATE_KEY_HEX or "
-            "place packages/api/.platform-keypair.json"
+            "No platform keypair found -- set PLATFORM_PRIVATE_KEY_HEX or place packages/api/.platform-keypair.json"
         )
     return solana.Keypair.from_bytes(bytes.fromhex(hex_key))
 

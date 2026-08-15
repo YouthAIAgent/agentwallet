@@ -69,9 +69,7 @@ async def test_escrow_unauthenticated(unauthed_client):
 
 
 @pytest.mark.asyncio
-async def test_escrow_release_disburses_from_platform(
-    client, db_session, test_escrow, monkeypatch
-):
+async def test_escrow_release_disburses_from_platform(client, db_session, test_escrow, monkeypatch):
     """Release must disburse FROM the platform custody wallet, NOT the funder.
 
     Regression test for the double-pay bug where the funder was charged a
@@ -100,9 +98,7 @@ async def test_escrow_release_disburses_from_platform(
     monkeypatch.setattr(svc, "transfer_sol", fake_transfer)
     monkeypatch.setattr(svc, "confirm_transaction", fake_confirm)
 
-    resp = await client.post(
-        f"/v1/escrow/{test_escrow.id}/action", json={"action": "release"}
-    )
+    resp = await client.post(f"/v1/escrow/{test_escrow.id}/action", json={"action": "release"})
     assert resp.status_code == 200
     data = resp.json()
     assert data["status"] == "released"
@@ -114,9 +110,7 @@ async def test_escrow_release_disburses_from_platform(
 
 
 @pytest.mark.asyncio
-async def test_escrow_refund_returns_to_funder(
-    client, db_session, test_escrow, test_wallet, monkeypatch
-):
+async def test_escrow_refund_returns_to_funder(client, db_session, test_escrow, test_wallet, monkeypatch):
     """Refund must return custody funds to the funder's wallet address."""
     from agentwallet.services import escrow_service as svc
     from solders.keypair import Keypair
@@ -140,9 +134,7 @@ async def test_escrow_refund_returns_to_funder(
     monkeypatch.setattr(svc, "transfer_sol", fake_transfer)
     monkeypatch.setattr(svc, "confirm_transaction", fake_confirm)
 
-    resp = await client.post(
-        f"/v1/escrow/{test_escrow.id}/action", json={"action": "refund"}
-    )
+    resp = await client.post(f"/v1/escrow/{test_escrow.id}/action", json={"action": "refund"})
     assert resp.status_code == 200
     data = resp.json()
     assert data["status"] == "refunded"
@@ -154,9 +146,7 @@ async def test_escrow_refund_returns_to_funder(
 
 
 @pytest.mark.asyncio
-async def test_escrow_release_requires_platform_key(
-    client, db_session, test_escrow, monkeypatch
-):
+async def test_escrow_release_requires_platform_key(client, db_session, test_escrow, monkeypatch):
     """Release without a configured platform key must fail cleanly (409)."""
     from agentwallet.services import escrow_service as svc
 
@@ -168,9 +158,7 @@ async def test_escrow_release_requires_platform_key(
 
     monkeypatch.setattr(svc, "load_platform_keypair", boom)
 
-    resp = await client.post(
-        f"/v1/escrow/{test_escrow.id}/action", json={"action": "release"}
-    )
+    resp = await client.post(f"/v1/escrow/{test_escrow.id}/action", json={"action": "release"})
     assert resp.status_code == 409
 
 

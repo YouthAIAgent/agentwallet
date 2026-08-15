@@ -193,9 +193,15 @@ async def send_memo(
     svc = AcpService(db)
     memo = await svc.send_memo(job_id, auth.org_id, sender_agent_id, body.memo_type, body.content, body.signature)
     return AcpMemoResponse(
-        id=memo.id, job_id=memo.job_id, sender_agent_id=memo.sender_agent_id,
-        memo_type=memo.memo_type, content=memo.content, signature=memo.signature,
-        tx_signature=memo.tx_signature, advances_phase=memo.advances_phase, created_at=memo.created_at,
+        id=memo.id,
+        job_id=memo.job_id,
+        sender_agent_id=memo.sender_agent_id,
+        memo_type=memo.memo_type,
+        content=memo.content,
+        signature=memo.signature,
+        tx_signature=memo.tx_signature,
+        advances_phase=memo.advances_phase,
+        created_at=memo.created_at,
     )
 
 
@@ -209,11 +215,20 @@ async def list_memos(
     svc = AcpService(db)
     memos = await svc.list_memos(job_id, auth.org_id)
     return AcpMemoListResponse(
-        memos=[AcpMemoResponse(
-            id=m.id, job_id=m.job_id, sender_agent_id=m.sender_agent_id,
-            memo_type=m.memo_type, content=m.content, signature=m.signature,
-            tx_signature=m.tx_signature, advances_phase=m.advances_phase, created_at=m.created_at,
-        ) for m in memos],
+        memos=[
+            AcpMemoResponse(
+                id=m.id,
+                job_id=m.job_id,
+                sender_agent_id=m.sender_agent_id,
+                memo_type=m.memo_type,
+                content=m.content,
+                signature=m.signature,
+                tx_signature=m.tx_signature,
+                advances_phase=m.advances_phase,
+                created_at=m.created_at,
+            )
+            for m in memos
+        ],
         total=len(memos),
     )
 
@@ -230,15 +245,28 @@ async def create_offering(
     """Register a resource offering (lightweight data endpoint) for agent discovery."""
     svc = AcpService(db)
     offering = await svc.create_offering(
-        auth.org_id, body.agent_id, body.name, body.description,
-        body.endpoint_path, body.parameters, body.response_schema,
+        auth.org_id,
+        body.agent_id,
+        body.name,
+        body.description,
+        body.endpoint_path,
+        body.parameters,
+        body.response_schema,
     )
     return ResourceOfferingResponse(
-        id=offering.id, agent_id=offering.agent_id, org_id=offering.org_id,
-        name=offering.name, description=offering.description, endpoint_path=offering.endpoint_path,
-        parameters=offering.parameters, response_schema=offering.response_schema,
-        is_active=offering.is_active, total_calls=offering.total_calls,
-        avg_response_ms=offering.avg_response_ms, created_at=offering.created_at, updated_at=offering.updated_at,
+        id=offering.id,
+        agent_id=offering.agent_id,
+        org_id=offering.org_id,
+        name=offering.name,
+        description=offering.description,
+        endpoint_path=offering.endpoint_path,
+        parameters=offering.parameters,
+        response_schema=offering.response_schema,
+        is_active=offering.is_active,
+        total_calls=offering.total_calls,
+        avg_response_ms=offering.avg_response_ms,
+        created_at=offering.created_at,
+        updated_at=offering.updated_at,
     )
 
 
@@ -254,12 +282,23 @@ async def list_offerings(
     svc = AcpService(db)
     offerings, total = await svc.list_offerings(auth.org_id, agent_id, limit, offset)
     return ResourceOfferingListResponse(
-        offerings=[ResourceOfferingResponse(
-            id=o.id, agent_id=o.agent_id, org_id=o.org_id,
-            name=o.name, description=o.description, endpoint_path=o.endpoint_path,
-            parameters=o.parameters, response_schema=o.response_schema,
-            is_active=o.is_active, total_calls=o.total_calls,
-            avg_response_ms=o.avg_response_ms, created_at=o.created_at, updated_at=o.updated_at,
-        ) for o in offerings],
+        offerings=[
+            ResourceOfferingResponse(
+                id=o.id,
+                agent_id=o.agent_id,
+                org_id=o.org_id,
+                name=o.name,
+                description=o.description,
+                endpoint_path=o.endpoint_path,
+                parameters=o.parameters,
+                response_schema=o.response_schema,
+                is_active=o.is_active,
+                total_calls=o.total_calls,
+                avg_response_ms=o.avg_response_ms,
+                created_at=o.created_at,
+                updated_at=o.updated_at,
+            )
+            for o in offerings
+        ],
         total=total,
     )

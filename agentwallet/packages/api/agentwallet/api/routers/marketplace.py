@@ -191,9 +191,7 @@ async def update_service(
 
     from ...models.marketplace import Service
 
-    result = await db.execute(
-        select(Service).options(joinedload(Service.agent)).where(Service.id == service_id)
-    )
+    result = await db.execute(select(Service).options(joinedload(Service.agent)).where(Service.id == service_id))
     service = result.scalar_one_or_none()
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
@@ -339,6 +337,7 @@ async def complete_job(
 
     # Verify agent belongs to caller's org
     from ...models.agent import Agent
+
     agent = await db.get(Agent, req.agent_id)
     if not agent or agent.org_id != auth.org_id:
         raise HTTPException(status_code=403, detail="Agent does not belong to your organization")
@@ -365,6 +364,7 @@ async def cancel_job(
 
     # Verify agent belongs to caller's org
     from ...models.agent import Agent
+
     agent = await db.get(Agent, req.agent_id)
     if not agent or agent.org_id != auth.org_id:
         raise HTTPException(status_code=403, detail="Agent does not belong to your organization")

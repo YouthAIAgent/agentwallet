@@ -98,6 +98,7 @@ async def test_subscribe_invalid_tier(client, test_wallet):
 @pytest.mark.asyncio
 async def test_subscribe_insufficient_balance(client, test_org, test_wallet):
     """Insufficient USDC in the wallet is surfaced as a 400."""
+
     def _fail(*args, **kwargs):
         raise InsufficientBalanceError(available=0, required=49_000_000)
 

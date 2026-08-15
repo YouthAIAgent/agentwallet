@@ -68,7 +68,7 @@ def _check_account_lockout(email: str) -> None:
         raise HTTPException(
             status_code=429,
             detail=f"Account temporarily locked due to too many failed login attempts. "
-                   f"Try again in {remaining} seconds.",
+            f"Try again in {remaining} seconds.",
             headers={"Retry-After": str(remaining)},
         )
     elif lock_until > 0:

@@ -1,6 +1,5 @@
 """Tests for public (unauthenticated) endpoints."""
 
-
 import pytest
 
 

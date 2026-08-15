@@ -144,9 +144,7 @@ class TokenService:
                 if balance_info["amount"] >= amount_raw:
                     break
                 await asyncio.sleep(1.5)
-                balance_info = await get_token_balance(
-                    client, from_address, token_config["mint"]
-                )
+                balance_info = await get_token_balance(client, from_address, token_config["mint"])
 
         if balance_info["amount"] < amount_raw:
             raise InsufficientBalanceError(available=balance_info["amount"], required=amount_raw)

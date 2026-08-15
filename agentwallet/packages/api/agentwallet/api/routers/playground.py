@@ -81,10 +81,7 @@ def _explorer(signature: str) -> str:
 
 async def _ensure_wallet(db: AsyncSession, auth: AuthContext) -> Wallet:
     wallet = await db.scalar(
-        select(Wallet)
-        .where(Wallet.org_id == auth.org_id)
-        .order_by(Wallet.created_at.asc())
-        .limit(1)
+        select(Wallet).where(Wallet.org_id == auth.org_id).order_by(Wallet.created_at.asc()).limit(1)
     )
     if wallet is None:
         mgr = WalletManager(db)
@@ -153,10 +150,7 @@ async def playground_fund(
         remaining = max(1, int(FUND_COOLDOWN_SECONDS - (now - last_fund)))
         raise HTTPException(
             status_code=429,
-            detail=(
-                f"Devnet SOL is available once per {FUND_COOLDOWN_SECONDS}s — "
-                f"try again in {remaining}s"
-            ),
+            detail=(f"Devnet SOL is available once per {FUND_COOLDOWN_SECONDS}s — try again in {remaining}s"),
             headers={"Retry-After": str(remaining)},
         )
 
@@ -384,8 +378,7 @@ async def playground_x402(
         raise HTTPException(
             status_code=400,
             detail=(
-                "Payment transaction has no signature yet — grab devnet SOL via the "
-                "playground fund demo, then retry"
+                "Payment transaction has no signature yet — grab devnet SOL via the playground fund demo, then retry"
             ),
         )
     if tx.status == "failed":
@@ -459,10 +452,7 @@ async def playground_usdc(
         remaining = max(1, int(USDC_COOLDOWN_SECONDS - (now - last_fund)))
         raise HTTPException(
             status_code=429,
-            detail=(
-                f"Devnet USDC is available once per {USDC_COOLDOWN_SECONDS}s — "
-                f"try again in {remaining}s"
-            ),
+            detail=(f"Devnet USDC is available once per {USDC_COOLDOWN_SECONDS}s — try again in {remaining}s"),
             headers={"Retry-After": str(remaining)},
         )
 

@@ -795,9 +795,7 @@ def associated_token_address(owner: str, mint: str) -> str:
     mint_pk = Pubkey.from_string(mint)
     token_program = Pubkey.from_string(TOKEN_PROGRAM_ID)
     ata_program = Pubkey.from_string(ATA_PROGRAM_ID)
-    ata, _bump = Pubkey.find_program_address(
-        [bytes(owner_pk), bytes(token_program), bytes(mint_pk)], ata_program
-    )
+    ata, _bump = Pubkey.find_program_address([bytes(owner_pk), bytes(token_program), bytes(mint_pk)], ata_program)
     return str(ata)
 
 
@@ -996,9 +994,7 @@ async def create_spl_mint(
     return mint_addr
 
 
-async def _token_account_addresses(
-    client: httpx.AsyncClient, owner: str, mint: str
-) -> list[str]:
+async def _token_account_addresses(client: httpx.AsyncClient, owner: str, mint: str) -> list[str]:
     """Return the pubkeys of `owner`'s token accounts holding `mint`."""
     resp = await _rpc_post(
         client,

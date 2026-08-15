@@ -54,9 +54,7 @@ class SwarmService:
         return swarm
 
     async def get_swarm(self, swarm_id: uuid.UUID, org_id: uuid.UUID) -> AgentSwarm:
-        result = await self.db.execute(
-            select(AgentSwarm).where(AgentSwarm.id == swarm_id, AgentSwarm.org_id == org_id)
-        )
+        result = await self.db.execute(select(AgentSwarm).where(AgentSwarm.id == swarm_id, AgentSwarm.org_id == org_id))
         swarm = result.scalar_one_or_none()
         if not swarm:
             raise NotFoundError("swarm", str(swarm_id))
@@ -66,8 +64,8 @@ class SwarmService:
         self, org_id: uuid.UUID, is_public: bool | None = None, limit: int = 20, offset: int = 0
     ) -> tuple[list[AgentSwarm], int]:
         query = select(AgentSwarm).where(AgentSwarm.org_id == org_id, AgentSwarm.is_active)
-        count_query = select(func.count()).select_from(AgentSwarm).where(
-            AgentSwarm.org_id == org_id, AgentSwarm.is_active
+        count_query = (
+            select(func.count()).select_from(AgentSwarm).where(AgentSwarm.org_id == org_id, AgentSwarm.is_active)
         )
         if is_public is not None:
             query = query.where(AgentSwarm.is_public == is_public)
@@ -92,9 +90,7 @@ class SwarmService:
 
         # Check max members
         count_result = await self.db.execute(
-            select(func.count()).select_from(SwarmMember).where(
-                SwarmMember.swarm_id == swarm_id, SwarmMember.is_active
-            )
+            select(func.count()).select_from(SwarmMember).where(SwarmMember.swarm_id == swarm_id, SwarmMember.is_active)
         )
         current_count = count_result.scalar() or 0
         if current_count >= swarm.max_members:
@@ -176,9 +172,7 @@ class SwarmService:
         return task
 
     async def get_task(self, task_id: uuid.UUID, org_id: uuid.UUID) -> SwarmTask:
-        result = await self.db.execute(
-            select(SwarmTask).where(SwarmTask.id == task_id, SwarmTask.org_id == org_id)
-        )
+        result = await self.db.execute(select(SwarmTask).where(SwarmTask.id == task_id, SwarmTask.org_id == org_id))
         task = result.scalar_one_or_none()
         if not task:
             raise NotFoundError("swarm_task", str(task_id))
@@ -188,8 +182,10 @@ class SwarmService:
         self, swarm_id: uuid.UUID, org_id: uuid.UUID, status: str | None = None, limit: int = 20, offset: int = 0
     ) -> tuple[list[SwarmTask], int]:
         query = select(SwarmTask).where(SwarmTask.swarm_id == swarm_id, SwarmTask.org_id == org_id)
-        count_query = select(func.count()).select_from(SwarmTask).where(
-            SwarmTask.swarm_id == swarm_id, SwarmTask.org_id == org_id
+        count_query = (
+            select(func.count())
+            .select_from(SwarmTask)
+            .where(SwarmTask.swarm_id == swarm_id, SwarmTask.org_id == org_id)
         )
         if status:
             query = query.where(SwarmTask.status == status)
@@ -205,13 +201,15 @@ class SwarmService:
         task = await self.get_task(task_id, org_id)
 
         subtasks = list(task.subtasks or [])
-        subtasks.append({
-            "id": subtask_id,
-            "description": description,
-            "assigned_agent_id": str(agent_id),
-            "status": "assigned",
-            "result": None,
-        })
+        subtasks.append(
+            {
+                "id": subtask_id,
+                "description": description,
+                "assigned_agent_id": str(agent_id),
+                "status": "assigned",
+                "result": None,
+            }
+        )
         task.subtasks = subtasks
         task.total_subtasks = len(subtasks)
         task.status = "in_progress"
@@ -219,9 +217,7 @@ class SwarmService:
         await self.db.refresh(task)
         return task
 
-    async def complete_subtask(
-        self, task_id: uuid.UUID, org_id: uuid.UUID, subtask_id: str, result: dict
-    ) -> SwarmTask:
+    async def complete_subtask(self, task_id: uuid.UUID, org_id: uuid.UUID, subtask_id: str, result: dict) -> SwarmTask:
         task = await self.get_task(task_id, org_id)
 
         subtasks = list(task.subtasks or [])
@@ -246,9 +242,7 @@ class SwarmService:
             task.aggregated_result = {"subtask_results": [s.get("result") for s in subtasks if s.get("result")]}
 
             # Update swarm stats
-            result_swarm = await self.db.execute(
-                select(AgentSwarm).where(AgentSwarm.id == task.swarm_id)
-            )
+            result_swarm = await self.db.execute(select(AgentSwarm).where(AgentSwarm.id == task.swarm_id))
             swarm = result_swarm.scalar_one_or_none()
             if swarm:
                 swarm.completed_tasks += 1

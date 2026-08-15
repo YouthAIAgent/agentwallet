@@ -150,9 +150,7 @@ async def make_x402_request(
             )
         if req.max_amount_usdc is not None and token_symbol == "USDC":
             if amount_int / 1e6 > req.max_amount_usdc:
-                raise ValidationError(
-                    f"Payment {amount_int / 1e6} USDC exceeds max_amount_usdc={req.max_amount_usdc}"
-                )
+                raise ValidationError(f"Payment {amount_int / 1e6} USDC exceeds max_amount_usdc={req.max_amount_usdc}")
 
         # Step 4: execute payment via org wallet
         # Idempotency key must be org-scoped: two different organizations
@@ -187,9 +185,7 @@ async def make_x402_request(
 
         signature = getattr(tx, "signature", None)
         if not signature:
-            raise ValidationError(
-                "Payment transaction has no signature yet — check the wallet balance, then retry"
-            )
+            raise ValidationError("Payment transaction has no signature yet — check the wallet balance, then retry")
 
         # Step 5: retry with payment proof
         payment_header = json.dumps(

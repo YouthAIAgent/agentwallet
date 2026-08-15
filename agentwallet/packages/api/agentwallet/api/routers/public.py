@@ -61,9 +61,7 @@ async def get_public_stats(
 
     # Total volume (sum of confirmed transaction amounts)
     vol_q = await db.execute(
-        select(func.coalesce(func.sum(Transaction.amount_lamports), 0)).where(
-            Transaction.status == "confirmed"
-        )
+        select(func.coalesce(func.sum(Transaction.amount_lamports), 0)).where(Transaction.status == "confirmed")
     )
 
     total_agents = agents_q.scalar_one()
@@ -117,10 +115,7 @@ async def get_public_feed(
 
     # Recent transactions (last 30 confirmed)
     txns = await db.execute(
-        select(Transaction)
-        .where(Transaction.status == "confirmed")
-        .order_by(Transaction.created_at.desc())
-        .limit(30)
+        select(Transaction).where(Transaction.status == "confirmed").order_by(Transaction.created_at.desc()).limit(30)
     )
     for tx in txns.scalars().all():
         amount_sol = round(tx.amount_lamports / LAMPORTS_PER_SOL, 4)
@@ -135,9 +130,7 @@ async def get_public_feed(
         )
 
     # Recent ACP jobs (last 10)
-    acp_jobs = await db.execute(
-        select(AcpJob).order_by(AcpJob.created_at.desc()).limit(10)
-    )
+    acp_jobs = await db.execute(select(AcpJob).order_by(AcpJob.created_at.desc()).limit(10))
     for job in acp_jobs.scalars().all():
         action = f"ACP {job.phase}"
         amount = None
@@ -154,9 +147,7 @@ async def get_public_feed(
         )
 
     # Recent escrows (last 10)
-    escrows = await db.execute(
-        select(Escrow).order_by(Escrow.created_at.desc()).limit(10)
-    )
+    escrows = await db.execute(select(Escrow).order_by(Escrow.created_at.desc()).limit(10))
     for esc in escrows.scalars().all():
         action = f"escrow {esc.status}"
         amount_sol = round(esc.amount_lamports / LAMPORTS_PER_SOL, 4)

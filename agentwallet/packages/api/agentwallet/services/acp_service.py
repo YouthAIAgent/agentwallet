@@ -71,9 +71,7 @@ class AcpService:
         return job
 
     async def get_job(self, job_id: uuid.UUID, org_id: uuid.UUID) -> AcpJob:
-        result = await self.db.execute(
-            select(AcpJob).where(AcpJob.id == job_id, AcpJob.org_id == org_id)
-        )
+        result = await self.db.execute(select(AcpJob).where(AcpJob.id == job_id, AcpJob.org_id == org_id))
         job = result.scalar_one_or_none()
         if not job:
             raise NotFoundError("acp_job", str(job_id))
@@ -99,9 +97,7 @@ class AcpService:
             count_query = count_query.where(AcpJob.phase == phase)
 
         total = (await self.db.execute(count_query)).scalar() or 0
-        result = await self.db.execute(
-            query.order_by(AcpJob.created_at.desc()).limit(limit).offset(offset)
-        )
+        result = await self.db.execute(query.order_by(AcpJob.created_at.desc()).limit(limit).offset(offset))
         return list(result.scalars().all()), total
 
     async def advance_phase(
@@ -118,8 +114,7 @@ class AcpService:
         valid_targets = PHASE_TRANSITIONS.get(job.phase, [])
         if target_phase not in valid_targets:
             raise EscrowStateError(
-                f"Cannot transition from '{job.phase}' to '{target_phase}'. "
-                f"Valid transitions: {valid_targets}"
+                f"Cannot transition from '{job.phase}' to '{target_phase}'. Valid transitions: {valid_targets}"
             )
 
         now = datetime.now(timezone.utc)
@@ -164,20 +159,20 @@ class AcpService:
         if price_lamports is not None:
             job.agreed_price_lamports = price_lamports
 
-        return await self.advance_phase(
-            job_id, org_id, seller_agent_id, "negotiation", "agreement", terms
-        )
+        return await self.advance_phase(job_id, org_id, seller_agent_id, "negotiation", "agreement", terms)
 
-    async def start_transaction(
-        self, job_id: uuid.UUID, org_id: uuid.UUID, buyer_agent_id: uuid.UUID
-    ) -> AcpJob:
+    async def start_transaction(self, job_id: uuid.UUID, org_id: uuid.UUID, buyer_agent_id: uuid.UUID) -> AcpJob:
         job = await self.get_job(job_id, org_id)
         if job.buyer_agent_id != buyer_agent_id:
             raise ValidationError("Only the buyer agent can fund the transaction")
 
         return await self.advance_phase(
-            job_id, org_id, buyer_agent_id, "transaction", "transaction",
-            {"funded": True, "amount": job.agreed_price_lamports}
+            job_id,
+            org_id,
+            buyer_agent_id,
+            "transaction",
+            "transaction",
+            {"funded": True, "amount": job.agreed_price_lamports},
         )
 
     async def deliver(
@@ -194,8 +189,7 @@ class AcpService:
 
         job.result_data = result_data
         return await self.advance_phase(
-            job_id, org_id, seller_agent_id, "evaluation", "deliverable",
-            {"result": result_data, "notes": notes}
+            job_id, org_id, seller_agent_id, "evaluation", "deliverable", {"result": result_data, "notes": notes}
         )
 
     async def evaluate(
@@ -222,13 +216,16 @@ class AcpService:
 
         if approved:
             return await self.advance_phase(
-                job_id, org_id, evaluator_id, "completed", "evaluation",
-                {"approved": True, "notes": notes, "rating": rating}
+                job_id,
+                org_id,
+                evaluator_id,
+                "completed",
+                "evaluation",
+                {"approved": True, "notes": notes, "rating": rating},
             )
         else:
             return await self.advance_phase(
-                job_id, org_id, evaluator_id, "disputed", "evaluation",
-                {"approved": False, "notes": notes}
+                job_id, org_id, evaluator_id, "disputed", "evaluation", {"approved": False, "notes": notes}
             )
 
     # ── Memos ──
@@ -259,9 +256,7 @@ class AcpService:
 
     async def list_memos(self, job_id: uuid.UUID, org_id: uuid.UUID) -> list[AcpMemo]:
         await self.get_job(job_id, org_id)
-        result = await self.db.execute(
-            select(AcpMemo).where(AcpMemo.job_id == job_id).order_by(AcpMemo.created_at)
-        )
+        result = await self.db.execute(select(AcpMemo).where(AcpMemo.job_id == job_id).order_by(AcpMemo.created_at))
         return list(result.scalars().all())
 
     # ── Resource Offerings ──

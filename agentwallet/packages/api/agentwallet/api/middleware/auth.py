@@ -128,9 +128,7 @@ def _resolve_agent_id(request: Request) -> uuid.UUID | None:
     return None
 
 
-async def _verify_agent_belongs_to_org(
-    db: AsyncSession, agent_id: uuid.UUID, org_id: uuid.UUID
-) -> None:
+async def _verify_agent_belongs_to_org(db: AsyncSession, agent_id: uuid.UUID, org_id: uuid.UUID) -> None:
     """Verify that an agent belongs to the given organization."""
     from ...models.agent import Agent
 
@@ -227,8 +225,5 @@ async def get_auth_context(
 
     raise HTTPException(
         status_code=401,
-        detail=(
-            "Authentication required — pass a Bearer token (Authorization header) "
-            "or an X-API-Key header"
-        ),
+        detail=("Authentication required — pass a Bearer token (Authorization header) or an X-API-Key header"),
     )

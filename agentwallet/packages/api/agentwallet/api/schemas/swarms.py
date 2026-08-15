@@ -106,6 +106,7 @@ class SwarmTaskListResponse(BaseModel):
 
 class SubtaskAssign(BaseModel):
     """Assign a subtask to a swarm member."""
+
     subtask_id: str
     agent_id: uuid.UUID
     description: str
@@ -113,5 +114,6 @@ class SubtaskAssign(BaseModel):
 
 class SubtaskComplete(BaseModel):
     """Mark a subtask as completed."""
+
     subtask_id: str
     result: Dict[str, Any]

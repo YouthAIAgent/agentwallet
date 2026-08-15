@@ -118,13 +118,24 @@ async def add_member(
     """Add an agent to a swarm as worker, specialist, or evaluator."""
     svc = SwarmService(db)
     member = await svc.add_member(
-        swarm_id, auth.org_id, body.agent_id, body.role, body.specialization, body.is_contestable,
+        swarm_id,
+        auth.org_id,
+        body.agent_id,
+        body.role,
+        body.specialization,
+        body.is_contestable,
     )
     return SwarmMemberResponse(
-        id=member.id, swarm_id=member.swarm_id, agent_id=member.agent_id,
-        role=member.role, specialization=member.specialization, is_contestable=member.is_contestable,
-        is_active=member.is_active, tasks_completed=member.tasks_completed,
-        avg_rating=member.avg_rating, joined_at=member.joined_at,
+        id=member.id,
+        swarm_id=member.swarm_id,
+        agent_id=member.agent_id,
+        role=member.role,
+        specialization=member.specialization,
+        is_contestable=member.is_contestable,
+        is_active=member.is_active,
+        tasks_completed=member.tasks_completed,
+        avg_rating=member.avg_rating,
+        joined_at=member.joined_at,
     )
 
 
@@ -138,12 +149,21 @@ async def list_members(
     svc = SwarmService(db)
     members = await svc.list_members(swarm_id, auth.org_id)
     return SwarmMemberListResponse(
-        members=[SwarmMemberResponse(
-            id=m.id, swarm_id=m.swarm_id, agent_id=m.agent_id,
-            role=m.role, specialization=m.specialization, is_contestable=m.is_contestable,
-            is_active=m.is_active, tasks_completed=m.tasks_completed,
-            avg_rating=m.avg_rating, joined_at=m.joined_at,
-        ) for m in members],
+        members=[
+            SwarmMemberResponse(
+                id=m.id,
+                swarm_id=m.swarm_id,
+                agent_id=m.agent_id,
+                role=m.role,
+                specialization=m.specialization,
+                is_contestable=m.is_contestable,
+                is_active=m.is_active,
+                tasks_completed=m.tasks_completed,
+                avg_rating=m.avg_rating,
+                joined_at=m.joined_at,
+            )
+            for m in members
+        ],
         total=len(members),
     )
 
@@ -174,15 +194,29 @@ async def create_task(
     """Submit a complex task to a swarm for decomposition and execution."""
     svc = SwarmService(db)
     task = await svc.create_task(
-        swarm_id, auth.org_id, body.title, body.description, body.task_type, body.client_agent_id,
+        swarm_id,
+        auth.org_id,
+        body.title,
+        body.description,
+        body.task_type,
+        body.client_agent_id,
     )
     return SwarmTaskResponse(
-        id=task.id, swarm_id=task.swarm_id, org_id=task.org_id,
-        title=task.title, description=task.description, task_type=task.task_type,
-        subtasks=task.subtasks or [], status=task.status, aggregated_result=task.aggregated_result,
-        total_subtasks=task.total_subtasks, completed_subtasks=task.completed_subtasks,
-        client_agent_id=task.client_agent_id, created_at=task.created_at,
-        updated_at=task.updated_at, completed_at=task.completed_at,
+        id=task.id,
+        swarm_id=task.swarm_id,
+        org_id=task.org_id,
+        title=task.title,
+        description=task.description,
+        task_type=task.task_type,
+        subtasks=task.subtasks or [],
+        status=task.status,
+        aggregated_result=task.aggregated_result,
+        total_subtasks=task.total_subtasks,
+        completed_subtasks=task.completed_subtasks,
+        client_agent_id=task.client_agent_id,
+        created_at=task.created_at,
+        updated_at=task.updated_at,
+        completed_at=task.completed_at,
     )
 
 
@@ -199,14 +233,26 @@ async def list_tasks(
     svc = SwarmService(db)
     tasks, total = await svc.list_tasks(swarm_id, auth.org_id, status, limit, offset)
     return SwarmTaskListResponse(
-        tasks=[SwarmTaskResponse(
-            id=t.id, swarm_id=t.swarm_id, org_id=t.org_id,
-            title=t.title, description=t.description, task_type=t.task_type,
-            subtasks=t.subtasks or [], status=t.status, aggregated_result=t.aggregated_result,
-            total_subtasks=t.total_subtasks, completed_subtasks=t.completed_subtasks,
-            client_agent_id=t.client_agent_id, created_at=t.created_at,
-            updated_at=t.updated_at, completed_at=t.completed_at,
-        ) for t in tasks],
+        tasks=[
+            SwarmTaskResponse(
+                id=t.id,
+                swarm_id=t.swarm_id,
+                org_id=t.org_id,
+                title=t.title,
+                description=t.description,
+                task_type=t.task_type,
+                subtasks=t.subtasks or [],
+                status=t.status,
+                aggregated_result=t.aggregated_result,
+                total_subtasks=t.total_subtasks,
+                completed_subtasks=t.completed_subtasks,
+                client_agent_id=t.client_agent_id,
+                created_at=t.created_at,
+                updated_at=t.updated_at,
+                completed_at=t.completed_at,
+            )
+            for t in tasks
+        ],
         total=total,
     )
 
@@ -222,12 +268,21 @@ async def get_task(
     svc = SwarmService(db)
     task = await svc.get_task(task_id, auth.org_id)
     return SwarmTaskResponse(
-        id=task.id, swarm_id=task.swarm_id, org_id=task.org_id,
-        title=task.title, description=task.description, task_type=task.task_type,
-        subtasks=task.subtasks or [], status=task.status, aggregated_result=task.aggregated_result,
-        total_subtasks=task.total_subtasks, completed_subtasks=task.completed_subtasks,
-        client_agent_id=task.client_agent_id, created_at=task.created_at,
-        updated_at=task.updated_at, completed_at=task.completed_at,
+        id=task.id,
+        swarm_id=task.swarm_id,
+        org_id=task.org_id,
+        title=task.title,
+        description=task.description,
+        task_type=task.task_type,
+        subtasks=task.subtasks or [],
+        status=task.status,
+        aggregated_result=task.aggregated_result,
+        total_subtasks=task.total_subtasks,
+        completed_subtasks=task.completed_subtasks,
+        client_agent_id=task.client_agent_id,
+        created_at=task.created_at,
+        updated_at=task.updated_at,
+        completed_at=task.completed_at,
     )
 
 
@@ -243,12 +298,21 @@ async def assign_subtask(
     svc = SwarmService(db)
     task = await svc.assign_subtask(task_id, auth.org_id, body.subtask_id, body.agent_id, body.description)
     return SwarmTaskResponse(
-        id=task.id, swarm_id=task.swarm_id, org_id=task.org_id,
-        title=task.title, description=task.description, task_type=task.task_type,
-        subtasks=task.subtasks or [], status=task.status, aggregated_result=task.aggregated_result,
-        total_subtasks=task.total_subtasks, completed_subtasks=task.completed_subtasks,
-        client_agent_id=task.client_agent_id, created_at=task.created_at,
-        updated_at=task.updated_at, completed_at=task.completed_at,
+        id=task.id,
+        swarm_id=task.swarm_id,
+        org_id=task.org_id,
+        title=task.title,
+        description=task.description,
+        task_type=task.task_type,
+        subtasks=task.subtasks or [],
+        status=task.status,
+        aggregated_result=task.aggregated_result,
+        total_subtasks=task.total_subtasks,
+        completed_subtasks=task.completed_subtasks,
+        client_agent_id=task.client_agent_id,
+        created_at=task.created_at,
+        updated_at=task.updated_at,
+        completed_at=task.completed_at,
     )
 
 
@@ -264,10 +328,19 @@ async def complete_subtask(
     svc = SwarmService(db)
     task = await svc.complete_subtask(task_id, auth.org_id, body.subtask_id, body.result)
     return SwarmTaskResponse(
-        id=task.id, swarm_id=task.swarm_id, org_id=task.org_id,
-        title=task.title, description=task.description, task_type=task.task_type,
-        subtasks=task.subtasks or [], status=task.status, aggregated_result=task.aggregated_result,
-        total_subtasks=task.total_subtasks, completed_subtasks=task.completed_subtasks,
-        client_agent_id=task.client_agent_id, created_at=task.created_at,
-        updated_at=task.updated_at, completed_at=task.completed_at,
+        id=task.id,
+        swarm_id=task.swarm_id,
+        org_id=task.org_id,
+        title=task.title,
+        description=task.description,
+        task_type=task.task_type,
+        subtasks=task.subtasks or [],
+        status=task.status,
+        aggregated_result=task.aggregated_result,
+        total_subtasks=task.total_subtasks,
+        completed_subtasks=task.completed_subtasks,
+        client_agent_id=task.client_agent_id,
+        created_at=task.created_at,
+        updated_at=task.updated_at,
+        completed_at=task.completed_at,
     )

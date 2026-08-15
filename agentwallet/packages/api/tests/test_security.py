@@ -132,9 +132,7 @@ async def test_replay_proof_rejected_for_different_payee(client, test_agent):
 
 
 @pytest.mark.asyncio
-async def test_api_key_without_wallet_permission_cannot_transfer(
-    client, test_org, db_session
-):
+async def test_api_key_without_wallet_permission_cannot_transfer(client, test_org, db_session):
     """An API key with no 'wallets' permission must be denied transfers."""
     from agentwallet.api.middleware.auth import hash_api_key
     from agentwallet.models.api_key import ApiKey
@@ -165,9 +163,7 @@ async def test_api_key_without_wallet_permission_cannot_transfer(
 
 
 @pytest.mark.asyncio
-async def test_api_key_with_wallet_permission_passes_permission_gate(
-    client, test_org, db_session
-):
+async def test_api_key_with_wallet_permission_passes_permission_gate(client, test_org, db_session):
     """A key with 'wallets: w' passes the permission gate (fails later on missing wallet)."""
     from agentwallet.api.middleware.auth import hash_api_key
     from agentwallet.models.api_key import ApiKey

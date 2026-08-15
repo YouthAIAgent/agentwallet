@@ -1,6 +1,5 @@
 """Tests for Agent Swarm endpoints."""
 
-
 import pytest
 from agentwallet.models import Agent
 

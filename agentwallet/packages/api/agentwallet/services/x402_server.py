@@ -27,9 +27,11 @@ from ..core.solana import confirm_transaction, verify_transfer_on_chain
 
 logger = get_logger(__name__)
 
+
 # USDC mint (devnet by default; overridable via config)
 def _usdc_mint() -> str:
     return get_settings().usdc_mint_address or "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+
 
 USDC_MINT = _usdc_mint()
 

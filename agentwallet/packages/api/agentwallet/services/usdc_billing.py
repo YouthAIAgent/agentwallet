@@ -33,6 +33,7 @@ def _as_utc(dt: datetime | None) -> datetime | None:
         return dt.replace(tzinfo=timezone.utc)
     return dt.astimezone(timezone.utc)
 
+
 PLANS = {
     "free": {
         "name": "Free",
@@ -103,9 +104,7 @@ class UsdcBillingService:
         immediately so limits, fees and rate limits reflect the new plan.
         """
         if tier not in PLANS:
-            raise ValidationError(
-                f"Unknown tier '{tier}'. Available: {', '.join(PLANS)}"
-            )
+            raise ValidationError(f"Unknown tier '{tier}'. Available: {', '.join(PLANS)}")
 
         org = await self.db.get(Organization, org_id)
         if not org:
@@ -177,12 +176,7 @@ class UsdcBillingService:
         now = datetime.now(timezone.utc)
 
         period_end = _as_utc(sub.period_end) if sub else None
-        if (
-            sub
-            and sub.status == "active"
-            and period_end is not None
-            and period_end < now
-        ):
+        if sub and sub.status == "active" and period_end is not None and period_end < now:
             sub.status = "expired"
             org.tier = "free"
             await self.db.flush()
@@ -288,9 +282,7 @@ class UsdcBillingService:
             sub.auto_renew = False
 
     @staticmethod
-    def _to_dict(
-        sub: BillingSubscription | None, org_tier: str
-    ) -> dict:
+    def _to_dict(sub: BillingSubscription | None, org_tier: str) -> dict:
         if sub is None:
             return {
                 "id": None,
