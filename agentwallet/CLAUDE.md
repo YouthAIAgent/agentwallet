@@ -35,6 +35,9 @@ means moving the whole `agentwallet.fun` zone. Do this only when you want CF's e
 bot fight, `CF-IPCountry` for every request). Our backend already prefers `CF-IPCountry` first
 (`_GEO_HEADERS` in `services/presence.py`), so no code change is needed after migration.
 
+**Full click-path checklist: `docs/CLOUDFLARE_MIGRATION.md`** (zone create → record wizard →
+NS change → verify → rollback). Summary below.
+
 Steps (requires Cloudflare account + registrar access):
 1. **Snapshot current DNS** — export the Vercel DNS records for `agentwallet.fun` (dashboard →
    Settings → Domains → DNS records). Minimum set: apex `A` → Vercel (the two IPs above), any
