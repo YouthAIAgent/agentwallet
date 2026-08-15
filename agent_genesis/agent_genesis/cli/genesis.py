@@ -20,7 +20,7 @@ from agent_genesis.plugins.hermes_genesis import (
     genesis_design, genesis_breed, genesis_deploy,
     genesis_finetune, genesis_memory, genesis_check_runtimes,
     genesis_list_champions, genesis_load_golden,
-    genesis_init_population, genesis_list_orgs,
+    genesis_init_population, genesis_list_orgs, genesis_deployer_status,
     openspace_local_search, openspace_local_skill,
 )
 
@@ -323,11 +323,13 @@ class GenesisTelegramBot:
             stats = self.memory.stats()
             runtimes = await genesis_check_runtimes()
             champs = await genesis_list_champions()
+            deployer = await genesis_deployer_status()
             
             msg = "📊 *Agent Genesis Status*\n\n"
             msg += f"💾 Memory: {stats.get('episodic', 0)} episodic, {stats.get('semantic', 0)} semantic, {stats.get('procedural', 0)} skills, {stats.get('orgs', 0)} orgs\n"
             msg += "⚙️ Runtimes: " + ", ".join([f"{k}={'✅' if v else '❌'}" for k,v in runtimes.items()]) + "\n"
             msg += f"🏆 Champions: {len(champs.get('champions', {}))}\n"
+            msg += f"🚀 Deployer: {deployer['active_agents']}/{deployer['max_concurrent_agents']} active agents (peak {deployer['peak_concurrent']})\n"
             
             await update.message.reply_text(msg, parse_mode="Markdown")
         except Exception as e:
@@ -460,9 +462,14 @@ class GenesisCLI:
                 stats = self.memory.stats()
                 runtimes = await genesis_check_runtimes()
                 champs = await genesis_list_champions()
+                deployer = await genesis_deployer_status()
                 print(f"Memory: {stats}")
                 print(f"Runtimes: {runtimes}")
                 print(f"Champions: {len(champs.get('champions', {}))}")
+                print(
+                    f"Deployer: {deployer['active_agents']}/{deployer['max_concurrent_agents']} "
+                    f"active agents (peak {deployer['peak_concurrent']})"
+                )
                 
             elif cmd == "init-pop":
                 if len(cmd_args) < 2:

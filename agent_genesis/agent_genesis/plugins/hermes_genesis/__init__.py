@@ -175,6 +175,19 @@ async def genesis_check_runtimes() -> Dict[str, Any]:
     return {rt.value: ok for rt, ok in results.items()}
 
 
+async def genesis_deployer_status() -> Dict[str, Any]:
+    """Live deployer load: active agents, peak concurrency, and the cap.
+
+    Reflects the shared ``_deployer`` instance used by ``genesis_deploy``,
+    so ``genesis status`` shows real load during deployments.
+    """
+    return {
+        "active_agents": _deployer.active_agent_count,
+        "peak_concurrent": _deployer.peak_concurrent,
+        "max_concurrent_agents": _deployer.max_concurrent_agents,
+    }
+
+
 async def genesis_deploy_agent(
     agent_spec: Dict[str, Any],
     deployment_id: str = "manual",

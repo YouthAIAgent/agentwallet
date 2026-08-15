@@ -75,3 +75,27 @@ async def test_status_command(cli, capsys):
     out = capsys.readouterr().out
     assert "Memory:" in out
     assert "Runtimes:" in out
+
+
+@pytest.mark.asyncio
+async def test_status_shows_deployer_load(cli, capsys):
+    """genesis status must expose active agents, peak, and the cap."""
+    await cli.run(["status"])
+    out = capsys.readouterr().out
+    assert "Deployer:" in out
+    assert "active agents" in out
+    assert "peak" in out
+
+
+@pytest.mark.asyncio
+async def test_deployer_status_reports_real_load(isolated_memory):
+    """genesis_deployer_status reflects the shared deployer instance."""
+    from agent_genesis.plugins.hermes_genesis import genesis_deployer_status
+
+    d = await genesis_deployer_status()
+    assert "active_agents" in d
+    assert "peak_concurrent" in d
+    assert "max_concurrent_agents" in d
+    assert d["max_concurrent_agents"] == 12
+    assert d["active_agents"] == 0
+    assert d["peak_concurrent"] == 0
