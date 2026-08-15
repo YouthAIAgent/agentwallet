@@ -220,6 +220,13 @@ function TypewriterTerminal() {
   const [chars, setChars] = useState(0);
   const [phase, setPhase] = useState<"typing" | "running">("typing");
   const [results, setResults] = useState<CmdResult[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // keep the active line in view as output grows
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [results, lineIdx, chars, phase]);
 
   useEffect(() => {
     if (lineIdx >= heroCmds.length) {
@@ -259,7 +266,10 @@ function TypewriterTerminal() {
   const allDone = lineIdx >= heroCmds.length;
 
   return (
-    <div className="p-4 h-[300px] overflow-hidden">
+    <div
+      ref={scrollRef}
+      className="p-4 h-[320px] overflow-y-auto terminal-scroll"
+    >
       {/* completed commands */}
       {results.map((r, i) => (
         <div key={i} className="mb-2.5">
@@ -356,40 +366,45 @@ export default function Landing() {
       </header>
 
       {/* Hero */}
-      <section className="relative max-w-6xl mx-auto px-6 pt-16 pb-20 grid lg:grid-cols-2 gap-14 items-center">
-        <Reveal>
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 border border-brand-500/30 bg-brand-500/5 rounded text-[11px] text-brand-400 mb-6">
+      <section className="relative max-w-6xl mx-auto px-6 pt-20 pb-24 grid lg:grid-cols-2 gap-14 items-center">
+        <Reveal className="min-w-0">
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-brand-500/30 bg-brand-500/5 rounded text-[11px] text-brand-400 mb-7">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
               SOLANA DEVNET · LIVE
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-heading tracking-tight leading-[1.1]">
-              The payment rail
-              <br />
-              for the <span className="text-brand-400">agent economy</span>.
+            <h1 className="text-[clamp(2.1rem,5vw,3.75rem)] font-bold text-heading tracking-[-0.05em] leading-[1.08] text-balance">
+              The Payment Rail For The{" "}
+              <span className="aw-shimmer-wrap aw-underline">
+                <span className="aw-shimmer">Agent Economy</span>
+              </span>
+              .
             </h1>
-            <p className="mt-5 text-ink-300 max-w-lg leading-relaxed">
-              Spin up Solana wallets, escrow and pay-per-call billing for your
-              agents in minutes. No Stripe, no intermediaries — just on-chain
-              money moving automatically when your agents work.
+            <p className="mt-6 text-ink-300 max-w-lg leading-relaxed">
+              Spin up <span className="aw-caps">Solana wallets</span>,{" "}
+              <span className="aw-caps">escrow</span> and{" "}
+              <span className="aw-caps">pay-per-call billing</span> for your
+              agents in minutes. No Stripe, no intermediaries — just{" "}
+              <span className="aw-caps">on-chain money</span> moving
+              automatically when your agents work.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
+            <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link
                 to="/login"
-                className="btn-primary"
+                className="btn-primary whitespace-nowrap"
                 onClick={() => track("click_launch_dashboard")}
               >
                 Launch Dashboard <ArrowRight className="w-4 h-4" />
               </Link>
               <a
                 href="#devnet"
-                className="btn-secondary"
+                className="btn-secondary whitespace-nowrap"
                 onClick={() => track("click_try_devnet")}
               >
                 Try Devnet — Free
               </a>
             </div>
-            <div className="mt-8 flex items-center gap-6 text-[11px] text-ink-500 uppercase tracking-widest">
+            <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px] text-ink-500 uppercase tracking-widest">
               <span>● Escrow</span>
               <span>● x402</span>
               <span>● USDC</span>
@@ -399,7 +414,7 @@ export default function Landing() {
         </Reveal>
 
         {/* Terminal demo */}
-        <Reveal delay={150}>
+        <Reveal delay={150} className="min-w-0">
           <div className="card !p-0 overflow-hidden">
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-ink-800 bg-ink-900/80">
               <span className="text-[11px] text-ink-500 uppercase tracking-widest">
@@ -465,25 +480,25 @@ export default function Landing() {
             </p>
           </div>
         </Reveal>
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-3 gap-4 items-stretch">
           {plans.map((p, i) => (
-            <Reveal key={p.name} delay={i * 120}>
+            <Reveal key={p.name} delay={i * 120} className="h-full">
               <div
-                className={`card h-full relative flex flex-col ${
+                className={`card h-full relative flex flex-col transition-all duration-300 ${
                   p.highlight
-                    ? "border-brand-500/60 shadow-[0_0_40px_-12px] shadow-brand-500/20"
-                    : ""
+                    ? "border-brand-500/60 shadow-[0_0_0_1px_rgba(0,187,127,0.15),0_0_45px_-12px_rgba(0,187,127,0.45)]"
+                    : "hover:border-ink-700"
                 }`}
               >
                 {p.highlight && (
-                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-brand-500 text-ink-950 text-[10px] font-bold uppercase tracking-widest rounded">
+                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-brand-500 text-ink-950 text-[10px] font-bold uppercase tracking-widest rounded whitespace-nowrap">
                     Most Popular
                   </span>
                 )}
                 <p className="text-[11px] text-ink-500 uppercase tracking-widest">
                   {p.name}
                 </p>
-                <div className="mt-3 flex items-baseline gap-2">
+                <div className="mt-3 flex items-baseline gap-2 flex-wrap">
                   <span className="text-3xl font-bold text-ink-100">
                     {p.price}
                   </span>
@@ -518,37 +533,41 @@ export default function Landing() {
       </section>
 
       {/* Devnet CTA */}
-      <section id="devnet" className="relative max-w-6xl mx-auto px-6 py-20">
+      <section id="devnet" className="relative max-w-6xl mx-auto px-6 pt-8 pb-24">
         <Reveal>
-          <div className="card !p-0 overflow-hidden relative">
+          <div className="card !p-0 overflow-hidden relative border-brand-500/25 shadow-[0_0_0_1px_rgba(0,187,127,0.12),0_0_60px_-20px_rgba(0,187,127,0.35)]">
             <div className="absolute inset-0 grid-bg opacity-60 pointer-events-none" />
-            <div className="relative p-8 md:p-12 text-center">
-              <div className="flex justify-center mb-6">
-                <div className="w-12 h-12">
-                  <LogoMark />
+            {/* centered glow behind the mark */}
+            <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[420px] h-[240px] bg-brand-500/15 blur-3xl rounded-full pointer-events-none" />
+            <div className="relative p-10 md:p-14 text-center">
+              <div className="flex justify-center mb-7">
+                <div className="w-16 h-16 rounded-full bg-brand-500/10 border border-brand-500/30 flex items-center justify-center shadow-[0_0_30px_-8px_rgba(0,187,127,0.5)]">
+                  <div className="w-9 h-9">
+                    <LogoMark />
+                  </div>
                 </div>
               </div>
               <h2 className="text-3xl font-bold text-heading tracking-tight">
                 Deploy your first agent wallet today.
               </h2>
-              <p className="mt-3 text-ink-300 max-w-xl mx-auto text-sm leading-relaxed">
+              <p className="mt-4 text-ink-300 max-w-xl mx-auto text-sm leading-relaxed">
                 Register free on devnet, fund your wallet from the faucet and
                 run escrow + x402 end to end — real Solana transactions, zero
                 cost.
               </p>
-              <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <div className="mt-9 flex flex-wrap justify-center gap-4">
                 <Link
                   to="/login"
-                  className="btn-primary"
+                  className="btn-primary whitespace-nowrap"
                   onClick={() => track("click_register_devnet")}
                 >
-                  Register on Devnet — Free
+                  Register on Devnet — Free <ArrowRight className="w-4 h-4" />
                 </Link>
                 <a
                   href="https://faucet.solana.com"
                   target="_blank"
                   rel="noreferrer"
-                  className="btn-secondary"
+                  className="btn-secondary whitespace-nowrap"
                 >
                   Get 0.5 Test SOL
                 </a>
@@ -559,26 +578,46 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="relative border-t border-ink-800 mt-10">
-        <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7">
-              <LogoMark />
-            </div>
+      <footer className="relative border-t border-ink-800">
+        <div className="max-w-6xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex flex-col items-center md:items-start gap-4">
+            <Brand size="sm" />
             <p className="text-xs text-ink-500">
               © 2026 agentwallet · Built on Solana · Devnet live
             </p>
           </div>
-          <div className="flex items-center gap-6 text-xs text-ink-400">
-            <a href="#features" className="hover:text-ink-200 transition-colors">
-              Features
-            </a>
-            <a href="#pricing" className="hover:text-ink-200 transition-colors">
-              Pricing
-            </a>
-            <Link to="/login" className="hover:text-brand-400 transition-colors">
-              Dashboard
-            </Link>
+          <div className="flex flex-col items-center md:items-end gap-4">
+            <nav className="flex items-center gap-6 text-xs">
+              <a
+                href="#features"
+                className="text-ink-400 hover:text-ink-200 transition-colors"
+              >
+                Features
+              </a>
+              <a
+                href="#pricing"
+                className="text-ink-400 hover:text-ink-200 transition-colors"
+              >
+                Pricing
+              </a>
+              <a
+                href="#devnet"
+                className="text-ink-400 hover:text-ink-200 transition-colors"
+              >
+                Devnet
+              </a>
+              <span className="w-px h-4 bg-ink-700" />
+              <Link
+                to="/login"
+                className="text-brand-400 hover:text-brand-300 font-semibold transition-colors"
+                onClick={() => track("click_footer_dashboard")}
+              >
+                Dashboard →
+              </Link>
+            </nav>
+            <p className="text-[10px] text-ink-600 uppercase tracking-widest">
+              Solana devnet · 0.4.x · agent-genesis
+            </p>
           </div>
         </div>
       </footer>
