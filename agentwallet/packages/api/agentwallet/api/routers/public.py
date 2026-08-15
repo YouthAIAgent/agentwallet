@@ -16,8 +16,9 @@ from ...models.escrow import Escrow
 from ...models.swarm import AgentSwarm
 from ...models.transaction import Transaction
 from ...models.wallet import Wallet
+from ...services.presence import presence
 from ..middleware.rate_limit import check_rate_limit
-from ..schemas.public import FeedItem, PublicFeed, PublicStats
+from ..schemas.public import FeedItem, PresenceRequest, PresenceResponse, PublicFeed, PublicStats
 
 logger = get_logger(__name__)
 
@@ -90,6 +91,19 @@ async def get_public_stats(
         pass  # Redis fail-open
 
     return stats
+
+
+@router.post("/presence", response_model=PresenceResponse)
+async def post_presence(
+    request: Request,
+    body: PresenceRequest,
+):
+    """Anonymous heartbeat — marks this visitor online and returns the live
+    count of people on the site right now. Fail-open: returns a best-effort
+    count even if Redis is down."""
+    await check_rate_limit(request, "public_presence", "free")
+    online = await presence.heartbeat(body.visitor_id)
+    return PresenceResponse(online=online)
 
 
 @router.get("/feed", response_model=PublicFeed)

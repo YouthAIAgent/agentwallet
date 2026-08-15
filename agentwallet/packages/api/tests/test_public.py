@@ -75,3 +75,44 @@ async def test_public_stats_counts(unauthed_client, db_session, test_org, test_a
     data = resp.json()
     assert data["total_agents"] >= 1
     assert data["total_wallets"] >= 1
+
+
+@pytest.mark.asyncio
+async def test_public_presence_heartbeat(unauthed_client):
+    """Presence heartbeat registers a visitor and returns the online count."""
+    resp = await unauthed_client.post(
+        "/v1/public/presence",
+        json={"visitor_id": "test-visitor-abc123"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert isinstance(data["online"], int)
+    assert data["online"] >= 1  # this heartbeat is included
+
+
+@pytest.mark.asyncio
+async def test_public_presence_counts_visitors(unauthed_client):
+    """Two distinct visitors -> online count reflects both."""
+    r1 = await unauthed_client.post(
+        "/v1/public/presence", json={"visitor_id": "visitor-aaaa-0001"}
+    )
+    r2 = await unauthed_client.post(
+        "/v1/public/presence", json={"visitor_id": "visitor-bbbb-0002"}
+    )
+    assert r1.status_code == 200 and r2.status_code == 200
+    # Second heartbeat must see at least both visitors (itself + the first)
+    assert r2.json()["online"] >= 2
+
+
+@pytest.mark.asyncio
+async def test_public_presence_rejects_bad_ids(unauthed_client):
+    """Malformed visitor ids are rejected (keeps Redis keys sane)."""
+    resp = await unauthed_client.post(
+        "/v1/public/presence", json={"visitor_id": "<script>alert(1)</script>"}
+    )
+    assert resp.status_code == 422
+
+    short = await unauthed_client.post(
+        "/v1/public/presence", json={"visitor_id": "short"}
+    )
+    assert short.status_code == 422

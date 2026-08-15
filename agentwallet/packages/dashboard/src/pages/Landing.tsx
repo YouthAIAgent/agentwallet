@@ -492,7 +492,41 @@ function FeedRow({ it }: { it: RenderedItem }) {
 
 function LiveFeed() {
   const [rendered, setRendered] = useState<RenderedItem[]>([]);
+  const [online, setOnline] = useState<number | null>(null);
   const firstLoad = useRef(true);
+
+  // presence heartbeat — anonymous visitor id in localStorage, beats every 60s
+  useEffect(() => {
+    let alive = true;
+    let vid = localStorage.getItem("aw_visitor_id");
+    if (!vid) {
+      vid =
+        typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : `v-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      localStorage.setItem("aw_visitor_id", vid);
+    }
+    const beat = async () => {
+      try {
+        const res = await fetch("/api/v1/public/presence", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ visitor_id: vid }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: { online?: number } = await res.json();
+        if (alive && typeof data.online === "number") setOnline(data.online);
+      } catch {
+        // hide the badge on failure — never break the landing page
+      }
+    };
+    beat();
+    const id = setInterval(beat, 60_000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -573,9 +607,20 @@ function LiveFeed() {
 
   return (
     <div className="mt-4 max-w-md">
-      <div className="flex items-center gap-2 mb-2 text-[9px] uppercase tracking-widest text-ink-500">
-        <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
-        Recent on-chain activity
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <div className="flex items-center gap-2 text-[9px] uppercase tracking-widest text-ink-500">
+          <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
+          Recent on-chain activity
+        </div>
+        {online !== null && (
+          <span
+            className="inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-widest text-brand-400 whitespace-nowrap"
+            title="Anonymous visitors seen in the last 90 seconds"
+          >
+            <span className="w-1 h-1 rounded-full bg-brand-500 animate-pulse" />
+            {online} online now
+          </span>
+        )}
       </div>
       <div className="border border-ink-800 rounded-lg overflow-hidden divide-y divide-ink-800/60 bg-ink-950/60">
         {rows.map((it) => (

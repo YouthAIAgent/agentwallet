@@ -1,8 +1,9 @@
 """Public endpoint schemas — unauthenticated stats and feed."""
 
 from datetime import datetime
+from typing import Annotated
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 
 class PublicStats(BaseModel):
@@ -30,3 +31,23 @@ class FeedItem(BaseModel):
 class PublicFeed(BaseModel):
     items: list[FeedItem]
     generated_at: datetime
+
+
+class PresenceRequest(BaseModel):
+    """Anonymous heartbeat from a landing-page visitor."""
+
+    visitor_id: Annotated[str, Field(min_length=8, max_length=64)]
+
+    @field_validator("visitor_id")
+    @classmethod
+    def _safe_id(cls, v: str) -> str:
+        v = v.strip()
+        # Only allow typical id characters (uuid, v-<ts>-<rand>) to keep
+        # Redis keys sane — never accept arbitrary user input verbatim.
+        if not all(c.isalnum() or c in "-_" for c in v):
+            raise ValueError("visitor_id contains invalid characters")
+        return v
+
+
+class PresenceResponse(BaseModel):
+    online: int
