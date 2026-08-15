@@ -124,6 +124,11 @@ jobs:
       #   Settings -> Secrets and variables -> Actions -> New repository secret
       #   Name: RAILWAY_TOKEN
       #   Value: <token from `railway login` or Railway dashboard>
+      - name: Link Railway project
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway link --project 447d110e-0eed-4208-98bd-9b370125476a --environment production
+
       - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

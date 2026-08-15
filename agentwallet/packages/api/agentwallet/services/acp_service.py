@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..core.exceptions import NotFoundError, ValidationError, EscrowStateError
+from ..core.exceptions import EscrowStateError, NotFoundError, ValidationError
 from ..models.acp import AcpJob, AcpMemo, ResourceOffering
 
 # Valid phase transitions
@@ -149,7 +149,12 @@ class AcpService:
         return job
 
     async def negotiate(
-        self, job_id: uuid.UUID, org_id: uuid.UUID, seller_agent_id: uuid.UUID, terms: dict, price_lamports: int | None = None
+        self,
+        job_id: uuid.UUID,
+        org_id: uuid.UUID,
+        seller_agent_id: uuid.UUID,
+        terms: dict,
+        price_lamports: int | None = None,
     ) -> AcpJob:
         job = await self.get_job(job_id, org_id)
         if job.seller_agent_id != seller_agent_id:
@@ -176,7 +181,12 @@ class AcpService:
         )
 
     async def deliver(
-        self, job_id: uuid.UUID, org_id: uuid.UUID, seller_agent_id: uuid.UUID, result_data: dict, notes: str | None = None
+        self,
+        job_id: uuid.UUID,
+        org_id: uuid.UUID,
+        seller_agent_id: uuid.UUID,
+        result_data: dict,
+        notes: str | None = None,
     ) -> AcpJob:
         job = await self.get_job(job_id, org_id)
         if job.seller_agent_id != seller_agent_id:
@@ -189,7 +199,13 @@ class AcpService:
         )
 
     async def evaluate(
-        self, job_id: uuid.UUID, org_id: uuid.UUID, evaluator_id: uuid.UUID, approved: bool, notes: str | None = None, rating: int | None = None
+        self,
+        job_id: uuid.UUID,
+        org_id: uuid.UUID,
+        evaluator_id: uuid.UUID,
+        approved: bool,
+        notes: str | None = None,
+        rating: int | None = None,
     ) -> AcpJob:
         job = await self.get_job(job_id, org_id)
 
@@ -218,7 +234,13 @@ class AcpService:
     # ── Memos ──
 
     async def send_memo(
-        self, job_id: uuid.UUID, org_id: uuid.UUID, sender_id: uuid.UUID, memo_type: str, content: dict, signature: str | None = None
+        self,
+        job_id: uuid.UUID,
+        org_id: uuid.UUID,
+        sender_id: uuid.UUID,
+        memo_type: str,
+        content: dict,
+        signature: str | None = None,
     ) -> AcpMemo:
         await self.get_job(job_id, org_id)  # Validate job exists
 
@@ -245,7 +267,14 @@ class AcpService:
     # ── Resource Offerings ──
 
     async def create_offering(
-        self, org_id: uuid.UUID, agent_id: uuid.UUID, name: str, description: str, endpoint_path: str, parameters: dict, response_schema: dict
+        self,
+        org_id: uuid.UUID,
+        agent_id: uuid.UUID,
+        name: str,
+        description: str,
+        endpoint_path: str,
+        parameters: dict,
+        response_schema: dict,
     ) -> ResourceOffering:
         offering = ResourceOffering(
             org_id=org_id,
@@ -264,8 +293,8 @@ class AcpService:
     async def list_offerings(
         self, org_id: uuid.UUID | None = None, agent_id: uuid.UUID | None = None, limit: int = 20, offset: int = 0
     ) -> tuple[list[ResourceOffering], int]:
-        query = select(ResourceOffering).where(ResourceOffering.is_active == True)
-        count_query = select(func.count()).select_from(ResourceOffering).where(ResourceOffering.is_active == True)
+        query = select(ResourceOffering).where(ResourceOffering.is_active)
+        count_query = select(func.count()).select_from(ResourceOffering).where(ResourceOffering.is_active)
 
         if org_id:
             query = query.where(ResourceOffering.org_id == org_id)
