@@ -214,8 +214,8 @@ export default function Playground() {
             <span className="badge badge-green">● LIVE · REAL TX</span>
           </div>
           <p className="text-ink-400 mt-1">
-            Har click ek <span className="text-brand-400">real devnet transaction</span> — Solana
-            Explorer mein verify karo. Koi fake data nahi.
+            Every click runs a <span className="text-brand-400">real devnet transaction</span> —
+            verify it on Solana Explorer. No fake data.
           </p>
         </div>
         <button
@@ -266,12 +266,12 @@ export default function Playground() {
             </div>
             <div>
               <div className="font-semibold text-ink-100">Get 0.01 SOL</div>
-              <div className="text-xs text-ink-400 mt-0.5">Platform wallet se free devnet SOL</div>
+              <div className="text-xs text-ink-400 mt-0.5">Free devnet SOL from the platform wallet</div>
             </div>
           </div>
           <p className="text-sm text-ink-400 mb-4 flex-1">
-            Public faucet rate-limited hai — yahan platform apne funded wallet se bhejta hai.
-            On-chain transfer, explorer pe visible.
+            The public faucet is rate-limited — here the platform sends SOL from its own
+            funded wallet. On-chain transfer, visible on the explorer.
           </p>
           <button onClick={doFund} disabled={funding} className="btn-primary w-full">
             {funding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
@@ -300,9 +300,9 @@ export default function Playground() {
             </div>
           </div>
           <p className="text-sm text-ink-400 mb-4 flex-1">
-            Escrow create karte hi wallet se fund ho jata hai (tx 1). Phir choose:
-            release — vendor ko pay karo, ya refund — paisa wapas apne wallet mein (tx 2).
-            Sab real signatures.
+            Creating an escrow funds it from your wallet instantly (tx 1). Then choose:
+            release — pay the vendor, or refund — get your funds back (tx 2).
+            All real signatures.
           </p>
           <div className="flex flex-col gap-2">
             <button onClick={doEscrow} disabled={escrowBusy} className="btn-primary w-full">
@@ -379,8 +379,8 @@ export default function Playground() {
             </div>
           </div>
           <p className="text-sm text-ink-400 mb-4 flex-1">
-            One click: wallet se payment (real tx), on-chain verify, phir AI call unlock.
-            Yehi x402 rail hai — HTTP 402 gate pe agents isi tarah pay karte hain.
+            One click: payment from your wallet (real tx), on-chain verification, then the
+            AI call unlocks. This is the x402 rail — how agents pay at HTTP 402 gates.
           </p>
           <button onClick={doX402} disabled={x402Busy} className="btn-primary w-full">
             {x402Busy ? (
@@ -426,12 +426,12 @@ export default function Playground() {
             </div>
             <div>
               <div className="font-semibold text-ink-100">Send 0.0001 SOL</div>
-              <div className="text-xs text-ink-400 mt-0.5">Apne wallet se platform ko</div>
+              <div className="text-xs text-ink-400 mt-0.5">From your wallet to the platform</div>
             </div>
           </div>
           <p className="text-sm text-ink-400 mb-4 flex-1">
-            Simple transfer demo — agent-style payment. Wallet ke encrypted key se signed,
-            devnet pe submit, explorer pe verify.
+            Simple transfer demo — agent-style payment. Signed with your wallet's encrypted
+            key, submitted on devnet, verified on the explorer.
           </p>
           <button onClick={doTransfer} disabled={transferring} className="btn-primary w-full">
             {transferring ? (
