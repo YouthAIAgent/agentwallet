@@ -8,7 +8,6 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from .api.routers import (
-    playground,
     acp,
     agents,
     analytics,
@@ -19,6 +18,7 @@ from .api.routers import (
     escrow,
     marketplace,
     pda_wallets,
+    playground,
     policies,
     public,
     swarms,

@@ -1,10 +1,10 @@
 from .acp import AcpJob, AcpMemo, ResourceOffering
 from .agent import Agent
 from .analytics_daily import AnalyticsDaily
-from .billing_subscription import BillingSubscription
 from .api_key import ApiKey
 from .approval_request import ApprovalRequest
 from .audit_event import AuditEvent
+from .billing_subscription import BillingSubscription
 from .erc8004_identity import ERC8004Feedback, ERC8004Identity, EVMWallet
 from .escrow import Escrow
 from .marketplace import AgentReputation, Job, JobMessage, Service, ServiceCategory
