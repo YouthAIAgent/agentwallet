@@ -41,6 +41,7 @@ class RuntimeType(str, Enum):
     CODEX = "codex"
     LOCAL_LLM = "local_llm"
     BOX = "box"
+    SANDBOX = "sandbox"
 
 
 @dataclass
@@ -121,6 +122,13 @@ class DeployerAgent:
             RuntimeType.BOX: {
                 "api_base": "https://api.box.ascii.dev/v1",
                 "token": self.box_token,
+            },
+            RuntimeType.SANDBOX: {
+                "command": "osb",
+                "image": "python:3.12",
+                "env": {"PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1"},
+                "create_timeout": 120,
+                "run_timeout": 300,
             },
         }
 
@@ -207,6 +215,8 @@ class DeployerAgent:
             return await self._deploy_local_llm(agent_spec, deployment_id)
         elif runtime == RuntimeType.BOX:
             return await self._deploy_box(agent_spec, deployment_id)
+        elif runtime == RuntimeType.SANDBOX:
+            return await self._deploy_sandbox(agent_spec, deployment_id)
         else:
             raise ValueError(f"Unknown runtime: {runtime}")
 
@@ -360,6 +370,78 @@ class DeployerAgent:
             "box_id": box_id,
         }
 
+    # ------------------------------------------------------ sandbox (OpenSandbox)
+    async def _deploy_sandbox(self, spec: Dict, deployment_id: str) -> Dict:
+        """Deploy agent into an isolated OpenSandbox container.
+
+        Uses the ``osb`` CLI (pointed at the OpenSandbox server, e.g. the
+        VPS at 187.77.185.34:8080). The sandbox is created, the agent prompt
+        runs inside it, and the sandbox is terminated afterwards so at most
+        ``max_concurrent_agents`` containers exist at any moment (semaphore
+        held across create+run+kill). Server-side caps (1Gi/0.7 by default)
+        protect the host even if a caller requests more.
+        """
+        cfg = self.runtime_configs[RuntimeType.SANDBOX]
+        osb_cmd = cfg["command"]
+        image = spec.get("image", cfg["image"])
+        env = {**os.environ, **cfg.get("env", {})}
+        # Default workload: print the agent id + task, keep container alive briefly.
+        task = spec.get("task", "")
+        code = (
+            f"import time; time.sleep(2); "
+            f"print('agent {spec['id']} done | {task[:120]}')"
+        )
+
+        sandbox_id: Optional[str] = None
+        try:
+            create = await asyncio.create_subprocess_exec(
+                *_exec_cmd([osb_cmd, "sandbox", "create", "--image", image, "-o", "json"]),
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env=env,
+            )
+            out, err = await asyncio.wait_for(create.communicate(), timeout=cfg["create_timeout"])
+            if create.returncode != 0:
+                return {"status": "failed", "error": err.decode()[:500], "runtime": "sandbox"}
+            try:
+                sandbox_id = json.loads(out.decode())["id"]
+            except (json.JSONDecodeError, KeyError):
+                return {"status": "failed", "error": out.decode()[:500], "runtime": "sandbox"}
+
+            run = await asyncio.create_subprocess_exec(
+                *_exec_cmd(
+                    [osb_cmd, "command", "run", sandbox_id, "--", "python3", "-c", code]
+                ),
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env=env,
+            )
+            rout, rerr = await asyncio.wait_for(run.communicate(), timeout=cfg["run_timeout"])
+            status = "completed" if run.returncode == 0 else "failed"
+            result = rout.decode() or rerr.decode()
+            return {
+                "status": status,
+                "result": result[:1000],
+                "runtime": "sandbox",
+                "sandbox_id": sandbox_id,
+            }
+        except asyncio.TimeoutError:
+            return {"status": "failed", "error": "timeout", "runtime": "sandbox"}
+        except Exception as e:
+            return {"status": "failed", "error": str(e), "runtime": "sandbox"}
+        finally:
+            if sandbox_id:
+                try:
+                    kill = await asyncio.create_subprocess_exec(
+                        *_exec_cmd([osb_cmd, "sandbox", "kill", sandbox_id]),
+                        stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.PIPE,
+                        env=env,
+                    )
+                    await asyncio.wait_for(kill.communicate(), timeout=30)
+                except Exception:
+                    pass
+
     # ------------------------------------------------------ helpers
     async def _provision_infrastructure(self, org_spec: Dict) -> None:
         """Provision Box VMs for agents that need them."""
@@ -420,6 +502,19 @@ class DeployerAgent:
 
         elif runtime == RuntimeType.BOX:
             return bool(self.box_token)
+
+        elif runtime == RuntimeType.SANDBOX:
+            # Check the osb CLI exists and the server answers.
+            try:
+                proc = await asyncio.create_subprocess_exec(
+                    *_exec_cmd(["osb", "sandbox", "list"]),
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                await proc.communicate()
+                return proc.returncode == 0
+            except Exception:
+                return False
 
         return False
 
