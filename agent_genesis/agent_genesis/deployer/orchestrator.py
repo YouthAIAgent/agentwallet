@@ -186,20 +186,38 @@ class DeployerAgent:
             "agents": agent_results,
         }
 
+    def _publish_state(self) -> None:
+        """Publish live load to the shared memory fabric (cross-process watch)."""
+        try:
+            self.memory.set_state(
+                "deployer",
+                {
+                    "active_agents": self._active_agent_count,
+                    "peak_concurrent": self._peak_concurrent,
+                    "max_concurrent_agents": self.max_concurrent_agents,
+                },
+            )
+        except Exception:
+            pass
+
     async def deploy_agent(self, agent_spec: Dict, deployment_id: str) -> Dict:
         """Deploy single agent to its target runtime.
 
         The concurrency semaphore is acquired here, so no matter how the
         caller fans out (waves, gather, external scripts) the number of
         simultaneously running agents never exceeds ``max_concurrent_agents``.
+        Live load is published to shared memory after every change so
+        ``genesis status --watch`` in another process sees real numbers.
         """
         async with self._get_semaphore():
             self._active_agent_count += 1
             self._peak_concurrent = max(self._peak_concurrent, self._active_agent_count)
+            self._publish_state()
             try:
                 return await self._deploy_agent_inner(agent_spec, deployment_id)
             finally:
                 self._active_agent_count -= 1
+                self._publish_state()
 
     async def _deploy_agent_inner(self, agent_spec: Dict, deployment_id: str) -> Dict:
         """Dispatch to the concrete runtime implementation (no concurrency logic)."""

@@ -178,13 +178,18 @@ async def genesis_check_runtimes() -> Dict[str, Any]:
 async def genesis_deployer_status() -> Dict[str, Any]:
     """Live deployer load: active agents, peak concurrency, and the cap.
 
-    Reflects the shared ``_deployer`` instance used by ``genesis_deploy``,
-    so ``genesis status`` shows real load during deployments.
+    Reads the shared runtime state published by the deployer (SQLite), so
+    ``genesis status --watch`` in a *separate process* shows real numbers
+    while ``genesis deploy`` runs elsewhere. Falls back to the in-process
+    ``_deployer`` instance when no state was published yet.
     """
+    shared = _memory.get_state("deployer") or {}
     return {
-        "active_agents": _deployer.active_agent_count,
-        "peak_concurrent": _deployer.peak_concurrent,
-        "max_concurrent_agents": _deployer.max_concurrent_agents,
+        "active_agents": shared.get("active_agents", _deployer.active_agent_count),
+        "peak_concurrent": shared.get("peak_concurrent", _deployer.peak_concurrent),
+        "max_concurrent_agents": shared.get(
+            "max_concurrent_agents", _deployer.max_concurrent_agents
+        ),
     }
 
 

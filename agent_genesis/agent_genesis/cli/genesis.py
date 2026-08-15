@@ -459,6 +459,10 @@ class GenesisCLI:
                 print(json.dumps(result, indent=2, ensure_ascii=False))
                 
             elif cmd == "status":
+                watch = "--watch" in cmd_args or "-w" in cmd_args
+                if watch:
+                    await self._status_watch()
+                    return
                 stats = self.memory.stats()
                 runtimes = await genesis_check_runtimes()
                 champs = await genesis_list_champions()
@@ -508,6 +512,26 @@ class GenesisCLI:
             import traceback
             traceback.print_exc()
 
+    async def _status_watch(self, interval: float = 1.0) -> None:
+        """Live-load monitor: refresh deployer state every second (Ctrl+C to stop).
+
+        Reads the shared runtime state, so it shows real numbers while a
+        deployment runs in another process (``genesis deploy ...``).
+        """
+        try:
+            while True:
+                deployer = await genesis_deployer_status()
+                stats = self.memory.stats()
+                line = (
+                    f"\r🚀 Deployer: {deployer['active_agents']:>2}/{deployer['max_concurrent_agents']} "
+                    f"active | peak {deployer['peak_concurrent']:>2} | "
+                    f"orgs {stats.get('orgs', 0)} | episodic {stats.get('episodic', 0)}"
+                )
+                print(line, end="", flush=True)
+                await asyncio.sleep(interval)
+        except KeyboardInterrupt:
+            print("\nWatch stopped.")
+
     def print_help(self):
         print("""
 🧬 Agent Genesis CLI
@@ -522,7 +546,7 @@ Commands:
   champions                        List champion genomes
   orgs                             List saved organizations
   skill <skill_name>               Get local skill
-  status                           System status
+  status [--watch]                 System status (--watch refreshes live every 1s)
   init-pop <role> <prompt>         Initialize population
   load-golden <role> <file.json>   Load golden test set
   search-skill <query>             Search local skills

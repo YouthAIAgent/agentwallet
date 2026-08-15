@@ -82,6 +82,11 @@ class MemoryFabric:
                 spec TEXT NOT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
+            CREATE TABLE IF NOT EXISTS runtime_state (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            );
             CREATE INDEX IF NOT EXISTS idx_episodic_agent ON episodic(agent_id);
             CREATE INDEX IF NOT EXISTS idx_episodic_task ON episodic(task_id);
             CREATE INDEX IF NOT EXISTS idx_semantic_concept ON semantic(concept);
@@ -89,6 +94,32 @@ class MemoryFabric:
             """
         )
         self.db.commit()
+
+    # ------------------------------------------------------- runtime state
+    def set_state(self, key: str, value: Dict) -> None:
+        """Upsert a shared runtime-state key (e.g. deployer live load).
+
+        SQLite-backed so separate processes (``genesis deploy`` vs
+        ``genesis status --watch``) can share live state.
+        """
+        self.db.execute(
+            """INSERT INTO runtime_state (key, value, updated_at) VALUES (?,?,CURRENT_TIMESTAMP)
+               ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=CURRENT_TIMESTAMP""",
+            (key, json.dumps(value)),
+        )
+        self.db.commit()
+
+    def get_state(self, key: str) -> Optional[Dict[str, Any]]:
+        """Read a runtime-state key; returns None when unset."""
+        row = self.db.execute(
+            "SELECT value FROM runtime_state WHERE key = ?", (key,)
+        ).fetchone()
+        if row is None:
+            return None
+        try:
+            return json.loads(row["value"])
+        except (json.JSONDecodeError, TypeError):
+            return None
 
     # ------------------------------------------------------------- episodic
     def remember(
