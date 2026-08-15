@@ -8,6 +8,7 @@ import {
 } from "remotion";
 
 import { VoiceMograph } from "./VoiceMograph";
+import { CoinMascot } from "./Mascot";
 import {
   DIM,
   FONT,
@@ -281,6 +282,7 @@ function SIntro() {
           </div>
         </Rise>
       </AbsoluteFill>
+      <CoinMascot x={1490} y={420} size={120} face="sol" start={45} spin={10} />
     </Base>
   );
 }
@@ -352,6 +354,7 @@ function SHeadline() {
           }}
         />
       </AbsoluteFill>
+      <CoinMascot x={300} y={870} size={82} face="sol" start={50} wink />
     </Base>
   );
 }
@@ -464,6 +467,7 @@ function SWallet() {
           </div>
         </Rise>
       ))}
+      <CoinMascot x={1450} y={330} size={96} face="sol" start={35} spin={6} />
     </Base>
   );
 }
@@ -539,7 +543,28 @@ function SEscrow() {
           </div>
         </Rise>
       </div>
+      {/* mascot rides the coin flow agent -> vendor */}
+      <RideMascot />
     </Base>
+  );
+}
+
+/** Mascot that flies along the escrow coin arc. */
+function RideMascot() {
+  const frame = useCurrentFrame();
+  const p = interpolate(frame, [25, 130], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: Easing.inOut(Easing.cubic),
+  });
+  return (
+    <CoinMascot
+      x={640 + 640 * p}
+      y={540 - Math.sin(p * Math.PI) * 150 - 78}
+      size={72}
+      face="sol"
+      start={25}
+    />
   );
 }
 
@@ -664,6 +689,7 @@ function SX402() {
         {receiptN > 4 ? "8c2d…" : ""}
         <span style={{ opacity: frame % 30 < 15 ? 1 : 0 }}>▍</span>
       </div>
+      <CoinMascot x={640} y={340} size={84} face="sol" start={40} wink />
     </Base>
   );
 }
@@ -775,6 +801,8 @@ function SUsdc() {
           CANCEL · ANYTIME
         </div>
       </Rise>
+      {/* mascot flips SOL -> USDC for billing */}
+      <CoinMascot x={430} y={540} size={104} face="usdc" start={5} flipAt={40} spin={8} />
     </Base>
   );
 }
@@ -811,6 +839,7 @@ function SSwarms() {
           border: "1px dashed rgba(0,187,127,0.2)",
         }}
       />
+      <CoinMascot x={1560} y={290} size={92} face="usdc" start={40} spin={6} />
       {/* center node */}
       <div
         style={{
@@ -980,6 +1009,7 @@ function STerminal() {
           })}
         </div>
       </div>
+      <CoinMascot x={1700} y={290} size={84} face="usdc" start={40} wink />
     </Base>
   );
 }
@@ -1040,6 +1070,7 @@ function SData() {
           </Rise>
         ))}
       </div>
+      <CoinMascot x={1790} y={430} size={88} face="usdc" start={40} spin={8} />
       {/* chain blocks */}
       <div style={{ position: "absolute", left: 140, top: 700, display: "flex", gap: 26, alignItems: "center" }}>
         {[0, 1, 2, 3].map((i) => {
@@ -1138,6 +1169,9 @@ function SOutro() {
           </div>
         </Rise>
       </AbsoluteFill>
+      {/* mascots flank the outro CTA */}
+      <CoinMascot x={600} y={720} size={120} face="sol" start={25} spin={12} />
+      <CoinMascot x={1330} y={720} size={120} face="usdc" start={35} spin={-12} />
     </Base>
   );
 }
