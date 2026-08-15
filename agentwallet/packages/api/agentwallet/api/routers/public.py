@@ -16,9 +16,16 @@ from ...models.escrow import Escrow
 from ...models.swarm import AgentSwarm
 from ...models.transaction import Transaction
 from ...models.wallet import Wallet
-from ...services.presence import presence
+from ...services.presence import country_from_request, presence
 from ..middleware.rate_limit import check_rate_limit
-from ..schemas.public import FeedItem, PresenceRequest, PresenceResponse, PublicFeed, PublicStats
+from ..schemas.public import (
+    CountryCount,
+    FeedItem,
+    PresenceRequest,
+    PresenceResponse,
+    PublicFeed,
+    PublicStats,
+)
 
 logger = get_logger(__name__)
 
@@ -99,11 +106,17 @@ async def post_presence(
     body: PresenceRequest,
 ):
     """Anonymous heartbeat — marks this visitor online and returns the live
-    count of people on the site right now. Fail-open: returns a best-effort
-    count even if Redis is down."""
+    count of people on the site right now, broken down by country (from CDN
+    geo headers, best-effort). Fail-open: returns a best-effort snapshot even
+    if Redis is down."""
     await check_rate_limit(request, "public_presence", "free")
-    online = await presence.heartbeat(body.visitor_id)
-    return PresenceResponse(online=online)
+    country = country_from_request(request)
+    total, tally = await presence.heartbeat(body.visitor_id, country)
+    countries = [
+        CountryCount(code=code, count=count)
+        for code, count in sorted(tally.items(), key=lambda kv: (-kv[1], kv[0]))
+    ]
+    return PresenceResponse(online=total, countries=countries)
 
 
 @router.get("/feed", response_model=PublicFeed)

@@ -88,6 +88,9 @@ async def test_public_presence_heartbeat(unauthed_client):
     data = resp.json()
     assert isinstance(data["online"], int)
     assert data["online"] >= 1  # this heartbeat is included
+    assert isinstance(data["countries"], list)
+    # country tally sums to the total
+    assert sum(c["count"] for c in data["countries"]) == data["online"]
 
 
 @pytest.mark.asyncio
@@ -102,6 +105,48 @@ async def test_public_presence_counts_visitors(unauthed_client):
     assert r1.status_code == 200 and r2.status_code == 200
     # Second heartbeat must see at least both visitors (itself + the first)
     assert r2.json()["online"] >= 2
+
+
+@pytest.mark.asyncio
+async def test_public_presence_country_header(unauthed_client):
+    """Geo header (e.g. CF-IPCountry) drives the per-country breakdown."""
+    resp = await unauthed_client.post(
+        "/v1/public/presence",
+        json={"visitor_id": "visitor-in-000001"},
+        headers={"CF-IPCountry": "IN"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    by_code = {c["code"]: c["count"] for c in data["countries"]}
+    assert by_code.get("IN", 0) >= 1
+
+
+@pytest.mark.asyncio
+async def test_public_presence_country_groups(unauthed_client):
+    """Visitors from different countries are grouped per code."""
+    await unauthed_client.post(
+        "/v1/public/presence", json={"visitor_id": "visitor-us-000001"},
+        headers={"CF-IPCountry": "US"},
+    )
+    r2 = await unauthed_client.post(
+        "/v1/public/presence", json={"visitor_id": "visitor-in-000002"},
+        headers={"CF-IPCountry": "IN"},
+    )
+    assert r2.status_code == 200
+    by_code = {c["code"]: c["count"] for c in r2.json()["countries"]}
+    assert by_code.get("US", 0) >= 1
+    assert by_code.get("IN", 0) >= 1
+
+
+@pytest.mark.asyncio
+async def test_public_presence_unknown_country(unauthed_client):
+    """No geo header -> visitors land under the unknown (xx) bucket."""
+    resp = await unauthed_client.post(
+        "/v1/public/presence", json={"visitor_id": "visitor-xx-000001"}
+    )
+    data = resp.json()
+    by_code = {c["code"]: c["count"] for c in data["countries"]}
+    assert by_code.get("xx", 0) >= 1
 
 
 @pytest.mark.asyncio

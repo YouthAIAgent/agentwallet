@@ -49,5 +49,11 @@ class PresenceRequest(BaseModel):
         return v
 
 
+class CountryCount(BaseModel):
+    code: str
+    count: int
+
+
 class PresenceResponse(BaseModel):
     online: int
+    countries: list[CountryCount] = []

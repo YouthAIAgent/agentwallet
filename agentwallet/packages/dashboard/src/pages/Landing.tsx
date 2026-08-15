@@ -447,6 +447,19 @@ function feedUid(it: FeedItem): string {
   return `${it.type}:${it.address}:${it.action}:${it.timestamp}`;
 }
 
+interface CountryCount {
+  code: string;
+  count: number;
+}
+
+/* ISO-3166 alpha-2 -> flag emoji; unknown (xx) -> globe */
+function flagEmoji(code: string): string {
+  if (code === "xx" || code.length !== 2) return "🌐";
+  return String.fromCodePoint(
+    ...[...code.toUpperCase()].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65)
+  );
+}
+
 interface RenderedItem extends FeedItem {
   uid: string;
   entering: boolean;
@@ -493,6 +506,7 @@ function FeedRow({ it }: { it: RenderedItem }) {
 function LiveFeed() {
   const [rendered, setRendered] = useState<RenderedItem[]>([]);
   const [online, setOnline] = useState<number | null>(null);
+  const [countries, setCountries] = useState<CountryCount[]>([]);
   const firstLoad = useRef(true);
 
   // presence heartbeat — anonymous visitor id in localStorage, beats every 60s
@@ -514,8 +528,12 @@ function LiveFeed() {
           body: JSON.stringify({ visitor_id: vid }),
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data: { online?: number } = await res.json();
-        if (alive && typeof data.online === "number") setOnline(data.online);
+        const data: { online?: number; countries?: CountryCount[] } =
+          await res.json();
+        if (alive && typeof data.online === "number") {
+          setOnline(data.online);
+          if (Array.isArray(data.countries)) setCountries(data.countries);
+        }
       } catch {
         // hide the badge on failure — never break the landing page
       }
@@ -615,10 +633,27 @@ function LiveFeed() {
         {online !== null && (
           <span
             className="inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-widest text-brand-400 whitespace-nowrap"
-            title="Anonymous visitors seen in the last 90 seconds"
+            title={
+              countries.length
+                ? countries
+                    .map(
+                      (c) =>
+                        `${c.code === "xx" ? "Unknown" : c.code} — ${c.count} online`
+                    )
+                    .join(", ")
+                : "Anonymous visitors seen in the last 90 seconds"
+            }
           >
             <span className="w-1 h-1 rounded-full bg-brand-500 animate-pulse" />
             {online} online now
+            {countries.length > 0 && (
+              <span className="tracking-normal">
+                {countries
+                  .slice(0, 3)
+                  .map((c) => `${flagEmoji(c.code)}${c.count}`)
+                  .join(" ")}
+              </span>
+            )}
           </span>
         )}
       </div>
