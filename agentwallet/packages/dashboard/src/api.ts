@@ -657,6 +657,20 @@ export interface EscrowRefundResult {
   funder_wallet_address: string | null;
 }
 
+export interface X402DemoResult {
+  demo: boolean;
+  amount_sol: number;
+  to_address: string;
+  payment_signature: string;
+  payment_confirmed: boolean;
+  payment_explorer_url: string;
+  verified_on_chain: boolean;
+  verification_error: string | null;
+  ai_provider: string;
+  ai_model: string;
+  ai_response: string;
+}
+
 export interface TransferDemoResult {
   wallet_id: string;
   amount_sol: number;
@@ -680,6 +694,7 @@ export const playground = {
     request<EscrowRefundResult>(`/playground/escrow/${escrowId}/refund`, {
       method: "POST",
     }),
+  x402: () => request<X402DemoResult>("/playground/x402", { method: "POST" }),
   transfer: () =>
     request<TransferDemoResult>("/playground/transfer", { method: "POST" }),
 };

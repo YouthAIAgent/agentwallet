@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Loader2,
   Undo2,
+  Sparkles,
   Wallet as WalletIcon,
 } from "lucide-react";
 import {
@@ -21,6 +22,7 @@ import {
   type EscrowDemoResult,
   type EscrowReleaseResult,
   type EscrowRefundResult,
+  type X402DemoResult,
   type TransferDemoResult,
 } from "../api";
 
@@ -69,6 +71,9 @@ export default function Playground() {
   const [releaseRes, setReleaseRes] = useState<EscrowReleaseResult | null>(null);
   const [refunding, setRefunding] = useState(false);
   const [refundRes, setRefundRes] = useState<EscrowRefundResult | null>(null);
+
+  const [x402Busy, setX402Busy] = useState(false);
+  const [x402Res, setX402Res] = useState<X402DemoResult | null>(null);
 
   const [transferring, setTransferring] = useState(false);
   const [transferRes, setTransferRes] = useState<TransferDemoResult | null>(null);
@@ -165,6 +170,22 @@ export default function Playground() {
       setError((e as Error).message);
     } finally {
       setReleasing(false);
+    }
+  };
+
+  const doX402 = async () => {
+    setX402Busy(true);
+    setError(null);
+    setX402Res(null);
+    try {
+      const r = await playground.x402();
+      setX402Res(r);
+      setBalance((b) => (b ?? 0) - r.amount_sol);
+      await loadStatus(true);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setX402Busy(false);
     }
   };
 
@@ -344,7 +365,60 @@ export default function Playground() {
           )}
         </div>
 
-        {/* 3 — Send SOL */}
+        {/* 3 — x402 pay-per-call */}
+        <div className="card flex flex-col">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-brand-500/10 rounded-xl flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-brand-400" />
+            </div>
+            <div>
+              <div className="font-semibold text-ink-100">x402 Pay-per-call AI</div>
+              <div className="text-xs text-ink-400 mt-0.5">
+                0.0001 SOL · pay → verified → AI response
+              </div>
+            </div>
+          </div>
+          <p className="text-sm text-ink-400 mb-4 flex-1">
+            One click: wallet se payment (real tx), on-chain verify, phir AI call unlock.
+            Yehi x402 rail hai — HTTP 402 gate pe agents isi tarah pay karte hain.
+          </p>
+          <button onClick={doX402} disabled={x402Busy} className="btn-primary w-full">
+            {x402Busy ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Sparkles className="w-4 h-4" />
+            )}
+            {x402Busy ? "Paying + calling AI…" : "Pay 0.0001 SOL + call AI"}
+          </button>
+          {x402Res && (
+            <>
+              <div className="mt-3 p-3 bg-ink-950 border border-ink-800 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle2
+                    className={`w-4 h-4 ${x402Res.verified_on_chain ? "text-brand-400" : "text-yellow-400"}`}
+                  />
+                  <span className="text-xs font-mono text-ink-400">
+                    {x402Res.verified_on_chain ? "payment verified on-chain" : "verify pending"} ·{" "}
+                    {x402Res.ai_provider} / {x402Res.ai_model}
+                    {x402Res.demo && (
+                      <span className="ml-2 text-yellow-400">demo AI (no LLM key)</span>
+                    )}
+                  </span>
+                </div>
+                <div className="text-sm text-ink-200 font-mono leading-5 max-h-36 overflow-y-auto whitespace-pre-wrap">
+                  {x402Res.ai_response}
+                </div>
+              </div>
+              <TxLink
+                sig={x402Res.payment_signature}
+                url={x402Res.payment_explorer_url}
+                label={`paid ${x402Res.amount_sol} SOL → platform`}
+              />
+            </>
+          )}
+        </div>
+
+        {/* 4 — Send SOL */}
         <div className="card flex flex-col">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-brand-500/10 rounded-xl flex items-center justify-center">
@@ -382,6 +456,9 @@ export default function Playground() {
         <div className="text-sm text-ink-400 font-mono leading-6">
           <span className="text-brand-400">$</span> every demo =
           <span className="text-ink-100"> platform-funded · signed · submitted on Solana devnet</span>
+          <br />
+          <span className="text-brand-400">$</span> x402 flow =
+          <span className="text-ink-100"> pay → proof → verify on-chain → AI call</span>
           <br />
           <span className="text-brand-400">$</span> network =
           <span className="text-ink-100"> {status?.network || "devnet"}</span> · RPC{" "}

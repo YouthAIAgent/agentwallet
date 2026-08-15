@@ -89,6 +89,69 @@ async def test_playground_fund_cooldown(client, test_wallet, monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_playground_x402_demo(client, test_wallet, monkeypatch):
+    """POST /playground/x402 pays, verifies on-chain, and returns an AI response."""
+    import agentwallet.api.routers.playground as pg
+
+    class FakeTx:
+        signature = FAKE_SIG
+        status = "submitted"
+        error = None
+
+    class FakeEngine:
+        def __init__(self, db):
+            self.db = db
+
+        async def transfer_sol(self, **kwargs):
+            assert kwargs["amount_lamports"] == int(0.0001 * 1e9)
+            assert "x402:playground:" in kwargs["idempotency_key"]
+            return FakeTx()
+
+    async def fake_verify(payment_header, expected_pay_to, expected_amount_lamports=None, **kw):
+        assert expected_amount_lamports == int(0.0001 * 1e9)
+        return {"valid": True, "error": None}
+
+    async def fake_llm(prompt):
+        return ("demo", "demo-model", "demo answer")
+
+    monkeypatch.setattr(pg, "TransactionEngine", FakeEngine)
+    monkeypatch.setattr(pg, "verify_payment_proof", fake_verify)
+    monkeypatch.setattr(pg, "_call_demo_llm", fake_llm)
+
+    resp = await client.post("/v1/playground/x402")
+    assert resp.status_code == 201
+    data = resp.json()
+    assert data["payment_signature"] == FAKE_SIG
+    assert data["verified_on_chain"] is True
+    assert data["ai_provider"] == "demo"
+    assert "explorer.solana.com/tx/" in data["payment_explorer_url"]
+    assert data["amount_sol"] == 0.0001
+
+
+@pytest.mark.asyncio
+async def test_playground_x402_demo_no_signature(client, test_wallet, monkeypatch):
+    """x402 demo without a signed transaction is rejected (400)."""
+    import agentwallet.api.routers.playground as pg
+
+    class FakeTx:
+        signature = None
+        status = "pending"
+        error = None
+
+    class FakeEngine:
+        def __init__(self, db):
+            self.db = db
+
+        async def transfer_sol(self, **kwargs):
+            return FakeTx()
+
+    monkeypatch.setattr(pg, "TransactionEngine", FakeEngine)
+
+    resp = await client.post("/v1/playground/x402")
+    assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
 async def test_playground_transfer_insufficient(client, test_wallet, monkeypatch):
     """POST /playground/transfer without balance is rejected."""
     import agentwallet.api.routers.playground as pg

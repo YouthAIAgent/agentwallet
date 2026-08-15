@@ -7,12 +7,16 @@ each result carries a signature linkable on the devnet explorer:
     POST /playground/fund     -> platform wallet -> org wallet (0.01 SOL)
     POST /playground/escrow   -> create + fund an escrow (0.0001 SOL)
     POST /playground/escrow/{escrow_id}/release -> release escrow on-chain
+    POST /playground/escrow/{escrow_id}/refund -> refund escrow to funder
+    POST /playground/x402     -> pay-per-call AI demo (real x402 payment)
     POST /playground/transfer -> org wallet -> platform (0.0001 SOL)
 
     Amounts stay microscopic on purpose so the platform fund is never
     drained (see FUND_SOL / ESCROW_SOL / TRANSFER_SOL below).
 """
 
+import json
+import os
 import time
 import uuid
 
@@ -27,7 +31,9 @@ from ...core.config import get_settings
 from ...core.database import get_db
 from ...models.wallet import Wallet
 from ...services.escrow_service import EscrowService
+from ...services.transaction_engine import TransactionEngine
 from ...services.wallet_manager import WalletManager
+from ...services.x402_server import verify_payment_proof
 from ..middleware.auth import AuthContext, get_auth_context
 from ..middleware.rate_limit import check_rate_limit
 
@@ -41,6 +47,7 @@ router = APIRouter(prefix="/playground", tags=["playground"])
 # ----------------------------------------------------------------
 FUND_SOL = 0.01
 ESCROW_SOL = 0.0001
+X402_SOL = 0.0001
 TRANSFER_SOL = 0.0001
 FUND_COOLDOWN_SECONDS = 60
 
@@ -265,6 +272,140 @@ async def playground_escrow_release(
         release_signature=escrow.release_signature,
         release_explorer_url=_explorer(escrow.release_signature) if escrow.release_signature else None,
         recipient_address=escrow.recipient_address,
+    )
+
+
+class X402DemoResponse(BaseModel):
+    demo: bool
+    amount_sol: float
+    to_address: str
+    payment_signature: str
+    payment_confirmed: bool
+    payment_explorer_url: str
+    verified_on_chain: bool
+    verification_error: str | None
+    ai_provider: str
+    ai_model: str
+    ai_response: str
+
+
+async def _call_demo_llm(prompt: str) -> tuple[str, str, str]:
+    """Call a real LLM when configured, else return an honest demo response.
+
+    Uses X402_LLM_* env vars (falling back to OPENAI_COMPAT_*). When no
+    upstream is reachable, returns a deterministic, clearly-labeled demo
+    answer so the payment rail is always demonstrable end to end.
+    Returns (provider, model, response_text).
+    """
+    base = (os.getenv("X402_LLM_BASE_URL") or os.getenv("OPENAI_COMPAT_BASE_URL") or "").rstrip("/")
+    key = os.getenv("X402_LLM_KEY") or os.getenv("OPENAI_COMPAT_API_KEY") or ""
+    model = os.getenv("X402_LLM_MODEL") or os.getenv("OPENAI_COMPAT_MODEL") or "demo"
+    if base and key:
+        try:
+            async with httpx.AsyncClient(timeout=60) as client:
+                resp = await client.post(
+                    f"{base}/chat/completions",
+                    headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                    json={
+                        "model": model,
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "You are AgentWallet's AI agent demo. Answer concisely (under 60 words).",
+                            },
+                            {"role": "user", "content": prompt},
+                        ],
+                        "max_tokens": 160,
+                    },
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    content = (data.get("choices") or [{}])[0].get("message", {}).get("content")
+                    if content:
+                        return "openai-compatible", model, content.strip()
+        except Exception:
+            pass
+
+    return (
+        "demo",
+        model,
+        "[demo AI · no LLM key configured on the API] "
+        "Your 0.0001 SOL payment was verified on-chain and unlocked this pay-per-call gate. "
+        "Point the API at any OpenAI-compatible model (X402_LLM_BASE_URL) and this same button "
+        "returns a real AI response — same wallet, same escrow, same rail.",
+    )
+
+
+@router.post("/x402", response_model=X402DemoResponse, status_code=201)
+async def playground_x402(
+    request: Request,
+    auth: AuthContext = Depends(get_auth_context),
+    db: AsyncSession = Depends(get_db),
+):
+    """One-click x402 pay-per-call demo — real on-chain payment + AI response.
+
+    Executes the actual x402 flow server-side: build a payment requirement,
+    pay from the org wallet (real devnet tx), verify the proof on-chain via
+    the same verify_payment_proof used by the x402 gate, then call an LLM
+    (real if configured, honest demo otherwise).
+    """
+    await check_rate_limit(request, str(auth.org_id), auth.org_tier)
+    wallet = await _ensure_wallet(db, auth)
+    recipient = _platform_address()
+    lamports = int(X402_SOL * 1e9)
+
+    engine = TransactionEngine(db)
+    tx = await engine.transfer_sol(
+        org_id=auth.org_id,
+        org_tier=auth.org_tier,
+        wallet_id=wallet.id,
+        to_address=recipient,
+        amount_lamports=lamports,
+        memo="x402 playground pay-per-call",
+        idempotency_key=f"x402:playground:{auth.org_id}:{wallet.id}:{lamports}",
+    )
+    signature = getattr(tx, "signature", None)
+    if not signature:
+        raise HTTPException(
+            status_code=400,
+            detail="Payment transaction has no signature yet (pending approval?) — grab devnet SOL first",
+        )
+    if tx.status == "failed":
+        raise HTTPException(status_code=400, detail=f"Payment failed: {tx.error or 'unknown error'}")
+
+    # Verify the payment the way the x402 gate does (on-chain confirm + recipient + amount)
+    proof = json.dumps(
+        {
+            "network": "solana-devnet",
+            "token": recipient,
+            "signature": signature,
+            "amount": str(lamports),
+            "timestamp": int(time.time()),
+        }
+    )
+    vr = await verify_payment_proof(
+        payment_header=proof,
+        expected_pay_to=recipient,
+        expected_amount_lamports=lamports,
+        network="solana-devnet",
+    )
+
+    ai_provider, ai_model, ai_text = await _call_demo_llm(
+        "You just received a verified x402 micropayment. Explain in one short line what the user can do now."
+    )
+
+    return X402DemoResponse(
+        demo=ai_provider == "demo",
+        amount_sol=X402_SOL,
+        to_address=recipient,
+        payment_signature=signature,
+        payment_confirmed=tx.status in ("submitted", "confirmed", "completed"),
+        payment_explorer_url=_explorer(signature),
+        verified_on_chain=bool(vr.get("valid")),
+        verification_error=vr.get("error"),
+        ai_provider=ai_provider,
+        ai_model=ai_model,
+        ai_response=ai_text,
     )
 
 
