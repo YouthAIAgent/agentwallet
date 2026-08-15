@@ -18,6 +18,52 @@ AI agent wallet infrastructure SaaS on Solana. Wallet-as-a-service for autonomou
   (deploys API → Railway and dashboard → Vercel + health checks, or `./deploy_prod.sh api` / `dashboard` for one).
   Requires `railway login` (project linked) + `npx vercel login` on this machine.
 
+### API routing & geo headers (current)
+- **Dashboard API calls are same-origin**: `VITE_API_URL=/api/v1` (in `packages/dashboard/.env.production`),
+  so browsers hit `https://agentwallet.fun/api/v1/...`.
+- **Vercel Routing Middleware** (`packages/dashboard/proxy.ts`, wired via `vercel.json` → `proxy.entrypoint`,
+  matcher `/api/*`) forwards those calls to `https://api-production-6421a.up.railway.app` and passes
+  Vercel's `x-vercel-ip-country` through as `cf-ipcountry` — the presence tracker
+  (`services/presence.py`, `country_from_request`) then records real country codes.
+- DNS: `agentwallet.fun` nameservers are Vercel's (`ns1.vercel-dns.com`, `ns2.vercel-dns.com`).
+  Note: `api.agentwallet.fun` currently CNAMEs to `a70gs6rx.up.railway.app` which is DEAD
+  ("Application not found") — repoint or delete it during migration.
+
+### Cloudflare full-proxy migration (optional, when ready)
+Why: Cloudflare's free plan only supports full-zone (no CNAME/partial setup), so moving to Cloudflare
+means moving the whole `agentwallet.fun` zone. Do this only when you want CF's edge (WAF, caching,
+bot fight, `CF-IPCountry` for every request). Our backend already prefers `CF-IPCountry` first
+(`_GEO_HEADERS` in `services/presence.py`), so no code change is needed after migration.
+
+Steps (requires Cloudflare account + registrar access):
+1. **Snapshot current DNS** — export the Vercel DNS records for `agentwallet.fun` (dashboard →
+   Settings → Domains → DNS records). Minimum set: apex `A` → Vercel (the two IPs above), any
+   `CNAME`s (e.g. `www`, `api`), and the `_vercel` TXT/verification records if present.
+2. **Create the zone on Cloudflare** — dashboard → Add site → `agentwallet.fun` (Free plan).
+3. **Recreate records in Cloudflare** with proxy ON (orange cloud):
+   - `A  @  216.198.79.65` (or the current Vercel apex IPs) — proxy ON.
+   - `CNAME  www  cname.vercel-dns.com` — proxy ON (or delete if www unused).
+   - `CNAME  api  api-production-6421a.up.railway.app` — proxy ON; this fixes the dead
+     `api.agentwallet.fun` record and gives every direct API call a real `CF-IPCountry`.
+   - Keep any `_vercel` verification records (proxy OFF / grey cloud) until Vercel re-verifies.
+4. **Change nameservers at the registrar** to the two Cloudflare-assigned NS (shown in CF dashboard).
+   Propagation: minutes to ~24h. Keep the old Vercel NS values handy for rollback.
+5. **Verify after propagation** (`dig +short agentwallet.fun NS` shows Cloudflare):
+   - `https://agentwallet.fun` still serves the dashboard (HTTP 200).
+   - `curl -s https://agentwallet.fun/api/v1/public/presence -X POST -H 'Content-Type: application/json'
+     -d '{"visitor_id":"cf-check-0001"}'` → `countries` should contain a real code (your own
+     country, e.g. `IN`), not `xx`.
+   - Presence badge on the landing page shows flag emojis + counts.
+6. **Optional cleanup**: with Cloudflare in front, the Vercel middleware (`proxy.ts`) is redundant
+   for geo (CF adds `CF-IPCountry` directly) but harmless — keep it as a fallback or remove it later.
+
+Rollback (if anything breaks): at the registrar, restore the old nameservers (`ns1.vercel-dns.com`,
+`ns2.vercel-dns.com`). Cloudflare keeps the zone config, so re-activating later is one NS change.
+
+Security note: with CF proxying the API, Cloudflare sees unauthenticated traffic in cleartext at the
+edge — TLS termination is on Cloudflare's side (free SSL cert auto-issued). Railway keeps its own TLS
+for the origin. Rate limiting stays per-IP on our side (`check_rate_limit` uses `X-Forwarded-For`).
+
 ## Tech Stack
 | Layer | Technology |
 |-------|-----------|
