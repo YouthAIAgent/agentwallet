@@ -10,6 +10,9 @@ each result carries a signature linkable on the devnet explorer:
     POST /playground/escrow/{escrow_id}/refund -> refund escrow to funder
     POST /playground/x402     -> pay-per-call AI demo (real x402 payment)
     POST /playground/transfer -> org wallet -> platform (0.0001 SOL)
+    POST /playground/usdc     -> mint devnet dUSDC to the org wallet so the
+                                 USDC billing demo (subscribe/renew/cancel)
+                                 works end to end on devnet
 
     Amounts stay microscopic on purpose so the platform fund is never
     drained (see FUND_SOL / ESCROW_SOL / TRANSFER_SOL below).
@@ -50,9 +53,12 @@ ESCROW_SOL = 0.0001
 X402_SOL = 0.0001
 TRANSFER_SOL = 0.0001
 FUND_COOLDOWN_SECONDS = 60
+USDC_GRANT = 200.0  # 200 dUSDC per click (pro = 49, enterprise = 299)
+USDC_COOLDOWN_SECONDS = 30
 
 # per-org cooldown so nobody can drain the funded platform wallet
 _fund_cooldown: dict[str, float] = {}
+_usdc_cooldown: dict[str, float] = {}
 
 _platform_address_cache: str | None = None
 
@@ -418,6 +424,72 @@ async def playground_x402(
         ai_provider=ai_provider,
         ai_model=ai_model,
         ai_response=ai_text,
+    )
+
+
+class UsdcDemoResponse(BaseModel):
+    wallet_id: str
+    wallet_address: str
+    mint: str
+    amount_usdc: float
+    signature: str
+    confirmed: bool
+    explorer_url: str
+
+
+@router.post("/usdc", response_model=UsdcDemoResponse, status_code=201)
+async def playground_usdc(
+    request: Request,
+    auth: AuthContext = Depends(get_auth_context),
+    db: AsyncSession = Depends(get_db),
+):
+    """Mint devnet dUSDC to the org wallet so the billing demo can run.
+
+    The platform keypair is the mint authority of the devnet dUSDC token
+    (USDC_MINT_ADDRESS), so this endpoint mints a 200 dUSDC grant directly
+    to the user's wallet -- no faucet, no rate limits. That makes the USDC
+    billing flow (subscribe -> renew -> cancel) demonstrable end to end.
+    """
+    await check_rate_limit(request, str(auth.org_id), auth.org_tier)
+
+    org_key = str(auth.org_id)
+    now = time.monotonic()
+    last_fund = _usdc_cooldown.get(org_key, 0)
+    if now - last_fund < USDC_COOLDOWN_SECONDS:
+        remaining = max(1, int(USDC_COOLDOWN_SECONDS - (now - last_fund)))
+        raise HTTPException(
+            status_code=429,
+            detail=(
+                f"Devnet USDC is available once per {USDC_COOLDOWN_SECONDS}s — "
+                f"try again in {remaining}s"
+            ),
+            headers={"Retry-After": str(remaining)},
+        )
+
+    mint = get_settings().usdc_mint_address
+    wallet = await _ensure_wallet(db, auth)
+    platform = solana.load_platform_keypair()
+    amount_raw = int(USDC_GRANT * 1e6)
+
+    async with httpx.AsyncClient(timeout=30) as client:
+        signature = await solana.mint_spl_token(
+            client=client,
+            mint_authority_keypair=platform,
+            mint=mint,
+            owner_address=wallet.address,
+            amount_raw=amount_raw,
+            confirm=True,
+        )
+
+    _usdc_cooldown[org_key] = now
+    return UsdcDemoResponse(
+        wallet_id=str(wallet.id),
+        wallet_address=wallet.address,
+        mint=mint,
+        amount_usdc=USDC_GRANT,
+        signature=signature,
+        confirmed=True,
+        explorer_url=_explorer(signature),
     )
 
 

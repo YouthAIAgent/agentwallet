@@ -9,6 +9,7 @@ import base64 as b64
 import base58
 import httpx
 from solders.hash import Hash
+from solders.instruction import Instruction
 from solders.keypair import Keypair
 from solders.message import Message
 from solders.presigner import Presigner
@@ -35,6 +36,49 @@ def _rpc_url() -> str:
 
 def _rpc_timeout() -> int:
     return get_settings().rpc_timeout
+
+
+async def _rpc_post(
+    client: httpx.AsyncClient,
+    method: str,
+    params: list,
+    rpc_id: int = 1,
+) -> httpx.Response:
+    """POST a JSON-RPC call with retry-on-429/5xx backoff.
+
+    The public devnet RPC rate-limits aggressively (429) and is load-balanced
+    with eventual consistency, so transient failures are retried with
+    exponential backoff + jitter instead of failing the whole request.
+    """
+    import asyncio
+    import random
+
+    max_attempts = 4
+    for attempt in range(max_attempts):
+        resp = await client.post(
+            _rpc_url(),
+            json={
+                "jsonrpc": "2.0",
+                "id": rpc_id + attempt,
+                "method": method,
+                "params": params,
+            },
+            timeout=_rpc_timeout(),
+        )
+        if resp.status_code in (429, 500, 502, 503, 504) and attempt < max_attempts - 1:
+            delay = min(1.0 * (2**attempt), 8.0) + random.uniform(0, 0.5)
+            logger.warning(
+                "rpc_retry",
+                method=method,
+                status=resp.status_code,
+                attempt=attempt + 1,
+                backoff_s=round(delay, 1),
+            )
+            await asyncio.sleep(delay)
+            continue
+        resp.raise_for_status()
+        return resp
+    raise RetryableError(f"RPC {method} failed after {max_attempts} attempts")
 
 
 def load_platform_keypair() -> Keypair:
@@ -72,12 +116,7 @@ def load_platform_keypair() -> Keypair:
 @retry()
 async def get_balance(client: httpx.AsyncClient, address: str) -> int:
     """Get SOL balance in lamports. Raises RetryableError on RPC failure."""
-    resp = await client.post(
-        _rpc_url(),
-        json={"jsonrpc": "2.0", "id": 1, "method": "getBalance", "params": [address]},
-        timeout=_rpc_timeout(),
-    )
-    resp.raise_for_status()
+    resp = await _rpc_post(client, "getBalance", [address])
     body = resp.json()
     if "error" in body:
         raise RetryableError(f"RPC error: {body['error']}")
@@ -127,12 +166,7 @@ async def transfer_sol(
         raise InsufficientBalanceError(available=bal, required=total_needed)
 
     # Get blockhash
-    resp = await client.post(
-        _rpc_url(),
-        json={"jsonrpc": "2.0", "id": 1, "method": "getLatestBlockhash"},
-        timeout=_rpc_timeout(),
-    )
-    resp.raise_for_status()
+    resp = await _rpc_post(client, "getLatestBlockhash", [])
     bh_data = resp.json()
     if "error" in bh_data:
         raise RetryableError(f"Blockhash RPC error: {bh_data['error']}")
@@ -165,17 +199,7 @@ async def transfer_sol(
     tx_b58 = base58.b58encode(bytes(tx)).decode()
 
     # Send
-    resp = await client.post(
-        _rpc_url(),
-        json={
-            "jsonrpc": "2.0",
-            "id": 2,
-            "method": "sendTransaction",
-            "params": [tx_b58, {"encoding": "base58"}],
-        },
-        timeout=_rpc_timeout(),
-    )
-    resp.raise_for_status()
+    resp = await _rpc_post(client, "sendTransaction", [tx_b58, {"encoding": "base58"}], rpc_id=2)
     result = resp.json()
 
     if result.get("error"):
@@ -219,17 +243,11 @@ async def confirm_transaction(
 
     for _i in range(max_polls):
         try:
-            resp = await client.post(
-                _rpc_url(),
-                json={
-                    "jsonrpc": "2.0",
-                    "id": 1,
-                    "method": "getSignatureStatuses",
-                    "params": [[signature], {"searchTransactionHistory": True}],
-                },
-                timeout=_rpc_timeout(),
+            resp = await _rpc_post(
+                client,
+                "getSignatureStatuses",
+                [[signature], {"searchTransactionHistory": True}],
             )
-            resp.raise_for_status()
             body = resp.json()
             statuses = body.get("result", {}).get("value", [])
             if statuses and statuses[0]:
@@ -264,24 +282,18 @@ async def get_parsed_transaction(
     """
     for method in ("getParsedTransaction", "getTransaction"):
         try:
-            resp = await client.post(
-                _rpc_url(),
-                json={
-                    "jsonrpc": "2.0",
-                    "id": 1,
-                    "method": method,
-                    "params": [
-                        signature,
-                        {
-                            "encoding": "jsonParsed",
-                            "maxSupportedTransactionVersion": 0,
-                            "commitment": "confirmed",
-                        },
-                    ],
-                },
-                timeout=_rpc_timeout(),
+            resp = await _rpc_post(
+                client,
+                method,
+                [
+                    signature,
+                    {
+                        "encoding": "jsonParsed",
+                        "maxSupportedTransactionVersion": 0,
+                        "commitment": "confirmed",
+                    },
+                ],
             )
-            resp.raise_for_status()
             body = resp.json()
             if body.get("error"):
                 logger.warning("parsed_tx_rpc_error", signature=signature[:24], error=body["error"])
@@ -544,17 +556,7 @@ async def submit_transaction(
     Returns dict with 'success', 'signature', and optionally 'confirmed'.
     """
     signed_b58 = base58.b58encode(signed_bytes).decode()
-    resp = await client.post(
-        _rpc_url(),
-        json={
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "sendTransaction",
-            "params": [signed_b58, {"encoding": "base58"}],
-        },
-        timeout=_rpc_timeout(),
-    )
-    resp.raise_for_status()
+    resp = await _rpc_post(client, "sendTransaction", [signed_b58, {"encoding": "base58"}])
     rpc = resp.json()
 
     if rpc.get("error"):
@@ -658,21 +660,11 @@ async def transfer_spl_token(
     # In a production system, you'd want to check and create it if needed
 
     # Get sender's token account address (we need the actual account pubkey)
-    sender_accounts_resp = await client.post(
-        _rpc_url(),
-        json={
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "getTokenAccountsByOwner",
-            "params": [
-                from_addr,
-                {"mint": mint},
-                {"encoding": "jsonParsed"},
-            ],
-        },
-        timeout=_rpc_timeout(),
+    sender_accounts_resp = await _rpc_post(
+        client,
+        "getTokenAccountsByOwner",
+        [from_addr, {"mint": mint}, {"encoding": "jsonParsed"}],
     )
-    sender_accounts_resp.raise_for_status()
     sender_accounts_data = sender_accounts_resp.json()
 
     if not sender_accounts_data.get("result", {}).get("value"):
@@ -681,21 +673,11 @@ async def transfer_spl_token(
     sender_token_account_pubkey = Pubkey.from_string(sender_accounts_data["result"]["value"][0]["pubkey"])
 
     # Get recipient's token account address
-    recipient_accounts_resp = await client.post(
-        _rpc_url(),
-        json={
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "getTokenAccountsByOwner",
-            "params": [
-                to_address,
-                {"mint": mint},
-                {"encoding": "jsonParsed"},
-            ],
-        },
-        timeout=_rpc_timeout(),
+    recipient_accounts_resp = await _rpc_post(
+        client,
+        "getTokenAccountsByOwner",
+        [to_address, {"mint": mint}, {"encoding": "jsonParsed"}],
     )
-    recipient_accounts_resp.raise_for_status()
     recipient_accounts_data = recipient_accounts_resp.json()
 
     if not recipient_accounts_data.get("result", {}).get("value"):
@@ -704,12 +686,7 @@ async def transfer_spl_token(
     recipient_token_account_pubkey = Pubkey.from_string(recipient_accounts_data["result"]["value"][0]["pubkey"])
 
     # Get blockhash
-    resp = await client.post(
-        _rpc_url(),
-        json={"jsonrpc": "2.0", "id": 1, "method": "getLatestBlockhash"},
-        timeout=_rpc_timeout(),
-    )
-    resp.raise_for_status()
+    resp = await _rpc_post(client, "getLatestBlockhash", [])
     bh_data = resp.json()
     if "error" in bh_data:
         raise RetryableError(f"Blockhash RPC error: {bh_data['error']}")
@@ -752,17 +729,7 @@ async def transfer_spl_token(
     tx_b58 = base58.b58encode(bytes(tx)).decode()
 
     # Send transaction
-    resp = await client.post(
-        _rpc_url(),
-        json={
-            "jsonrpc": "2.0",
-            "id": 2,
-            "method": "sendTransaction",
-            "params": [tx_b58, {"encoding": "base58"}],
-        },
-        timeout=_rpc_timeout(),
-    )
-    resp.raise_for_status()
+    resp = await _rpc_post(client, "sendTransaction", [tx_b58, {"encoding": "base58"}], rpc_id=2)
     result = resp.json()
 
     if result.get("error"):
@@ -786,21 +753,15 @@ async def transfer_spl_token(
 
 async def get_token_accounts(client: httpx.AsyncClient, owner: str) -> list[dict]:
     """Get all SPL token accounts for an owner. Returns list of {mint, amount, decimals}."""
-    resp = await client.post(
-        _rpc_url(),
-        json={
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "getTokenAccountsByOwner",
-            "params": [
-                owner,
-                {"programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"},
-                {"encoding": "jsonParsed"},
-            ],
-        },
-        timeout=_rpc_timeout(),
+    resp = await _rpc_post(
+        client,
+        "getTokenAccountsByOwner",
+        [
+            owner,
+            {"programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"},
+            {"encoding": "jsonParsed"},
+        ],
     )
-    resp.raise_for_status()
     body = resp.json()
     accounts = []
     for item in body.get("result", {}).get("value", []):
@@ -815,3 +776,295 @@ async def get_token_accounts(client: httpx.AsyncClient, owner: str) -> list[dict
             }
         )
     return accounts
+
+
+# ---------------------------------------------------------------------------
+# SPL Mint / Associated Token Account helpers (raw instruction building)
+# ---------------------------------------------------------------------------
+
+TOKEN_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+ATA_PROGRAM_ID = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+SYSTEM_PROGRAM_ID = "11111111111111111111111111111111"
+RENT_SYSVAR_ID = "SysvarRent111111111111111111111111111111111"
+MINT_ACCOUNT_SPACE = 82
+
+
+def associated_token_address(owner: str, mint: str) -> str:
+    """Derive the Associated Token Account address for an owner+mint pair."""
+    owner_pk = Pubkey.from_string(owner)
+    mint_pk = Pubkey.from_string(mint)
+    token_program = Pubkey.from_string(TOKEN_PROGRAM_ID)
+    ata_program = Pubkey.from_string(ATA_PROGRAM_ID)
+    ata, _bump = Pubkey.find_program_address(
+        [bytes(owner_pk), bytes(token_program), bytes(mint_pk)], ata_program
+    )
+    return str(ata)
+
+
+async def account_exists(client: httpx.AsyncClient, address: str) -> bool:
+    """Check whether an account exists on-chain."""
+    resp = await _rpc_post(client, "getAccountInfo", [address, {"encoding": "base64"}])
+    body = resp.json()
+    if "error" in body:
+        raise RetryableError(f"RPC error: {body['error']}")
+    return body.get("result", {}).get("value") is not None
+
+
+async def wait_for_account(
+    client: httpx.AsyncClient,
+    address: str,
+    timeout: float = 25.0,
+) -> bool:
+    """Poll until an account is visible on-chain (cross-node visibility).
+
+    The public devnet RPC is load-balanced, so a freshly confirmed account
+    may not be visible to the node serving the next simulation for a few
+    seconds. Polling getAccountInfo removes that race deterministically.
+    """
+    import asyncio
+
+    deadline = asyncio.get_event_loop().time() + timeout
+    while asyncio.get_event_loop().time() < deadline:
+        if await account_exists(client, address):
+            return True
+        await asyncio.sleep(0.75)
+    return False
+
+
+async def _send_instructions(
+    client: httpx.AsyncClient,
+    signers: list[Keypair],
+    instructions: list,
+    retry_simulation: bool = False,
+) -> str:
+    """Build, sign and send a legacy transaction from raw instructions.
+
+    When `retry_simulation` is True, transient simulation failures are retried
+    a few times -- the public devnet RPC is load-balanced, and a transaction
+    referencing an account that was just created (e.g. a new mint or token
+    account) can hit a lagging node that hasn't seen it yet. A short retry
+    resolves this without any code changes.
+    """
+    import asyncio
+
+    attempts = 3 if retry_simulation else 1
+    last_error: Exception | None = None
+    for attempt in range(attempts):
+        resp = await _rpc_post(client, "getLatestBlockhash", [])
+        bh_data = resp.json()
+        if "error" in bh_data:
+            raise RetryableError(f"Blockhash RPC error: {bh_data['error']}")
+        bh = Hash.from_string(bh_data["result"]["value"]["blockhash"])
+
+        msg = Message(instructions, signers[0].pubkey())
+        tx = Transaction(signers, msg, bh)
+        tx_b58 = base58.b58encode(bytes(tx)).decode()
+
+        resp = await _rpc_post(client, "sendTransaction", [tx_b58, {"encoding": "base58"}], rpc_id=2)
+        result = resp.json()
+        if result.get("error"):
+            last_error = RetryableError(f"sendTransaction error: {result['error']}")
+            msg_text = str(last_error)
+            if retry_simulation and "simulation" in msg_text and attempt < attempts - 1:
+                await asyncio.sleep(1.0 + attempt)
+                continue
+            raise last_error
+        sig = result.get("result")
+        if not sig:
+            raise RetryableError(f"sendTransaction returned no signature: {result}")
+        return sig
+    raise last_error or RetryableError("sendTransaction failed after retries")
+
+
+def _create_token_account_ixs(
+    funder: Pubkey,
+    owner: Pubkey,
+    mint: Pubkey,
+    account_kp: Keypair,
+    rent_lamports: int,
+) -> list[Instruction]:
+    """Instructions to create a brand-new token account for `owner`+`mint`.
+
+    Uses a fresh random account (a real keypair that can sign) instead of
+    the Associated Token Account program, so no PDA signature is needed:
+
+      1. system_program.create_account   (funder -> account, rent, space 165)
+      2. token_program.InitializeAccount (opcode 1)
+
+    The account shows up in getTokenAccountsByOwner, so transfers and
+    balance checks work exactly like an ATA.
+    """
+    from solders.instruction import AccountMeta, Instruction
+    from solders.system_program import CreateAccountParams, create_account
+
+    ix_create = create_account(
+        CreateAccountParams(
+            from_pubkey=funder,
+            to_pubkey=account_kp.pubkey(),
+            lamports=rent_lamports,
+            space=165,
+            owner=Pubkey.from_string(TOKEN_PROGRAM_ID),
+        )
+    )
+    ix_init = Instruction(
+        program_id=Pubkey.from_string(TOKEN_PROGRAM_ID),
+        accounts=[
+            AccountMeta(account_kp.pubkey(), False, True),
+            AccountMeta(mint, False, False),
+            AccountMeta(owner, False, False),
+            AccountMeta(Pubkey.from_string(RENT_SYSVAR_ID), False, False),
+        ],
+        data=bytes([1]),  # InitializeAccount
+    )
+    return [ix_create, ix_init]
+
+
+def _mint_to_ix(mint: Pubkey, dest: Pubkey, authority: Pubkey, amount_raw: int) -> Instruction:
+    """Token Program MintTo (opcode 7) instruction."""
+    from solders.instruction import AccountMeta, Instruction
+
+    return Instruction(
+        program_id=Pubkey.from_string(TOKEN_PROGRAM_ID),
+        accounts=[
+            AccountMeta(mint, False, True),
+            AccountMeta(dest, False, True),
+            AccountMeta(authority, True, False),
+        ],
+        data=bytes([7]) + amount_raw.to_bytes(8, "little"),
+    )
+
+
+def _init_mint_ix(mint: Pubkey, authority: Pubkey, decimals: int) -> Instruction:
+    """Token Program InitializeMint (opcode 0) instruction.
+
+    Layout: [0] opcode, [decimals], mint_authority (32 bytes), then an
+    optional freeze authority COption. No `is_initialized` byte -- the
+    program sets that flag on the account itself.
+    """
+    from solders.instruction import AccountMeta, Instruction
+
+    return Instruction(
+        program_id=Pubkey.from_string(TOKEN_PROGRAM_ID),
+        accounts=[
+            AccountMeta(mint, False, True),
+            AccountMeta(Pubkey.from_string(RENT_SYSVAR_ID), False, False),
+        ],
+        data=bytes([0]) + bytes([decimals]) + bytes(authority) + bytes([0]),
+    )
+
+
+async def create_spl_mint(
+    client: httpx.AsyncClient,
+    authority_keypair: Keypair,
+    decimals: int = 6,
+) -> str:
+    """Create a new SPL token mint owned by `authority_keypair`.
+
+    The authority becomes the mint authority (can mint more). Returns the
+    new mint address. Only the authority signs -- the mint account itself
+    never needs its own key.
+    """
+    from solders.system_program import CreateAccountParams, create_account
+
+    mint_kp = Keypair()
+    resp = await _rpc_post(client, "getMinimumBalanceForRentExemption", [MINT_ACCOUNT_SPACE])
+    rent_body = resp.json()
+    if "error" in rent_body:
+        raise RetryableError(f"RPC error: {rent_body['error']}")
+    rent = rent_body["result"]
+
+    instructions = [
+        create_account(
+            CreateAccountParams(
+                from_pubkey=authority_keypair.pubkey(),
+                to_pubkey=mint_kp.pubkey(),
+                lamports=rent,
+                space=MINT_ACCOUNT_SPACE,
+                owner=Pubkey.from_string(TOKEN_PROGRAM_ID),
+            )
+        ),
+        _init_mint_ix(mint_kp.pubkey(), authority_keypair.pubkey(), decimals),
+    ]
+    # solders' create_account marks the new account as a signer, so the mint
+    # keypair must sign alongside the authority. Confirm before returning so
+    # callers never race the mint creation (a subsequent tx that references
+    # this mint would simulate before it lands and fail with IncorrectProgramId).
+    sig = await _send_instructions(client, [authority_keypair, mint_kp], instructions)
+    await confirm_transaction(client, sig)
+    mint_addr = str(mint_kp.pubkey())
+    await wait_for_account(client, mint_addr)
+    return mint_addr
+
+
+async def _token_account_addresses(
+    client: httpx.AsyncClient, owner: str, mint: str
+) -> list[str]:
+    """Return the pubkeys of `owner`'s token accounts holding `mint`."""
+    resp = await _rpc_post(
+        client,
+        "getTokenAccountsByOwner",
+        [owner, {"mint": mint}, {"encoding": "jsonParsed"}],
+    )
+    body = resp.json()
+    return [item.get("pubkey", "") for item in body.get("result", {}).get("value", [])]
+
+
+async def ensure_token_account(
+    client: httpx.AsyncClient,
+    payer_keypair: Keypair,
+    owner_address: str,
+    mint: str,
+) -> str:
+    """Create a token account for `owner`+`mint` if missing; returns its address."""
+    existing = await _token_account_addresses(client, owner_address, mint)
+    if existing:
+        return existing[0]
+
+    # Rent-exempt lamports for a 165-byte token account.
+    resp = await _rpc_post(client, "getMinimumBalanceForRentExemption", [165])
+    rent_body = resp.json()
+    if "error" in rent_body:
+        raise RetryableError(f"RPC error: {rent_body['error']}")
+    rent = rent_body["result"]
+
+    account_kp = Keypair()
+    ixs = _create_token_account_ixs(
+        payer_keypair.pubkey(),
+        Pubkey.from_string(owner_address),
+        Pubkey.from_string(mint),
+        account_kp,
+        rent,
+    )
+    sig = await _send_instructions(client, [payer_keypair, account_kp], ixs, retry_simulation=True)
+    # Confirm + wait for cross-node visibility so a subsequent mint_to in the
+    # same flow never races the account creation (simulation would see an
+    # absent account and fail with IncorrectProgramId).
+    await confirm_transaction(client, sig)
+    await wait_for_account(client, str(account_kp.pubkey()))
+    return str(account_kp.pubkey())
+
+
+async def mint_spl_token(
+    client: httpx.AsyncClient,
+    mint_authority_keypair: Keypair,
+    mint: str,
+    owner_address: str,
+    amount_raw: int,
+    confirm: bool = False,
+) -> str:
+    """Mint `amount_raw` tokens to `owner_address` (creates their ATA first).
+
+    Returns the transaction signature. The mint authority signs; the
+    recipient does not need to sign anything.
+    """
+    ata = await ensure_token_account(client, mint_authority_keypair, owner_address, mint)
+    ix = _mint_to_ix(
+        Pubkey.from_string(mint),
+        Pubkey.from_string(ata),
+        mint_authority_keypair.pubkey(),
+        amount_raw,
+    )
+    sig = await _send_instructions(client, [mint_authority_keypair], [ix], retry_simulation=True)
+    if confirm:
+        await confirm_transaction(client, sig)
+    return sig

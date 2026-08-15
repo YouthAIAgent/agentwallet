@@ -130,9 +130,23 @@ class TokenService:
         from_keypair = self.wallet_mgr._decrypt_keypair(wallet)
         from_address = str(from_keypair.pubkey())
 
-        # Check token balance
+        # Check token balance. The public devnet RPC is load-balanced and
+        # eventually consistent: a balance read right after a mint/transfer
+        # can hit a lagging node and report 0. Retry briefly so a just-minted
+        # balance is seen before declaring it insufficient.
+        import asyncio
+
+        # The public devnet RPC lags ~5s on token balance reads after a mint
+        # (measured), so poll with a ~10s window before declaring insufficiency.
         async with httpx.AsyncClient() as client:
             balance_info = await get_token_balance(client, from_address, token_config["mint"])
+            for _attempt in range(6):
+                if balance_info["amount"] >= amount_raw:
+                    break
+                await asyncio.sleep(1.5)
+                balance_info = await get_token_balance(
+                    client, from_address, token_config["mint"]
+                )
 
         if balance_info["amount"] < amount_raw:
             raise InsufficientBalanceError(available=balance_info["amount"], required=amount_raw)

@@ -174,6 +174,49 @@ async def test_playground_transfer_insufficient(client, test_wallet, monkeypatch
 
 
 @pytest.mark.asyncio
+async def test_playground_usdc(client, test_wallet, monkeypatch):
+    """POST /playground/usdc mints devnet dUSDC to the org wallet."""
+    import agentwallet.api.routers.playground as pg
+
+    async def fake_mint(client, mint_authority_keypair, mint, owner_address, amount_raw, confirm=False):
+        assert amount_raw == int(200.0 * 1e6)
+        assert owner_address == test_wallet.address
+        return FAKE_SIG
+
+    monkeypatch.setattr(pg.solana, "mint_spl_token", fake_mint)
+    monkeypatch.setattr(pg.solana, "load_platform_keypair", _fake_platform_kp)
+    monkeypatch.setattr(pg, "_usdc_cooldown", {})
+
+    resp = await client.post("/v1/playground/usdc")
+    assert resp.status_code == 201
+    data = resp.json()
+    assert data["signature"] == FAKE_SIG
+    assert data["confirmed"] is True
+    assert data["amount_usdc"] == 200.0
+    assert "explorer.solana.com/tx/" in data["explorer_url"]
+
+
+@pytest.mark.asyncio
+async def test_playground_usdc_cooldown(client, test_wallet, monkeypatch):
+    """Second USDC grant within the cooldown window is rejected (429)."""
+    import agentwallet.api.routers.playground as pg
+
+    async def fake_mint(client, mint_authority_keypair, mint, owner_address, amount_raw, confirm=False):
+        return FAKE_SIG
+
+    monkeypatch.setattr(pg.solana, "mint_spl_token", fake_mint)
+    monkeypatch.setattr(pg.solana, "load_platform_keypair", _fake_platform_kp)
+    monkeypatch.setattr(pg, "_usdc_cooldown", {})
+    monkeypatch.setattr(pg.time, "monotonic", lambda: 200.0)
+
+    first = await client.post("/v1/playground/usdc")
+    assert first.status_code == 201
+    second = await client.post("/v1/playground/usdc")
+    assert second.status_code == 429
+    assert "try again in" in second.json()["detail"]
+
+
+@pytest.mark.asyncio
 async def test_playground_escrow_refund(client, test_wallet, monkeypatch):
     """POST /playground/escrow/{id}/refund refunds escrow funds to the funder wallet."""
     import agentwallet.api.routers.playground as pg

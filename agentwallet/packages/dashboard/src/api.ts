@@ -680,6 +680,16 @@ export interface TransferDemoResult {
   explorer_url: string;
 }
 
+export interface UsdcDemoResult {
+  wallet_id: string;
+  wallet_address: string;
+  mint: string;
+  amount_usdc: number;
+  signature: string;
+  confirmed: boolean;
+  explorer_url: string;
+}
+
 export const playground = {
   status: () => request<PlaygroundStatus>("/playground"),
   fund: () =>
@@ -697,6 +707,7 @@ export const playground = {
   x402: () => request<X402DemoResult>("/playground/x402", { method: "POST" }),
   transfer: () =>
     request<TransferDemoResult>("/playground/transfer", { method: "POST" }),
+  usdc: () => request<UsdcDemoResult>("/playground/usdc", { method: "POST" }),
 };
 
 // Solana devnet explorer link for a tx signature

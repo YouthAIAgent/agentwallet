@@ -12,6 +12,7 @@ import {
   Undo2,
   Sparkles,
   Wallet as WalletIcon,
+  Coins,
 } from "lucide-react";
 import {
   playground,
@@ -24,6 +25,7 @@ import {
   type EscrowRefundResult,
   type X402DemoResult,
   type TransferDemoResult,
+  type UsdcDemoResult,
 } from "../api";
 
 function TxLink({ sig, url, label }: { sig: string; url: string; label: string }) {
@@ -77,6 +79,9 @@ export default function Playground() {
 
   const [transferring, setTransferring] = useState(false);
   const [transferRes, setTransferRes] = useState<TransferDemoResult | null>(null);
+
+  const [usdcBusy, setUsdcBusy] = useState(false);
+  const [usdcRes, setUsdcRes] = useState<UsdcDemoResult | null>(null);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -205,6 +210,21 @@ export default function Playground() {
     }
   };
 
+  const doUsdc = async () => {
+    setUsdcBusy(true);
+    setError(null);
+    setUsdcRes(null);
+    try {
+      const r = await playground.usdc();
+      setUsdcRes(r);
+      await loadStatus(true);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setUsdcBusy(false);
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
@@ -253,6 +273,11 @@ export default function Playground() {
             <div className="text-2xl font-bold text-brand-400">
               {balance === null ? "—" : `${balance.toFixed(4)} SOL`}
             </div>
+            {usdcRes && (
+              <div className="text-xs text-ink-400 mt-0.5">
+                + {usdcRes.amount_usdc.toFixed(0)} USDC (devnet dUSDC)
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -446,6 +471,39 @@ export default function Playground() {
               sig={transferRes.signature}
               url={transferRes.explorer_url}
               label={`${transferRes.amount_sol} SOL sent`}
+            />
+          )}
+        </div>
+
+        {/* 5 — Get USDC (billing demo) */}
+        <div className="card flex flex-col">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-brand-500/10 rounded-xl flex items-center justify-center">
+              <Coins className="w-5 h-5 text-brand-400" />
+            </div>
+            <div>
+              <div className="font-semibold text-ink-100">Get 200 USDC</div>
+              <div className="text-xs text-ink-400 mt-0.5">Devnet dUSDC for the billing demo</div>
+            </div>
+          </div>
+          <p className="text-sm text-ink-400 mb-4 flex-1">
+            Mints 200 devnet USDC straight into your wallet — enough to pay for any tier.
+            Now try the Billing page: Subscribe → Renew → Cancel, each payment a real
+            on-chain USDC transfer.
+          </p>
+          <button onClick={doUsdc} disabled={usdcBusy} className="btn-primary w-full">
+            {usdcBusy ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Coins className="w-4 h-4" />
+            )}
+            {usdcBusy ? "Minting…" : "Get 200 USDC"}
+          </button>
+          {usdcRes && (
+            <TxLink
+              sig={usdcRes.signature}
+              url={usdcRes.explorer_url}
+              label={`${usdcRes.amount_usdc.toFixed(0)} USDC minted → you`}
             />
           )}
         </div>
