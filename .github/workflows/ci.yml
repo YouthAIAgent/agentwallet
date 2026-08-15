@@ -126,10 +126,10 @@ jobs:
       #   Value: <token from `railway login` or Railway dashboard>
       - name: Link Railway project
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway link --project 447d110e-0eed-4208-98bd-9b370125476a --environment production
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+        run: railway link --project 447d110e-0eed-4208-98bd-9b370125476a --environment production --service api
 
       - name: Deploy to Railway
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
         run: railway up --detach
