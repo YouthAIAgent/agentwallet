@@ -6,12 +6,17 @@ AI agent wallet infrastructure SaaS on Solana. Wallet-as-a-service for autonomou
 ## Live Deployment
 - **Railway API**: https://api-production-6421a.up.railway.app (devnet)
 - **Website**: https://agentwallet.fun (Vercel)
-- **Railway Project ID**: 1e142b95-97f5-49b4-aa54-38c76b369742
-- **Railway Service**: trustworthy-celebration
-- **Railway Account**: YouthAIAgent (web3youth@gmail.com)
-- **GitHub**: https://github.com/YouthAIAgent/agentwallet
+- **Railway Project**: `agentwallet-devnet` (workspace: Earning Girl's Projects) → service `api`
+- **Railway Account**: Earning Girl (earninggirl6@gmail.com)
+- **GitHub**: https://github.com/ChiranjibAI/agent-genesis
 - **Health**: `GET /health` returns `{"status":"ok","version":"0.4.0"}`
 - **Swagger Docs**: `GET /docs` (disabled in production)
+
+### Deploy
+- **Normal path (preferred)**: push to master → GitHub Actions CI deploys Railway + Vercel automatically.
+- **CI fallback** (Actions disabled / flagged account): run `./deploy_prod.sh` from `agentwallet/agentwallet`
+  (deploys API → Railway and dashboard → Vercel + health checks, or `./deploy_prod.sh api` / `dashboard` for one).
+  Requires `railway login` (project linked) + `npx vercel login` on this machine.
 
 ## Tech Stack
 | Layer | Technology |
