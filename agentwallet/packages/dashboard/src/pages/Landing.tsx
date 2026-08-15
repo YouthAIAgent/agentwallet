@@ -442,8 +442,57 @@ function timeAgo(iso: string): string {
   return `${Math.floor(s / 86400)}d ago`;
 }
 
+/* stable identity for an item, so React can tell new vs pushed-out */
+function feedUid(it: FeedItem): string {
+  return `${it.type}:${it.address}:${it.action}:${it.timestamp}`;
+}
+
+interface RenderedItem extends FeedItem {
+  uid: string;
+  entering: boolean;
+  leaving: boolean;
+  delay: number;
+}
+
+function FeedRow({ it }: { it: RenderedItem }) {
+  const Icon = it.type === "escrow" ? Lock : it.type === "acp" ? Zap : ArrowRight;
+  const tint =
+    it.type === "escrow"
+      ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
+      : it.type === "acp"
+        ? "bg-sky-500/10 border-sky-500/20 text-sky-400"
+        : "bg-brand-500/10 border-brand-500/20 text-brand-400";
+  return (
+    <div
+      className={`flex items-center gap-3 px-3.5 py-2.5 ${
+        it.entering ? "aw-feed-in" : it.leaving ? "aw-feed-out" : ""
+      }`}
+      style={it.delay ? { animationDelay: `${it.delay}ms` } : undefined}
+    >
+      <span
+        className={`w-6 h-6 rounded border flex items-center justify-center shrink-0 ${tint}`}
+      >
+        <Icon className="w-3 h-3" />
+      </span>
+      <span className="font-mono text-[11px] text-ink-300 truncate flex-1">
+        <span className="text-ink-100">{it.address}</span>{" "}
+        <span className="text-ink-500">{it.action}</span>
+      </span>
+      {it.amount && (
+        <span className="font-mono text-[11px] text-brand-400 tabular-nums whitespace-nowrap">
+          {it.amount}
+        </span>
+      )}
+      <span className="font-mono text-[10px] text-ink-600 whitespace-nowrap">
+        {timeAgo(it.timestamp)}
+      </span>
+    </div>
+  );
+}
+
 function LiveFeed() {
-  const [items, setItems] = useState<FeedItem[]>([]);
+  const [rendered, setRendered] = useState<RenderedItem[]>([]);
+  const firstLoad = useRef(true);
 
   useEffect(() => {
     let alive = true;
@@ -454,10 +503,39 @@ function LiveFeed() {
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data: { items?: FeedItem[] } = await res.json();
-        // fresh array reference on every load so relative times re-render
-        if (alive && Array.isArray(data.items)) {
-          setItems(data.items.slice(0, 4));
-        }
+        if (!alive || !Array.isArray(data.items)) return;
+        const next = data.items.slice(0, 6); // 2 extra for exit detection
+        const nextUids = new Set(next.map(feedUid));
+        const stagger = firstLoad.current;
+        firstLoad.current = false;
+
+        setRendered((prev) => {
+          const prevUids = new Set(prev.map((r) => r.uid));
+          // kept rows already played their entrance — clear the flag so the
+          // animation never replays if React ever recreates the element
+          const kept = prev.map((r) =>
+            r.leaving
+              ? r
+              : { ...r, entering: false, leaving: !nextUids.has(r.uid) }
+          );
+          const fresh = next
+            .filter((n) => !prevUids.has(feedUid(n)))
+            .map((n) => ({
+              ...n,
+              uid: feedUid(n),
+              entering: true,
+              leaving: false,
+              delay: 0,
+            }));
+          // stagger the initial batch; new arrivals animate instantly
+          const withDelay = stagger
+            ? fresh.map((f, i) => ({ ...f, delay: i * 70 }))
+            : fresh;
+          return [...withDelay, ...kept].sort(
+            (a, b) =>
+              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          );
+        });
       } catch {
         // never break the landing page on a feed failure
       }
@@ -470,7 +548,28 @@ function LiveFeed() {
     };
   }, []);
 
-  if (items.length === 0) return null;
+  // prune items that finished their exit animation
+  useEffect(() => {
+    const id = setInterval(() => {
+      setRendered((prev) =>
+        prev.some((r) => r.leaving)
+          ? prev.filter((r) => !r.leaving)
+          : prev
+      );
+    }, 700);
+    return () => clearInterval(id);
+  }, []);
+
+  const rows = rendered
+    .filter((r) => !r.leaving)
+    .slice(0, 4)
+    .concat(rendered.filter((r) => r.leaving))
+    .sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+
+  if (rows.length === 0) return null;
 
   return (
     <div className="mt-4 max-w-md">
@@ -479,40 +578,9 @@ function LiveFeed() {
         Recent on-chain activity
       </div>
       <div className="border border-ink-800 rounded-lg overflow-hidden divide-y divide-ink-800/60 bg-ink-950/60">
-        {items.map((it, i) => {
-          const Icon =
-            it.type === "escrow" ? Lock : it.type === "acp" ? Zap : ArrowRight;
-          const tint =
-            it.type === "escrow"
-              ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
-              : it.type === "acp"
-                ? "bg-sky-500/10 border-sky-500/20 text-sky-400"
-                : "bg-brand-500/10 border-brand-500/20 text-brand-400";
-          return (
-            <div
-              key={`${it.address}-${i}`}
-              className="flex items-center gap-3 px-3.5 py-2.5"
-            >
-              <span
-                className={`w-6 h-6 rounded border flex items-center justify-center shrink-0 ${tint}`}
-              >
-                <Icon className="w-3 h-3" />
-              </span>
-              <span className="font-mono text-[11px] text-ink-300 truncate flex-1">
-                <span className="text-ink-100">{it.address}</span>{" "}
-                <span className="text-ink-500">{it.action}</span>
-              </span>
-              {it.amount && (
-                <span className="font-mono text-[11px] text-brand-400 tabular-nums whitespace-nowrap">
-                  {it.amount}
-                </span>
-              )}
-              <span className="font-mono text-[10px] text-ink-600 whitespace-nowrap">
-                {timeAgo(it.timestamp)}
-              </span>
-            </div>
-          );
-        })}
+        {rows.map((it) => (
+          <FeedRow key={it.uid} it={it} />
+        ))}
       </div>
     </div>
   );
