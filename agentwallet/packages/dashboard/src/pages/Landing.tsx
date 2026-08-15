@@ -319,6 +319,108 @@ function TypewriterTerminal() {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* LiveStats — real platform numbers from GET /v1/public/stats,        */
+/* refreshed every 60s. Graceful: hides itself if the API is down,     */
+/* so the landing page never breaks on a stats fetch.                  */
+/* ------------------------------------------------------------------ */
+interface PublicStats {
+  total_agents: number;
+  total_wallets: number;
+  total_transactions: number;
+  total_escrows: number;
+  total_volume_sol: number;
+}
+
+function fmt(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + "K";
+  return String(Math.round(n));
+}
+
+function useCountUp(target: number, ms = 900): number {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    // setInterval (not rAF) so the animation also completes when the tab
+    // is backgrounded/throttled — rAF is paused there and would stick at 0.
+    const start = performance.now();
+    const id = setInterval(() => {
+      const p = Math.min(1, (performance.now() - start) / ms);
+      // ease-out cubic so it lands softly
+      setVal(target * (1 - Math.pow(1 - p, 3)));
+      if (p >= 1) clearInterval(id);
+    }, 16);
+    return () => clearInterval(id);
+  }, [target, ms]);
+  return val;
+}
+
+function LiveStats() {
+  const [stats, setStats] = useState<PublicStats | null>(null);
+  // hooks first — one per stat, unconditional (Rules of Hooks)
+  const txns = useCountUp(stats?.total_transactions ?? 0);
+  const wallets = useCountUp(stats?.total_wallets ?? 0);
+  const agents = useCountUp(stats?.total_agents ?? 0);
+  const volume = useCountUp(stats?.total_volume_sol ?? 0);
+
+  useEffect(() => {
+    let alive = true;
+    const load = async () => {
+      try {
+        const res = await fetch("/api/v1/public/stats", {
+          headers: { Accept: "application/json" },
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: PublicStats = await res.json();
+        if (alive) setStats(data);
+      } catch {
+        // never break the landing page on a stats failure
+      }
+    };
+    load();
+    const id = setInterval(load, 60_000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, []);
+
+  if (!stats) return null;
+
+  const items = [
+    { label: "On-chain txns", value: fmt(txns) },
+    { label: "Wallets created", value: fmt(wallets) },
+    { label: "Agents running", value: fmt(agents) },
+    { label: "Volume", value: volume.toFixed(3) + " SOL" },
+  ];
+
+  return (
+    <div className="mt-8 inline-flex flex-wrap items-stretch gap-px rounded-lg border border-ink-800 overflow-hidden bg-ink-800">
+      {items.map((it, i) => (
+        <div
+          key={it.label}
+          className={`px-4 py-2.5 bg-ink-950/95 min-w-[110px] ${
+            i > 0 ? "border-l border-ink-800" : ""
+          }`}
+        >
+          <div className="font-mono text-sm font-bold text-brand-400 tabular-nums">
+            {it.value}
+          </div>
+          <div className="text-[9px] uppercase tracking-widest text-ink-500 mt-0.5">
+            {it.label}
+          </div>
+        </div>
+      ))}
+      <div className="px-3 py-2.5 bg-ink-950/95 flex items-center gap-1.5">
+        <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
+        <span className="font-mono text-[9px] uppercase tracking-widest text-brand-400">
+          live
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function Landing() {
   const [light, setLight] = useState(
     () => localStorage.getItem("aw-theme") === "light"
@@ -410,6 +512,7 @@ export default function Landing() {
               <span>● USDC</span>
               <span>● Swarms</span>
             </div>
+            <LiveStats />
           </div>
         </Reveal>
 
