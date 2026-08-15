@@ -13,15 +13,15 @@ from .exceptions import (
     RateLimitError,
     ValidationError,
 )
+from .resources.acp import AcpResource
 from .resources.agents import AgentsResource
 from .resources.analytics import AnalyticsResource
 from .resources.escrow import EscrowResource
 from .resources.pda_wallets import PDAWalletsResource
 from .resources.policies import PoliciesResource
+from .resources.swarms import SwarmsResource
 from .resources.transactions import TransactionsResource
 from .resources.wallets import WalletsResource
-from .resources.acp import AcpResource
-from .resources.swarms import SwarmsResource
 from .resources.x402 import X402Resource
 
 DEFAULT_BASE_URL = "http://localhost:8000/v1"
@@ -88,7 +88,17 @@ class AgentWallet:
         params: dict | None = None,
     ) -> dict:
         """Make an authenticated API request."""
-        resp = await self._client.request(method, path, json=json, params=params)
+        try:
+            resp = await self._client.request(method, path, json=json, params=params)
+        except httpx.RequestError as e:
+            raise AgentWalletAPIError(
+                0,
+                f"Network error: {e}",
+                hint=(
+                    f"Could not reach {self.base_url}{path} -- check that the API is running "
+                    "and the base_url/api key are correct."
+                ),
+            )
 
         if resp.status_code >= 400:
             body = {}
@@ -98,7 +108,14 @@ class AgentWallet:
                 pass
             message = body.get("error", body.get("detail", resp.text))
             error_cls = ERROR_MAP.get(resp.status_code, AgentWalletAPIError)
-            raise error_cls(resp.status_code, message, body)
+
+            # Prefer an explicit hint from the server body; the API already embeds
+            # action hints in many detail messages, so only fall back when missing.
+            hint = body.get("hint") if isinstance(body, dict) else None
+            msg_str = message if isinstance(message, str) else str(message)
+            if hint is None and ("--" in msg_str or "—" in msg_str):
+                hint = ""  # message already embeds the next step -- don't append
+            raise error_cls(resp.status_code, message, body, hint=hint)
 
         if resp.status_code == 204:
             return {}

@@ -22,6 +22,11 @@ import json
 import os
 import sys
 
+# Fix Windows console encoding (emoji hints crash on cp1252 otherwise)
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 import httpx
 
 # ── Configuration ────────────────────────────────────────────────
@@ -38,6 +43,37 @@ def _headers() -> dict:
     return h
 
 
+def _hint_for_status(status_code: int, body: dict | None = None) -> str | None:
+    """Return an actionable next-step hint for an API error status.
+
+    Returns None when the server's detail message already embeds the next
+    step (it contains '--' or an em-dash), so we don't repeat it.
+    """
+    if isinstance(body, dict):
+        hint = body.get("hint")
+        if hint:
+            return hint
+        detail = body.get("detail")
+        if isinstance(detail, str) and ("--" in detail or "—" in detail):
+            return None
+    hints = {
+        401: "Generate a valid API key via POST /api-keys or the dashboard, then retry.",
+        403: "Create an API key with the required access level (POST /api-keys), or ask the org owner for permission.",
+        404: "Check the resource ID -- it may not exist or may belong to another account.",
+        409: "Resolve the conflict (use a different email/idempotency key) and retry.",
+        422: "Fix the validation errors in your payload and retry.",
+        429: "Rate limit hit -- wait for the window to reset (~60s), then retry, or upgrade your tier.",
+        500: "The server hit an unexpected error -- retry in a few seconds, or contact support if it persists.",
+        502: "The upstream service failed -- retry in a few seconds, or contact support if it persists.",
+    }
+    return hints.get(status_code, "Retry the operation, or contact support if it persists.")
+
+
+def _print_hint(hint: str) -> None:
+    """Print an indented, highlighted hint line."""
+    print(f"       💡 {hint}")
+
+
 def _get(path: str, params: dict | None = None) -> dict:
     """Perform a synchronous GET request against the AgentWallet API."""
     url = f"{API_URL.rstrip('/')}{path}"
@@ -48,17 +84,29 @@ def _get(path: str, params: dict | None = None) -> dict:
     except httpx.ConnectError:
         print(f"ERROR: Could not connect to {url}")
         print("       Is the AgentWallet API running?")
+        _print_hint(
+            "Check that the API is up (docker compose up or your Railway service) and that "
+            "AGENTWALLET_API_URL points to it."
+        )
         sys.exit(1)
     except httpx.HTTPStatusError as e:
         print(f"ERROR: API returned {e.response.status_code}")
+        body = {}
         try:
-            detail = e.response.json()
-            print(f"       {json.dumps(detail, indent=2)}")
+            body = e.response.json()
+            print(f"       {json.dumps(body, indent=2)}")
         except Exception:
             print(f"       {e.response.text[:200]}")
+        hint = _hint_for_status(e.response.status_code, body)
+        if hint:
+            _print_hint(hint)
+        retry_after = e.response.headers.get("retry-after")
+        if retry_after:
+            print(f"       Retry after: {retry_after}s")
         sys.exit(1)
     except Exception as e:
         print(f"ERROR: {e}")
+        _print_hint("Check your network connection and that the API URL is reachable.")
         sys.exit(1)
 
 

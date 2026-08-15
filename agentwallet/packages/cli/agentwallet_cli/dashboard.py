@@ -155,6 +155,12 @@ def build_dashboard(data: dict, start_time: float) -> Layout:
         f"[dim]{now.strftime('%Y-%m-%d %H:%M:%S')}[/]"
     )
 
+    if api_status != "ok":
+        header_text += (
+            "\n[dim]💡 Hint: verify AGENTWALLET_API_URL and AGENTWALLET_API_KEY -- "
+            "start the API (docker compose up) or point at your Railway service.[/]"
+        )
+
     # ── Agent Table ──
     agents_data = data.get("agents") or {}
     agents_list = agents_data.get("data", [])
@@ -230,7 +236,6 @@ def build_dashboard(data: dict, start_time: float) -> Layout:
     txs_list = txs_data.get("data", [])
     pending_count = sum(1 for tx in txs_list if tx.get("status") == "pending")
     confirmed_recent = sum(1 for tx in txs_list if tx.get("status") == "confirmed")
-    failed_recent = sum(1 for tx in txs_list if tx.get("status") == "failed")
 
     stats_text = (
         f"[bold cyan]TRANSACTIONS:[/] {tx_count} total | "
@@ -446,7 +451,9 @@ def main():
                     error_layout.split_column(
                         Layout(
                             Panel(
-                                f"[bold red]ERROR: {e}[/]\n[dim]Retrying in {interval}s...[/]",
+                                f"[bold red]ERROR: {e}[/]\n"
+                                f"[dim]💡 Hint: check AGENTWALLET_API_URL / AGENTWALLET_API_KEY and "
+                                f"that the API is reachable. Retrying in {interval}s...[/]",
                                 title="[bold red]Dashboard Error[/]",
                                 border_style="red",
                             ),

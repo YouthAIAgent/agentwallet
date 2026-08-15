@@ -3,11 +3,9 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import httpx
-
-from .x402_types import X402Response
 
 if TYPE_CHECKING:
     from .client import AgentWallet
@@ -17,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class X402AutoPay:
     """Middleware that wraps httpx client to auto-handle 402 responses.
-    
+
     Usage:
         client = X402AutoPay(wallet_id="wallet_123", aw_client=aw, max_per_request=0.01)
         response = await client.get("https://api.weather.com/forecast")
@@ -33,7 +31,7 @@ class X402AutoPay:
     ):
         """
         Initialize x402 auto-payment middleware.
-        
+
         Args:
             wallet_id: AgentWallet wallet ID for payments
             aw_client: AgentWallet client instance
@@ -44,7 +42,7 @@ class X402AutoPay:
         self.aw_client = aw_client
         self.max_per_request = max_per_request
         self._client = httpx.AsyncClient(**httpx_kwargs)
-        
+
         # Track payments for audit
         self._payments = []
 
@@ -57,7 +55,7 @@ class X402AutoPay:
             max_amount_usd=self.max_per_request,
             **kwargs,
         )
-        
+
         # Log payment if one was made
         if x402_response.payment_required and x402_response.payment_proof:
             payment_log = {
@@ -69,14 +67,15 @@ class X402AutoPay:
             }
             self._payments.append(payment_log)
             logger.info(f"x402 auto-payment: ${x402_response.cost_usd:.4f} to {url}")
-        
+
         # Create httpx.Response object from x402 response
+        content = str(x402_response.data).encode()
         response = httpx.Response(
             status_code=x402_response.status_code,
             headers={"content-type": "application/json"},
-            content=str(x402_response.data).encode() if isinstance(x402_response.data, str) else str(x402_response.data).encode(),
+            content=content,
         )
-        
+
         return response
 
     async def get(self, url: str, **kwargs) -> httpx.Response:
@@ -129,12 +128,12 @@ class X402AutoPay:
 
 class X402Budget:
     """Budget management for x402 payments."""
-    
+
     def __init__(self, daily_limit: float = 1.0, per_request_limit: float = 0.10):
         self.daily_limit = daily_limit
         self.per_request_limit = per_request_limit
         self._daily_spent = 0.0
-    
+
     def can_afford(self, amount_usd: float) -> bool:
         """Check if payment is within budget limits."""
         if amount_usd > self.per_request_limit:
@@ -142,15 +141,15 @@ class X402Budget:
         if self._daily_spent + amount_usd > self.daily_limit:
             return False
         return True
-    
+
     def record_payment(self, amount_usd: float):
         """Record a payment against the budget."""
         self._daily_spent += amount_usd
-    
+
     def reset_daily(self):
         """Reset daily spending counter."""
         self._daily_spent = 0.0
-    
+
     def get_remaining_daily(self) -> float:
         """Get remaining daily budget."""
         return max(0.0, self.daily_limit - self._daily_spent)

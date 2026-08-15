@@ -9,7 +9,7 @@ from typing import Any
 @dataclass
 class X402PaymentRequirement:
     """Payment requirement from a 402 Payment Required response."""
-    
+
     network: str          # "solana", "base-sepolia", etc
     token: str            # token address or symbol
     amount: str           # amount in smallest unit
@@ -20,7 +20,7 @@ class X402PaymentRequirement:
 @dataclass
 class X402PaymentProof:
     """Payment proof to include in retry request."""
-    
+
     network: str
     token: str
     signature: str        # tx signature
@@ -30,7 +30,7 @@ class X402PaymentProof:
 @dataclass
 class X402Response:
     """Complete response from x402 payment flow."""
-    
+
     status_code: int
     payment_required: bool
     requirements: list[X402PaymentRequirement] | None
@@ -42,7 +42,7 @@ class X402Response:
 @dataclass
 class X402PaymentInfo:
     """Payment requirement parsed from 402 response."""
-    
+
     x402_version: str
     description: str
     accepts: list[dict]   # List of accepted payment methods
