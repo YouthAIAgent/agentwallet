@@ -117,6 +117,12 @@ See `.env.example` for the full list.
     - Server: systemd service `opensandbox`, venv at `/opt/osb/bin`, config `/root/.sandbox.toml`
     - Binds `0.0.0.0:8080` with API key auth (key in `~/.opensandbox/config.toml` local CLI config)
     - Local CLI points at `187.77.185.34:8080` — remote sandboxes run on the VPS, not locally
+    - **Server-side hard caps** (every sandbox, no flags needed): memory=1Gi, cpu=0.7,
+      max 24h timeout. Patched `container_ops.py:_resolve_resource_limits` (site-packages,
+      backup `.bak`) — SDK default 2Gi/1.0 is overridden; smaller explicit requests are kept.
+      Caps configurable via `OPENSANDBOX_DEFAULT_MEMORY` / `OPENSANDBOX_DEFAULT_CPU` in
+      `/etc/systemd/system/opensandbox.service`. Capacity (verified by stress test):
+      12–16 concurrent agents comfortable, 20 light burst, memory ceiling ~14GB aggregate.
   - Flow: `osb sandbox create --image python:3.12 -o json` → `osb command run <id> -o raw -- <cmd>`
   - Config: `~/.opensandbox/config.toml` (CLI) + `~/.sandbox.toml` (server, docker example)
   - Windows note: set `PYTHONIOENCODING=utf-8 PYTHONUTF8=1` before `osb` (charmap emoji bug)
