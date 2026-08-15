@@ -217,6 +217,38 @@ class EscrowReleaseResponse(BaseModel):
     recipient_address: str
 
 
+class EscrowRefundResponse(BaseModel):
+    escrow_id: str
+    status: str
+    refund_signature: str | None
+    refund_explorer_url: str | None
+    funder_wallet_address: str | None
+
+
+@router.post("/escrow/{escrow_id}/refund", response_model=EscrowRefundResponse)
+async def playground_escrow_refund(
+    escrow_id: uuid.UUID,
+    request: Request,
+    auth: AuthContext = Depends(get_auth_context),
+    db: AsyncSession = Depends(get_db),
+):
+    """Refund an escrow — platform custody returns the funds to the funder's wallet."""
+    await check_rate_limit(request, str(auth.org_id), auth.org_tier)
+    svc = EscrowService(db)
+    escrow = await svc.refund_escrow(escrow_id, auth.org_id)
+    funder_address = None
+    if escrow.funder_wallet_id:
+        funder_wallet = await db.get(Wallet, escrow.funder_wallet_id)
+        funder_address = funder_wallet.address if funder_wallet else None
+    return EscrowRefundResponse(
+        escrow_id=str(escrow.id),
+        status=escrow.status,
+        refund_signature=escrow.refund_signature,
+        refund_explorer_url=_explorer(escrow.refund_signature) if escrow.refund_signature else None,
+        funder_wallet_address=funder_address,
+    )
+
+
 @router.post("/escrow/{escrow_id}/release", response_model=EscrowReleaseResponse)
 async def playground_escrow_release(
     escrow_id: uuid.UUID,

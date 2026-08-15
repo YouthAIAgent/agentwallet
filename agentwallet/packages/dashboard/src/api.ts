@@ -649,6 +649,14 @@ export interface EscrowReleaseResult {
   recipient_address: string;
 }
 
+export interface EscrowRefundResult {
+  escrow_id: string;
+  status: string;
+  refund_signature: string | null;
+  refund_explorer_url: string | null;
+  funder_wallet_address: string | null;
+}
+
 export interface TransferDemoResult {
   wallet_id: string;
   amount_sol: number;
@@ -666,6 +674,10 @@ export const playground = {
     request<EscrowDemoResult>("/playground/escrow", { method: "POST" }),
   release: (escrowId: string) =>
     request<EscrowReleaseResult>(`/playground/escrow/${escrowId}/release`, {
+      method: "POST",
+    }),
+  refund: (escrowId: string) =>
+    request<EscrowRefundResult>(`/playground/escrow/${escrowId}/refund`, {
       method: "POST",
     }),
   transfer: () =>

@@ -9,6 +9,7 @@ import {
   Copy,
   CheckCircle2,
   Loader2,
+  Undo2,
   Wallet as WalletIcon,
 } from "lucide-react";
 import {
@@ -19,6 +20,7 @@ import {
   type FundResult,
   type EscrowDemoResult,
   type EscrowReleaseResult,
+  type EscrowRefundResult,
   type TransferDemoResult,
 } from "../api";
 
@@ -65,6 +67,8 @@ export default function Playground() {
   const [escrowRes, setEscrowRes] = useState<EscrowDemoResult | null>(null);
   const [releasing, setReleasing] = useState(false);
   const [releaseRes, setReleaseRes] = useState<EscrowReleaseResult | null>(null);
+  const [refunding, setRefunding] = useState(false);
+  const [refundRes, setRefundRes] = useState<EscrowRefundResult | null>(null);
 
   const [transferring, setTransferring] = useState(false);
   const [transferRes, setTransferRes] = useState<TransferDemoResult | null>(null);
@@ -120,6 +124,7 @@ export default function Playground() {
     setError(null);
     setEscrowRes(null);
     setReleaseRes(null);
+    setRefundRes(null);
     try {
       const r = await playground.escrow();
       setEscrowRes(r);
@@ -128,6 +133,22 @@ export default function Playground() {
       setError((e as Error).message);
     } finally {
       setEscrowBusy(false);
+    }
+  };
+
+  const doRefund = async () => {
+    if (!escrowRes) return;
+    setRefunding(true);
+    setError(null);
+    try {
+      const r = await playground.refund(escrowRes.escrow_id);
+      setRefundRes(r);
+      setEscrowRes((e) => (e ? { ...e, status: r.status } : e));
+      await loadStatus(true);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setRefunding(false);
     }
   };
 
@@ -253,13 +274,14 @@ export default function Playground() {
             <div>
               <div className="font-semibold text-ink-100">Escrow Demo</div>
               <div className="text-xs text-ink-400 mt-0.5">
-                0.0001 SOL · create → fund → release
+                0.0001 SOL · create → fund → release / refund
               </div>
             </div>
           </div>
           <p className="text-sm text-ink-400 mb-4 flex-1">
-            Escrow create karte hi wallet se fund ho jata hai (tx 1). Phir release — platform
-            vendor ko pay karta hai (tx 2). Dono real signatures.
+            Escrow create karte hi wallet se fund ho jata hai (tx 1). Phir choose:
+            release — vendor ko pay karo, ya refund — paisa wapas apne wallet mein (tx 2).
+            Sab real signatures.
           </p>
           <div className="flex flex-col gap-2">
             <button onClick={doEscrow} disabled={escrowBusy} className="btn-primary w-full">
@@ -270,19 +292,33 @@ export default function Playground() {
               )}
               {escrowBusy ? "Creating escrow…" : escrowRes ? "Create another escrow" : "Create + fund escrow"}
             </button>
-            {escrowRes && escrowRes.status === "funded" && !releaseRes && (
-              <button
-                onClick={doRelease}
-                disabled={releasing}
-                className="btn-secondary w-full"
-              >
-                {releasing ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <ArrowRight className="w-4 h-4" />
-                )}
-                {releasing ? "Releasing…" : "Release to vendor"}
-              </button>
+            {escrowRes && escrowRes.status === "funded" && !releaseRes && !refundRes && (
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={doRelease}
+                  disabled={releasing || refunding}
+                  className="btn-secondary w-full"
+                >
+                  {releasing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <ArrowRight className="w-4 h-4" />
+                  )}
+                  {releasing ? "Releasing…" : "Release to vendor"}
+                </button>
+                <button
+                  onClick={doRefund}
+                  disabled={releasing || refunding}
+                  className="btn-secondary w-full"
+                >
+                  {refunding ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Undo2 className="w-4 h-4" />
+                  )}
+                  {refunding ? "Refunding…" : "Refund to my wallet"}
+                </button>
+              </div>
             )}
           </div>
           {escrowRes?.fund_explorer_url && escrowRes.fund_signature && (
@@ -297,6 +333,13 @@ export default function Playground() {
               sig={releaseRes.release_signature}
               url={releaseRes.release_explorer_url}
               label={`release · ${releaseRes.status}`}
+            />
+          )}
+          {refundRes?.refund_explorer_url && refundRes.refund_signature && (
+            <TxLink
+              sig={refundRes.refund_signature}
+              url={refundRes.refund_explorer_url}
+              label={`refund · ${refundRes.status} → your wallet`}
             />
           )}
         </div>

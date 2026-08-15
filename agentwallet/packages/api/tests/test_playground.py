@@ -1,5 +1,7 @@
 """Tests for the Devnet Playground endpoints."""
 
+import uuid
+
 import pytest
 from solders.keypair import Keypair
 
@@ -106,3 +108,32 @@ async def test_playground_transfer_insufficient(client, test_wallet, monkeypatch
 
     resp = await client.post("/v1/playground/transfer")
     assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_playground_escrow_refund(client, test_wallet, monkeypatch):
+    """POST /playground/escrow/{id}/refund refunds escrow funds to the funder wallet."""
+    import agentwallet.api.routers.playground as pg
+
+    escrow_id = uuid.uuid4()
+
+    class FakeEscrow:
+        id = escrow_id
+        status = "refunded"
+        refund_signature = FAKE_SIG
+        funder_wallet_id = None
+        recipient_address = "recv-addr"
+
+    async def fake_refund(self, requested_id, org_id):
+        assert str(requested_id) == str(escrow_id)
+        return FakeEscrow()
+
+    monkeypatch.setattr(pg.EscrowService, "refund_escrow", fake_refund)
+
+    resp = await client.post(f"/v1/playground/escrow/{escrow_id}/refund")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["escrow_id"] == str(escrow_id)
+    assert data["status"] == "refunded"
+    assert data["refund_signature"] == FAKE_SIG
+    assert "explorer.solana.com/tx/" in data["refund_explorer_url"]
