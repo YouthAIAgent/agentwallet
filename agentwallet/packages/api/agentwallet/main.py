@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from .api.routers import (
+    playground,
     acp,
     agents,
     analytics,
@@ -137,6 +138,7 @@ app.include_router(pda_wallets.router, prefix="/v1")
 app.include_router(acp.router, prefix="/v1")
 app.include_router(swarms.router, prefix="/v1")
 app.include_router(public.router, prefix="/v1")
+app.include_router(playground.router, prefix="/v1")
 
 
 # Global exception handlers

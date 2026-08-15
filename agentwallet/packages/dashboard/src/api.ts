@@ -614,6 +614,73 @@ export const pdaWallets = {
     }),
 };
 
+// --- Devnet Playground ---
+export interface PlaygroundStatus {
+  wallet_id: string | null;
+  wallet_address: string | null;
+  balance_sol: number;
+  platform_address: string;
+  network: string;
+}
+
+export interface FundResult {
+  wallet_id: string;
+  wallet_address: string;
+  amount_sol: number;
+  signature: string;
+  confirmed: boolean;
+  explorer_url: string;
+}
+
+export interface EscrowDemoResult {
+  escrow_id: string;
+  status: string;
+  amount_sol: number;
+  fund_signature: string | null;
+  fund_explorer_url: string | null;
+  recipient_address: string;
+}
+
+export interface EscrowReleaseResult {
+  escrow_id: string;
+  status: string;
+  release_signature: string | null;
+  release_explorer_url: string | null;
+  recipient_address: string;
+}
+
+export interface TransferDemoResult {
+  wallet_id: string;
+  amount_sol: number;
+  to_address: string;
+  signature: string;
+  confirmed: boolean;
+  explorer_url: string;
+}
+
+export const playground = {
+  status: () => request<PlaygroundStatus>("/playground"),
+  fund: () =>
+    request<FundResult>("/playground/fund", { method: "POST" }),
+  escrow: () =>
+    request<EscrowDemoResult>("/playground/escrow", { method: "POST" }),
+  release: (escrowId: string) =>
+    request<EscrowReleaseResult>(`/playground/escrow/${escrowId}/release`, {
+      method: "POST",
+    }),
+  transfer: () =>
+    request<TransferDemoResult>("/playground/transfer", { method: "POST" }),
+};
+
+// Solana devnet explorer link for a tx signature
+export function explorerUrl(signature: string): string {
+  return `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
+}
+
+export function shortSig(signature: string): string {
+  return signature.length > 24 ? `${signature.slice(0, 12)}…${signature.slice(-8)}` : signature;
+}
+
 // --- Dashboard Overview ---
 export interface DashboardOverview {
   total_agents: number;
