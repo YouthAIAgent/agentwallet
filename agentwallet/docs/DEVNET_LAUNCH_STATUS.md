@@ -8,7 +8,7 @@ Fully public devnet launch (webapp ke saath) → users test → feedback → mai
 ## 🌐 Live URLs
 | What | URL |
 |---|---|
-| Dashboard (Vercel) | https://agentwallet-devnet-two.vercel.app |
+| Dashboard (Vercel) | https://agentwallet.fun |
 | API (Railway) | https://api-production-6421a.up.railway.app |
 | API docs | https://api-production-6421a.up.railway.app/docs |
 | Platform devnet wallet | BTcvExhix1pfVX25imKzkHquGJrncZjijxEJq1RkKK5 |
