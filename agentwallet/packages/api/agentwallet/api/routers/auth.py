@@ -107,7 +107,7 @@ async def register(request: Request, req: RegisterRequest, db: AsyncSession = De
     await check_rate_limit(request, org_id="anon:register", tier="free")
     existing = await db.scalar(select(User).where(User.email == req.email))
     if existing:
-        raise HTTPException(status_code=409, detail="Email already registered")
+        raise HTTPException(status_code=409, detail="Email already registered — try logging in instead")
 
     org = Organization(name=req.org_name, email=req.email)
     db.add(org)
@@ -138,9 +138,9 @@ async def login(request: Request, req: LoginRequest, db: AsyncSession = Depends(
     user = await db.scalar(select(User).where(User.email == req.email))
     if not user or not verify_password(req.password, user.password_hash):
         _record_login_failure(req.email)
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(status_code=401, detail="Invalid email or password — double-check your credentials")
     if not user.is_active:
-        raise HTTPException(status_code=403, detail="Account disabled")
+        raise HTTPException(status_code=403, detail="Account disabled — contact support to restore access")
 
     # Successful login — clear any failure counters
     _clear_login_failures(req.email)

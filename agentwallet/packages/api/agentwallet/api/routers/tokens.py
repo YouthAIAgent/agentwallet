@@ -108,7 +108,7 @@ async def get_token_balances(
     try:
         wallet = await token_service.wallet_mgr.get_wallet(wallet_id, auth.org_id)
         if wallet.org_id != auth.org_id:
-            raise HTTPException(status_code=404, detail="Wallet not found")
+            raise HTTPException(status_code=404, detail="Wallet not found — check the wallet ID")
 
         # Get all token balances
         balances = await token_service.get_all_token_balances(wallet.address)
@@ -121,7 +121,7 @@ async def get_token_balances(
         )
 
     except NotFoundError:
-        raise HTTPException(status_code=404, detail="Wallet not found")
+        raise HTTPException(status_code=404, detail="Wallet not found — check the wallet ID")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get balances: {str(e)}")
 

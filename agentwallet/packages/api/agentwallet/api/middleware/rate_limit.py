@@ -121,7 +121,10 @@ async def check_rate_limit(
                 )
                 raise HTTPException(
                     status_code=429,
-                    detail=f"Rate limit exceeded ({limit}/min). Upgrade tier for higher limits.",
+                    detail=(
+                        f"Rate limit exceeded ({limit}/min). "
+                        "Wait for the window to reset (~60s), then retry, or upgrade your tier for higher limits."
+                    ),
                     headers={"Retry-After": "60"},
                 )
             return  # Within limit
@@ -140,6 +143,9 @@ async def check_rate_limit(
         )
         raise HTTPException(
             status_code=429,
-            detail=f"Rate limit exceeded ({limit}/min). Upgrade tier for higher limits.",
+            detail=(
+                f"Rate limit exceeded ({limit}/min). "
+                "Wait for the window to reset (~60s), then retry, or upgrade your tier for higher limits."
+            ),
             headers={"Retry-After": "60"},
         )

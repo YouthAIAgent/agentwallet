@@ -93,7 +93,10 @@ async def current_billing(
 
     org = await db.get(Organization, auth.org_id)
     if not org:
-        raise HTTPException(status_code=404, detail="Organization not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Organization not found — check your account or log in again",
+        )
 
     agent_count = (
         await db.execute(select(func.count()).select_from(Agent).where(Agent.org_id == auth.org_id))

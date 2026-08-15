@@ -108,7 +108,10 @@ def require_permission(resource: str, mode: str = "w"):
         if not auth.has_permission(resource, mode):
             raise HTTPException(
                 status_code=403,
-                detail=f"API key lacks '{mode}' permission on '{resource}'",
+                detail=(
+                    f"API key lacks '{mode}' permission on '{resource}' — "
+                    f"create an API key with '{mode}' access to '{resource}' (POST /api-keys)"
+                ),
             )
 
     return _checker
@@ -121,7 +124,7 @@ def _resolve_agent_id(request: Request) -> uuid.UUID | None:
         try:
             return uuid.UUID(agent_id_header)
         except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid X-Agent-Id header (must be a valid UUID)")
+            raise HTTPException(status_code=400, detail="Invalid X-Agent-Id header — expected a valid UUID")
     return None
 
 
@@ -133,7 +136,10 @@ async def _verify_agent_belongs_to_org(
 
     agent = await db.get(Agent, agent_id)
     if not agent or agent.org_id != org_id:
-        raise HTTPException(status_code=403, detail="Agent does not belong to your organization")
+        raise HTTPException(
+            status_code=403,
+            detail="Agent does not belong to your organization — check the X-Agent-Id header",
+        )
 
 
 async def get_auth_context(
@@ -151,7 +157,10 @@ async def get_auth_context(
         key_hash = hash_api_key(api_key_header)
         api_key = await db.scalar(select(ApiKey).where(ApiKey.key_hash == key_hash, ApiKey.is_active.is_(True)))
         if not api_key:
-            raise HTTPException(status_code=401, detail="Invalid API key")
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid API key — generate a valid key via POST /api-keys or the dashboard",
+            )
 
         # Update last used
         api_key.last_used_at = datetime.now(timezone.utc)
@@ -186,11 +195,17 @@ async def get_auth_context(
 
             user = await db.get(User, user_id)
             if not user or not user.is_active:
-                raise HTTPException(status_code=401, detail="Invalid token: user not found or disabled")
+                raise HTTPException(
+                    status_code=401,
+                    detail="Invalid token: user not found or disabled — log in again",
+                )
 
             org = await db.get(Organization, org_id)
             if not org or not org.is_active:
-                raise HTTPException(status_code=401, detail="Organization inactive")
+                raise HTTPException(
+                    status_code=401,
+                    detail="Organization inactive — contact support to reactivate it",
+                )
 
             # Verify the user belongs to the org encoded in the token
             if user.org_id != org_id:
@@ -208,6 +223,12 @@ async def get_auth_context(
                 actor_type="user",
             )
         except (JWTError, KeyError, ValueError):
-            raise HTTPException(status_code=401, detail="Invalid token")
+            raise HTTPException(status_code=401, detail="Invalid or expired token — log in again to get a fresh one")
 
-    raise HTTPException(status_code=401, detail="Authentication required")
+    raise HTTPException(
+        status_code=401,
+        detail=(
+            "Authentication required — pass a Bearer token (Authorization header) "
+            "or an X-API-Key header"
+        ),
+    )

@@ -116,7 +116,13 @@ async def escrow_action(
         elif req.action == "dispute":
             escrow = await svc.dispute_escrow(escrow_id, auth.org_id, req.reason or "")
         else:
-            raise HTTPException(status_code=400, detail=f"Unknown action: {req.action}")
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Unknown action '{req.action}' — supported actions: "
+                    "release, refund, dispute"
+                ),
+            )
     except EscrowStateError as e:
         raise HTTPException(status_code=409, detail=str(e))
     except NotFoundError as e:

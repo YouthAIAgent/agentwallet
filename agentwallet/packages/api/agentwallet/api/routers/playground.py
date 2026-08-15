@@ -142,10 +142,16 @@ async def playground_fund(
 
     org_key = str(auth.org_id)
     now = time.monotonic()
-    if now - _fund_cooldown.get(org_key, 0) < FUND_COOLDOWN_SECONDS:
+    last_fund = _fund_cooldown.get(org_key, 0)
+    if now - last_fund < FUND_COOLDOWN_SECONDS:
+        remaining = max(1, int(FUND_COOLDOWN_SECONDS - (now - last_fund)))
         raise HTTPException(
             status_code=429,
-            detail=f"Devnet SOL is available once per {FUND_COOLDOWN_SECONDS}s — try again in a moment",
+            detail=(
+                f"Devnet SOL is available once per {FUND_COOLDOWN_SECONDS}s — "
+                f"try again in {remaining}s"
+            ),
+            headers={"Retry-After": str(remaining)},
         )
 
     wallet = await _ensure_wallet(db, auth)
@@ -157,7 +163,10 @@ async def playground_fund(
         if balance < lamports + 5000:
             raise HTTPException(
                 status_code=503,
-                detail="Platform wallet is out of devnet SOL — please try again later",
+                detail=(
+                    "Platform wallet is out of devnet SOL — please try again later, "
+                    "or contact support to refill the custody wallet"
+                ),
             )
         signature = await solana.transfer_sol(
             client=client,
@@ -368,7 +377,10 @@ async def playground_x402(
     if not signature:
         raise HTTPException(
             status_code=400,
-            detail="Payment transaction has no signature yet (pending approval?) — grab devnet SOL first",
+            detail=(
+                "Payment transaction has no signature yet — grab devnet SOL via the "
+                "playground fund demo, then retry"
+            ),
         )
     if tx.status == "failed":
         raise HTTPException(status_code=400, detail=f"Payment failed: {tx.error or 'unknown error'}")
@@ -435,7 +447,7 @@ async def playground_transfer(
         if balance < lamports + 5000:
             raise HTTPException(
                 status_code=400,
-                detail="Not enough SOL in your wallet — grab devnet SOL first",
+                detail="Not enough SOL in your wallet — click 'Get 0.01 SOL' first to fund it, then retry",
             )
         signature = await solana.transfer_sol(
             client=client,

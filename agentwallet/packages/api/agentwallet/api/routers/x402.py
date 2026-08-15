@@ -187,7 +187,9 @@ async def make_x402_request(
 
         signature = getattr(tx, "signature", None)
         if not signature:
-            raise ValidationError("Payment transaction has no signature yet (pending approval?)")
+            raise ValidationError(
+                "Payment transaction has no signature yet — check the wallet balance, then retry"
+            )
 
         # Step 5: retry with payment proof
         payment_header = json.dumps(
