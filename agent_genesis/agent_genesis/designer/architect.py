@@ -162,6 +162,21 @@ MODEL_DEFAULTS: Dict[RuntimeTarget, str] = {
     RuntimeTarget.BOX: os.getenv("GENESIS_BOX_MODEL", "claude-3-5-sonnet-20241022"),
 }
 
+
+def _default_model(runtime: RuntimeTarget) -> str:
+    """Resolve a runtime's default model, honoring live env overrides.
+
+    Codex is provider-aware: when ``GENESIS_CODEX_PROVIDER`` selects a local
+    proxy, fall back to a model the proxy serves unless ``GENESIS_CODEX_MODEL``
+    is set explicitly.
+    """
+    base = MODEL_DEFAULTS.get(runtime, "qwen2.5:7b")
+    if runtime == RuntimeTarget.CODEX:
+        return os.getenv("GENESIS_CODEX_MODEL") or (
+            "oc/deepseek-v4-flash-free" if os.getenv("GENESIS_CODEX_PROVIDER") else base
+        )
+    return base
+
 INPUT_CONTRACTS: Dict[AgentRole, Dict] = {
     AgentRole.SCOUT: {"task_context": "object", "query": "string", "keywords": "array"},
     AgentRole.PARSER: {"raw_data": "string", "schema": "object", "source_type": "string"},
@@ -257,7 +272,7 @@ class DesignerAgent:
                 name=f"{role.value.title()} {i}",
                 role=role,
                 runtime=runtime_assign[role],
-                model=MODEL_DEFAULTS.get(runtime_assign[role], "qwen2.5:7b"),
+                model=_default_model(runtime_assign[role]),
                 persona=PERSONAS.get(role, "You are a specialized agent."),
                 tools=TOOL_MAP.get(role, []),
                 input_contract=INPUT_CONTRACTS.get(role, {}),

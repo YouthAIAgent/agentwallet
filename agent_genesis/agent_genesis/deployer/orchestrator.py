@@ -214,6 +214,12 @@ class DeployerAgent:
         cmd_config = self.runtime_configs[RuntimeType.CODEX]
         args = [arg.format(model=spec["model"]) for arg in cmd_config["args_template"]]
 
+        # Optional custom provider (e.g. a local OpenAI-compatible proxy):
+        #   GENESIS_CODEX_PROVIDER=omniroute -> codex exec ... -c model_provider=omniroute
+        provider = os.getenv("GENESIS_CODEX_PROVIDER", "").strip()
+        if provider:
+            args += ["-c", f"model_provider={provider}"]
+
         cmd = _exec_cmd([cmd_config["command"]] + args)
         prompt = self._build_prompt(spec)
 

@@ -7,6 +7,7 @@ from agent_genesis.designer.architect import (
     DesignerAgent,
     OrganizationSpec,
     RuntimeTarget,
+    _default_model,
     _env_runtime_prefs,
 )
 
@@ -72,3 +73,26 @@ def test_role_keyword_mapping(isolated_memory):
     # No keyword match falls back to ANALYZER
     spec = d.design("something completely unrelated")
     assert all(a.role in (AgentRole.ANALYZER,) for a in spec.agents)
+
+
+def test_codex_model_follows_provider_env(monkeypatch):
+    monkeypatch.delenv("GENESIS_CODEX_MODEL", raising=False)
+    monkeypatch.delenv("GENESIS_CODEX_PROVIDER", raising=False)
+    assert _default_model(RuntimeTarget.CODEX) == "gpt-4o"
+
+    monkeypatch.setenv("GENESIS_CODEX_PROVIDER", "omniroute")
+    assert _default_model(RuntimeTarget.CODEX) == "oc/deepseek-v4-flash-free"
+
+    monkeypatch.setenv("GENESIS_CODEX_MODEL", "custom-model")
+    assert _default_model(RuntimeTarget.CODEX) == "custom-model"
+
+
+def test_codex_agents_use_proxy_model_by_default(isolated_memory, monkeypatch):
+    monkeypatch.setenv("GENESIS_CODEX_PROVIDER", "omniroute")
+    monkeypatch.delenv("GENESIS_CODEX_MODEL", raising=False)
+
+    d = DesignerAgent()
+    spec = d.design("deploy this service to production and validate the release")
+    codex_agents = [a for a in spec.agents if a.runtime == RuntimeTarget.CODEX]
+    assert codex_agents, "expected codex-runtime agents (executor/validator)"
+    assert all(a.model == "oc/deepseek-v4-flash-free" for a in codex_agents)

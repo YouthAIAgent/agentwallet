@@ -68,6 +68,10 @@ genesis runtimes   # see which runtimes are available before deploying
 > **Environment overrides** (per machine):
 > - `GENESIS_LOCAL_LLM_MODEL=qwen3:1.7b` — which Ollama model to use
 > - `GENESIS_CLAUDE_MODEL` / `GENESIS_CODEX_MODEL` — CLI model names
+> - `GENESIS_CODEX_PROVIDER=omniroute` — route `codex exec` through an
+>   OpenAI-compatible proxy (e.g. a local router) instead of the default
+>   provider; when set and no `GENESIS_CODEX_MODEL`, defaults to
+>   `oc/deepseek-v4-flash-free`
 > - `GENESIS_RUNTIME_PREFS="parser=local_llm,validator=local_llm"` — force
 >   runtimes for every design (deploy operators targeting available runtimes)
 

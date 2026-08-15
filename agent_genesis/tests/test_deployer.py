@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import sys
 
 import pytest
@@ -56,6 +57,75 @@ async def test_deploy_hermes_offline_fails_gracefully(isolated_memory):
     )
     assert result["status"] == "failed"
     assert result["runtime"] == "hermes"
+
+
+@pytest.mark.asyncio
+async def test_codex_deploy_adds_provider_flag(isolated_memory, monkeypatch):
+    monkeypatch.setenv("GENESIS_CODEX_PROVIDER", "omniroute")
+
+    captured = {}
+
+    class FakeProc:
+        returncode = 0
+
+        async def communicate(self, input=None):
+            return b"done", b""
+
+    async def fake_spawn(*cmd, **kwargs):
+        captured["cmd"] = list(cmd)
+        return FakeProc()
+
+    monkeypatch.setattr(asyncio, "create_subprocess_exec", fake_spawn)
+
+    d = DeployerAgent()
+    spec = {
+        "id": "a0",
+        "name": "Validator",
+        "runtime": "codex",
+        "model": "oc/deepseek-v4-flash-free",
+        "tools": [],
+        "input_context": {"task": "validate"},
+        "output_contract": {},
+    }
+    result = await d._deploy_codex(spec, "dep-1")
+
+    assert result["status"] == "completed"
+    assert "model_provider=omniroute" in captured["cmd"]
+    assert "oc/deepseek-v4-flash-free" in captured["cmd"]
+
+
+@pytest.mark.asyncio
+async def test_codex_deploy_without_provider_keeps_args(isolated_memory, monkeypatch):
+    monkeypatch.delenv("GENESIS_CODEX_PROVIDER", raising=False)
+
+    captured = {}
+
+    class FakeProc:
+        returncode = 0
+
+        async def communicate(self, input=None):
+            return b"done", b""
+
+    async def fake_spawn(*cmd, **kwargs):
+        captured["cmd"] = list(cmd)
+        return FakeProc()
+
+    monkeypatch.setattr(asyncio, "create_subprocess_exec", fake_spawn)
+
+    d = DeployerAgent()
+    spec = {
+        "id": "a0",
+        "name": "Validator",
+        "runtime": "codex",
+        "model": "gpt-4o",
+        "tools": [],
+        "input_context": {"task": "validate"},
+        "output_contract": {},
+    }
+    await d._deploy_codex(spec, "dep-1")
+
+    assert "model_provider=omniroute" not in captured["cmd"]
+    assert "gpt-4o" in captured["cmd"]
 
 
 @pytest.mark.asyncio
