@@ -5,6 +5,24 @@ All notable changes to AgentWallet Protocol will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-08-15 — Public Devnet Launch 🚀
+
+**Live:** [agentwallet.fun](https://agentwallet.fun) · API: `api-production-6421a.up.railway.app` · SDK: `aw-protocol-sdk 0.4.7` on PyPI
+
+### Added
+- **Devnet Playground** — one-click real on-chain demos for any user: fund SOL, escrow create/fund/release/refund, x402 pay-per-call (real AI response after on-chain verified micropayment), 200 dUSDC grant, real SOL transfer — every action a real devnet transaction with Explorer links, using microscopic amounts so the platform fund never runs out
+- **USDC Billing (production verified)** — subscribe → renew → cancel settles in real on-chain USDC transfers; all 17 RPC call sites hardened with 429/5xx exponential backoff + stale-balance polling
+- **Public landing page** — brand hero, features, pricing, devnet CTA at agentwallet.fun; animated typing terminal, gradient glow, scroll reveal; shimmer motion graphics on the headline; small-caps key terms; title-case heading with tight tracking
+- **Dashboard polish** — local.ai-inspired visual system (warm ink, Geist Mono, emerald), light theme toggle, first-class logo/branding, login/register redesign, terminal-style stat cards, home composed from live analytics
+- **Action-oriented error hints** — API, SDK and CLI now add next-step hints to every error; `aw-protocol-sdk` **0.4.7 on PyPI**
+- **New endpoints** — `/billing/tiers`, `/billing/current`, root `/audit-log`
+- **Launch video** — 2-min motion-graphics video + 15s/30s vertical shorts, captions, edge-tts voiceover, music bed with ducking, glowing coin mascot
+- **Agent Genesis** — MVP runnable (`genesis` + `genesis-bot`), AGX CLI genesis tools, Ollama runtime + codex custom provider (`GENESIS_CODEX_PROVIDER`)
+- **CI on devnet** — GitHub Actions runs smoke + escrow + x402 lifecycles against Solana devnet on every push; `prod_journey_test.sh` one-command production journey
+
+### Fixed
+- Escrow double-pay, x402 replay protection + auth hardening, Postgres URL → asyncpg driver, dashboard dev proxy + real API shapes, MCP handshake retry (spawn race), Hinglish UI copy → English
+
 ## [0.4.5] - 2026-08-13
 
 ### Fixed
@@ -32,6 +50,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **docker-compose setup works out of the box on a fresh clone** — `.env.example` now points `DATABASE_URL`/`REDIS_URL` at the compose `postgres`/`redis` services (was `localhost`, which the API container could not reach), and the API `Dockerfile` now runs `alembic upgrade head` before starting uvicorn so the schema is created automatically (previously only Railway's start command ran migrations, so `register` returned 500).
+
+## [0.4.0] - 2026-02-16
+
+### Added
+- **SDK v0.4.0** — async Stripe-like Python client, published to PyPI (`aw-protocol-sdk`)
+- **TypeScript SDK** — `aw-protocol-sdk-ts` with CJS/ESM/DTS builds
+- **ACP (Agent Commerce Protocol) + Agent Swarm** — Virtual Protocol-style multi-agent coordination
+- **Public stats API + docs page + quest system + security.txt**
+- **Framework integration examples + quickstart notebook**
+- **Swagger docs enabled in production**, SDK metadata, example scripts
+- **Interactive API playground, AI chat widget, one-click deploy**
+- **Hacker terminal landing page** — live devnet proof, PDA wallets, updated stats
+- **7 new dashboard features** — leaderboard, bloomberg, network viz, builder, heatmap, voice, escrow theater
+- **Migration 006** + ACP/Swarm tests, ruff lint CI job, comprehensive README rewrite
+- **Dual agent/human join section, live agent feed**, AI neural background, colorful dashboard
+
+### Security
+- Removed internal reports and dev files from the repo
 
 ## [0.3.0] - 2026-02-14
 
