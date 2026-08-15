@@ -132,6 +132,13 @@ Runtimes: Hermes, Claude Code, Codex, Local LLM (Ollama), Box
 | Local LLM | Ollama /api/generate |
 | Box | box.ascii.dev API |
 
+**Concurrency cap** (default `12`): at most that many agents run at once,
+so the host is never overloaded — independent agents deploy in parallel
+waves but the semaphore keeps simultaneous executions at or below the cap.
+Configure via `GENESIS_MAX_CONCURRENT_AGENTS` env var or the
+`DeployerAgent(max_concurrent_agents=N)` constructor arg. Track live load
+with `agent.active_agent_count` and `agent.peak_concurrent`.
+
 ### Fine-Tune Loop (Nightly, Mac mini M4)
 ```
 Failures (Episodic) + Successes (Procedural)

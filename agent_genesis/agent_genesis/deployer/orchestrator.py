@@ -57,16 +57,46 @@ class AgentProcess:
     error: Optional[str] = None
 
 
+DEFAULT_MAX_CONCURRENT_AGENTS = 12
+"""Default cap on simultaneously running agents (matches VPS capacity: 4vCPU/16GB)."""
+
+
 class DeployerAgent:
     """
     Orchestrates agent deployment across heterogeneous runtimes.
+
+    Concurrency is capped by ``max_concurrent_agents`` so the host (VPS)
+    is never overloaded: at most that many agents run at once, configurable
+    via the ``GENESIS_MAX_CONCURRENT_AGENTS`` env var or the constructor arg.
     """
 
-    def __init__(self, box_token: Optional[str] = None):
+    def __init__(self, box_token: Optional[str] = None, max_concurrent_agents: Optional[int] = None):
         self.memory = get_memory_fabric()
         self.box_token = box_token or os.getenv("BOX_TOKEN")
+        self.max_concurrent_agents = max_concurrent_agents or int(
+            os.getenv("GENESIS_MAX_CONCURRENT_AGENTS", str(DEFAULT_MAX_CONCURRENT_AGENTS))
+        )
+        # Semaphore is loop-agnostic on py3.11+; bind at first use inside the event loop.
+        self._semaphore: Optional[asyncio.Semaphore] = None
+        self._active_agent_count = 0
+        self._peak_concurrent = 0
         self.active_processes: Dict[str, AgentProcess] = {}
         self.runtime_configs = self._load_runtime_configs()
+
+    def _get_semaphore(self) -> asyncio.Semaphore:
+        if self._semaphore is None:
+            self._semaphore = asyncio.Semaphore(self.max_concurrent_agents)
+        return self._semaphore
+
+    @property
+    def active_agent_count(self) -> int:
+        """Agents currently running (respects the concurrency cap)."""
+        return self._active_agent_count
+
+    @property
+    def peak_concurrent(self) -> int:
+        """Highest number of agents running simultaneously this session."""
+        return self._peak_concurrent
 
     def _load_runtime_configs(self) -> Dict:
         return {
@@ -96,34 +126,51 @@ class DeployerAgent:
 
     # ------------------------------------------------------ main deploy
     async def deploy_organization(self, org_spec: Dict) -> Dict[str, Any]:
-        """Deploy entire agent organization, return deployment status."""
+        """Deploy entire agent organization, return deployment status.
+
+        Agents with no unsatisfied dependencies are deployed in parallel
+        waves, bounded by the concurrency cap (never more than
+        ``max_concurrent_agents`` at once).
+        """
         deployment_id = str(uuid.uuid4())[:8]
 
         # 1. Provision infrastructure (Box VMs if needed)
         await self._provision_infrastructure(org_spec)
 
-        # 2. Deploy agents in topological order
-        agent_results = {}
-        for agent_spec in org_spec.get("agents", []):
-            agent_id = agent_spec["id"]
+        # 2. Deploy agents in dependency-ordered waves, capped by the semaphore
+        agents = list(org_spec.get("agents", []))
+        agent_results: Dict[str, Dict] = {}
+        deployed_ids: set = set()
 
-            # Wait for dependencies
-            for dep_id in agent_spec.get("depends_on", []):
-                if dep_id in agent_results:
-                    agent_spec.setdefault("input_context", {})
-                    agent_spec["input_context"][dep_id] = agent_results[dep_id]
+        while agents:
+            ready = [
+                a
+                for a in agents
+                if all(d in deployed_ids for d in a.get("depends_on", []))
+            ]
+            if not ready:
+                # Circular dependency fallback: deploy the next agent anyway.
+                ready = [agents[0]]
 
-            # Deploy
-            result = await self.deploy_agent(agent_spec, deployment_id)
-            agent_results[agent_id] = result
+            async def _deploy_one(agent_spec: Dict) -> None:
+                agent_id = agent_spec["id"]
+                # Feed results of already-deployed dependencies into context
+                for dep_id in agent_spec.get("depends_on", []):
+                    if dep_id in agent_results:
+                        agent_spec.setdefault("input_context", {})
+                        agent_spec["input_context"][dep_id] = agent_results[dep_id]
+                result = await self.deploy_agent(agent_spec, deployment_id)
+                agent_results[agent_id] = result
+                self.memory.remember(
+                    agent_id="deployer",
+                    event_type="agent_deployed",
+                    content=f"Deployed {agent_id} on {agent_spec['runtime']}",
+                    metadata={"deployment_id": deployment_id, "result": result},
+                )
 
-            # Store in memory
-            self.memory.remember(
-                agent_id="deployer",
-                event_type="agent_deployed",
-                content=f"Deployed {agent_id} on {agent_spec['runtime']}",
-                metadata={"deployment_id": deployment_id, "result": result},
-            )
+            await asyncio.gather(*(_deploy_one(a) for a in ready))
+            deployed_ids.update(a["id"] for a in ready)
+            agents = [a for a in agents if a["id"] not in deployed_ids]
 
         return {
             "deployment_id": deployment_id,
@@ -132,7 +179,22 @@ class DeployerAgent:
         }
 
     async def deploy_agent(self, agent_spec: Dict, deployment_id: str) -> Dict:
-        """Deploy single agent to its target runtime."""
+        """Deploy single agent to its target runtime.
+
+        The concurrency semaphore is acquired here, so no matter how the
+        caller fans out (waves, gather, external scripts) the number of
+        simultaneously running agents never exceeds ``max_concurrent_agents``.
+        """
+        async with self._get_semaphore():
+            self._active_agent_count += 1
+            self._peak_concurrent = max(self._peak_concurrent, self._active_agent_count)
+            try:
+                return await self._deploy_agent_inner(agent_spec, deployment_id)
+            finally:
+                self._active_agent_count -= 1
+
+    async def _deploy_agent_inner(self, agent_spec: Dict, deployment_id: str) -> Dict:
+        """Dispatch to the concrete runtime implementation (no concurrency logic)."""
         runtime = RuntimeType(agent_spec["runtime"])
 
         if runtime == RuntimeType.HERMES:
