@@ -3,11 +3,15 @@
 Picks up tasks in 'assigned'/'in_progress' state, calls an OpenAI-
 compatible model (X402_LLM_* env vars, same config as the playground x402
 demo), writes the delivery payload, and releases the escrow to the agent.
-Falls back to a deterministic demo response when no LLM key is configured
-so the payment rail stays demonstrable end to end.
+Falls back to a deterministic demo response only when no LLM key is
+configured so the payment rail stays demonstrable end to end. When the
+provider rate-limits (429/5xx), the task is left queued and retried on the
+next tick instead of silently delivering a demo answer.
 """
 
+import asyncio
 import os
+import random
 
 import httpx
 from sqlalchemy import select
@@ -51,18 +55,48 @@ CATEGORY_PROMPTS = {
 }
 
 
+class LLMRateLimitedError(Exception):
+    """Raised when the LLM provider keeps rate-limiting after retries.
+
+    The task is left in the queue and retried on a later tick instead of
+    delivering a demo fallback that would look like real AI output.
+    """
+
+
+_LLM_RETRYABLE = {429, 500, 502, 503, 504}
+
+
 async def _call_llm(prompt: str, category: str = "general") -> tuple[str, str, str]:
-    """Call the configured OpenAI-compatible model; fall back to demo.
+    """Call the configured OpenAI-compatible model; fall back to demo only when unconfigured.
+
+    Retries 429/5xx with exponential backoff + jitter (respecting Retry-After
+    when present). After max retries the call raises LLMRateLimitedError so
+    the worker re-queues the task instead of delivering a fake result.
 
     Returns (provider, model, response_text).
     """
     base = (os.getenv("X402_LLM_BASE_URL") or os.getenv("OPENAI_COMPAT_BASE_URL") or "").rstrip("/")
     key = os.getenv("X402_LLM_KEY") or os.getenv("OPENAI_COMPAT_API_KEY") or ""
     model = os.getenv("X402_LLM_MODEL") or os.getenv("OPENAI_COMPAT_MODEL") or "demo"
+    max_attempts = int(os.getenv("X402_LLM_MAX_ATTEMPTS", "4"))
 
     system_prompt = CATEGORY_PROMPTS.get(category, CATEGORY_PROMPTS["general"])
 
-    if base and key:
+    if not (base and key):
+        return (
+            "demo",
+            model,
+            f"[demo AI · no LLM key configured on the API] Task executed successfully.\n\n"
+            f"Prompt: {prompt[:200]}\n\n"
+            f"Payment rail verified: the escrow for this task was funded on-chain and will "
+            f"release to the agent's wallet on delivery. Point the API at any OpenAI-compatible "
+            f"model (X402_LLM_BASE_URL) and this same flow returns a real AI deliverable.",
+        )
+
+    last_status = 0
+    retry_after_sec = 0.0
+    resp = None
+    for attempt in range(max_attempts):
         try:
             async with httpx.AsyncClient(timeout=90) as client:
                 resp = await client.post(
@@ -77,23 +111,37 @@ async def _call_llm(prompt: str, category: str = "general") -> tuple[str, str, s
                         "max_tokens": 400,
                     },
                 )
-                if resp.status_code == 200:
-                    data = resp.json()
-                    content = (data.get("choices") or [{}])[0].get("message", {}).get("content")
-                    if content:
-                        return "openai-compatible", model, content.strip()
-        except Exception as e:
-            logger.warning("task_llm_call_failed", error=str(e))
+            last_status = resp.status_code
+            if resp.status_code == 200:
+                data = resp.json()
+                content = (data.get("choices") or [{}])[0].get("message", {}).get("content")
+                if content:
+                    return "openai-compatible", model, content.strip()
+            if resp.status_code not in _LLM_RETRYABLE:
+                # Non-retryable (4xx etc.) — not a rate limit, so surface it.
+                raise LLMRateLimitedError(f"LLM returned HTTP {resp.status_code}: {resp.text[:200]}")
+            # Retryable: read Retry-After for the backoff window
+            try:
+                ra = resp.headers.get("Retry-After", "0")
+                retry_after_sec = float(ra) if ra else 0.0
+            except (ValueError, AttributeError):
+                retry_after_sec = 0.0
+        except (httpx.HTTPError, asyncio.TimeoutError) as e:
+            logger.warning("task_llm_call_failed", attempt=attempt + 1, error=str(e))
 
-    return (
-        "demo",
-        model,
-        f"[demo AI · no LLM key configured on the API] Task executed successfully.\n\n"
-        f"Prompt: {prompt[:200]}\n\n"
-        f"Payment rail verified: the escrow for this task was funded on-chain and will "
-        f"release to the agent's wallet on delivery. Point the API at any OpenAI-compatible "
-        f"model (X402_LLM_BASE_URL) and this same flow returns a real AI deliverable.",
-    )
+        if attempt < max_attempts - 1:
+            delay = retry_after_sec if retry_after_sec > 0 else min(1.0 * (2**attempt), 8.0)
+            delay += random.uniform(0, 0.5)
+            logger.warning(
+                "task_llm_retry",
+                status=last_status,
+                attempt=attempt + 1,
+                backoff_s=round(delay, 1),
+            )
+            await asyncio.sleep(delay)
+            retry_after_sec = 0.0
+
+    raise LLMRateLimitedError(f"LLM rate-limited after {max_attempts} attempts (last HTTP {last_status})")
 
 
 class TaskWorker(BaseWorker):
@@ -148,7 +196,18 @@ class TaskWorker(BaseWorker):
                 if task.requirements:
                     prompt += f"\n\nRequirements: {task.requirements}"
 
-                provider, model, content = await _call_llm(prompt, task.category)
+                try:
+                    provider, model, content = await _call_llm(prompt, task.category)
+                except LLMRateLimitedError as e:
+                    # Leave the task queued (still in_progress/assigned) so the
+                    # next tick retries it instead of delivering a demo answer.
+                    logger.warning(
+                        "task_llm_rate_limited",
+                        task_id=str(task.id),
+                        error=str(e),
+                    )
+                    await db.rollback()
+                    return
 
                 # Deliver + auto-release escrow to the agent
                 await svc.deliver(
