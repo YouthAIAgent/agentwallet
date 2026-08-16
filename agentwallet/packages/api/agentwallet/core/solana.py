@@ -25,6 +25,12 @@ from .retry import retry
 
 logger = get_logger(__name__)
 
+# Minimum balance a 0-byte (plain SOL) account must hold to be rent-exempt on
+# Solana. Solana rejects transfers that leave the destination below this
+# threshold with an opaque `InsufficientFundsForRent` RPC error — guard
+# against it up front so callers get a clear, action-oriented message.
+RENT_EXEMPT_MIN_LAMPORTS = 890_880  # 0.00089088 SOL (0-byte account)
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -133,6 +139,21 @@ async def get_balance_sol(client: httpx.AsyncClient, address: str) -> float | No
     except Exception as e:
         logger.error("balance_check_failed", address=address[:16], error=str(e))
         return None
+
+
+@retry()
+async def get_rent_exempt_min(client: httpx.AsyncClient) -> int:
+    """Query the rent-exempt minimum for a 0-byte account from the RPC.
+
+    Falls back to RENT_EXEMPT_MIN_LAMPORTS if the RPC does not answer, so
+    callers still get a sane guard value.
+    """
+    resp = await _rpc_post(client, "getMinimumBalanceForRentExemption", [0])
+    body = resp.json()
+    if "error" in body:
+        raise RetryableError(f"RPC error: {body['error']}")
+    result = body.get("result")
+    return int(result) if isinstance(result, int) else RENT_EXEMPT_MIN_LAMPORTS
 
 
 # ---------------------------------------------------------------------------

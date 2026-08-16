@@ -16,7 +16,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..core.config import get_settings
 from ..core.exceptions import EscrowStateError, NotFoundError
 from ..core.logging import get_logger
-from ..core.solana import confirm_transaction, load_platform_keypair, transfer_sol
+from ..core.solana import (
+    RENT_EXEMPT_MIN_LAMPORTS,
+    confirm_transaction,
+    get_balance,
+    get_rent_exempt_min,
+    load_platform_keypair,
+    transfer_sol,
+)
 from ..models.escrow import Escrow
 from .wallet_manager import WalletManager
 
@@ -100,6 +107,41 @@ class EscrowService:
         logger.info("escrow_created", escrow_id=str(escrow.id), status=escrow.status)
         return escrow
 
+    async def _ensure_rent_exempt(
+        self,
+        client: httpx.AsyncClient,
+        *,
+        to_address: str,
+        amount_lamports: int,
+        action: str,
+    ) -> None:
+        """Verify a disbursement won't leave the recipient below rent-exempt.
+
+        Solana rejects transfers that leave the destination account below the
+        rent-exempt minimum with an opaque ``InsufficientFundsForRent`` RPC
+        error. Check up front so the API surfaces a clear, action-oriented
+        message instead of a raw RPC failure.
+        """
+        try:
+            current = await get_balance(client, to_address)
+            min_lamports = await get_rent_exempt_min(client)
+        except Exception:
+            # If we cannot reach the RPC for the guard, fall back to the
+            # well-known constant so the check still runs.
+            current = 0
+            min_lamports = RENT_EXEMPT_MIN_LAMPORTS
+
+        if current + amount_lamports < min_lamports:
+            shortfall = min_lamports - (current + amount_lamports)
+            raise EscrowStateError(
+                f"Cannot {action} escrow: recipient account "
+                f"{to_address[:12]}... would be left below the Solana "
+                f"rent-exempt minimum ({(current + amount_lamports) / 1e9:.6f} SOL, "
+                f"need >= {min_lamports / 1e9:.6f} SOL). Increase the escrow amount "
+                f"by at least {shortfall / 1e9:.6f} SOL, or pre-fund the recipient "
+                f"wallet with {min_lamports / 1e9:.6f} SOL first."
+            )
+
     async def release_escrow(self, escrow_id: uuid.UUID, org_id: uuid.UUID) -> Escrow:
         """Release escrow funds to the recipient on-chain, then update status.
 
@@ -114,6 +156,12 @@ class EscrowService:
         try:
             keypair = load_platform_keypair()
             async with httpx.AsyncClient(timeout=15) as client:
+                await self._ensure_rent_exempt(
+                    client,
+                    to_address=escrow.recipient_address,
+                    amount_lamports=escrow.amount_lamports,
+                    action="release",
+                )
                 sig = await transfer_sol(
                     client=client,
                     from_keypair=keypair,
@@ -170,6 +218,12 @@ class EscrowService:
             wallet = await self.wallet_mgr.get_wallet(escrow.funder_wallet_id, org_id)
             keypair = load_platform_keypair()
             async with httpx.AsyncClient(timeout=15) as client:
+                await self._ensure_rent_exempt(
+                    client,
+                    to_address=wallet.address,
+                    amount_lamports=escrow.amount_lamports,
+                    action="refund",
+                )
                 sig = await transfer_sol(
                     client=client,
                     from_keypair=keypair,

@@ -62,6 +62,83 @@ async def test_escrow_action(client, test_escrow):
 
 
 @pytest.mark.asyncio
+async def test_escrow_release_rent_exempt_guard(client, db_session, test_escrow, monkeypatch):
+    """Release below the Solana rent-exempt minimum must fail with a clear error.
+
+    Regression test: a 0.0001 SOL release to a fresh (empty) recipient used to
+    fail with an opaque `InsufficientFundsForRent` RPC error. The guard must
+    reject it up front with an action-oriented message.
+    """
+    from agentwallet.services import escrow_service as svc
+    from solders.keypair import Keypair
+
+    test_escrow.status = "funded"
+    test_escrow.amount_lamports = 100_000  # 0.0001 SOL — below rent-exempt
+    await db_session.commit()
+
+    monkeypatch.setattr(svc, "load_platform_keypair", lambda: Keypair())
+
+    async def fake_balance(client, address):
+        return 0  # recipient is fresh / empty
+
+    async def fake_rent_exempt(client):
+        return svc.RENT_EXEMPT_MIN_LAMPORTS  # 890_880
+
+    async def fake_transfer(client, from_keypair, to_address, lamports, **kw):
+        raise AssertionError("transfer must not run when the guard rejects")
+
+    monkeypatch.setattr(svc, "get_balance", fake_balance)
+    monkeypatch.setattr(svc, "get_rent_exempt_min", fake_rent_exempt)
+    monkeypatch.setattr(svc, "transfer_sol", fake_transfer)
+
+    resp = await client.post(f"/v1/escrow/{test_escrow.id}/action", json={"action": "release"})
+    assert resp.status_code == 409
+    detail = resp.json()["detail"]
+    assert "rent-exempt minimum" in detail
+    assert "Increase the escrow amount" in detail
+
+
+@pytest.mark.asyncio
+async def test_escrow_release_rent_exempt_ok(client, db_session, test_escrow, monkeypatch):
+    """Release above the rent-exempt minimum proceeds to transfer."""
+    from agentwallet.services import escrow_service as svc
+    from solders.keypair import Keypair
+
+    test_escrow.status = "funded"
+    test_escrow.amount_lamports = 2_000_000  # 0.002 SOL — above rent-exempt
+    await db_session.commit()
+
+    platform_kp = Keypair()
+    sent = {}
+
+    async def fake_balance(client, address):
+        return 0
+
+    async def fake_rent_exempt(client):
+        return svc.RENT_EXEMPT_MIN_LAMPORTS
+
+    async def fake_transfer(client, from_keypair, to_address, lamports, **kw):
+        sent["to"] = to_address
+        sent["lamports"] = lamports
+        return "sig-rent-ok"
+
+    async def fake_confirm(client_, sig):
+        return True
+
+    monkeypatch.setattr(svc, "load_platform_keypair", lambda: platform_kp)
+    monkeypatch.setattr(svc, "get_balance", fake_balance)
+    monkeypatch.setattr(svc, "get_rent_exempt_min", fake_rent_exempt)
+    monkeypatch.setattr(svc, "transfer_sol", fake_transfer)
+    monkeypatch.setattr(svc, "confirm_transaction", fake_confirm)
+
+    resp = await client.post(f"/v1/escrow/{test_escrow.id}/action", json={"action": "release"})
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "released"
+    assert sent["to"] == test_escrow.recipient_address
+    assert sent["lamports"] == 2_000_000
+
+
+@pytest.mark.asyncio
 async def test_escrow_unauthenticated(unauthed_client):
     """Test accessing escrows without auth should fail."""
     resp = await unauthed_client.get("/v1/escrow")
