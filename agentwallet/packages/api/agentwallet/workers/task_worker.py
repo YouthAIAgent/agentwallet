@@ -101,13 +101,27 @@ class TaskWorker(BaseWorker):
     interval_seconds = 15.0
 
     async def tick(self) -> None:
-        """Execute one funded/assigned task per tick."""
+        """Execute one funded/assigned task per tick.
+
+        Only picks tasks whose escrow is funded (a task posted while the
+        funder had no SOL stays 'created' forever and would block the queue);
+        oldest-first so nothing starves.
+        """
+        from ..models.escrow import Escrow
+
         factory = get_session_factory()
         async with factory() as db:
             try:
                 svc = TaskService(db)
                 result = await db.execute(
-                    select(Task).where(Task.status.in_(["assigned", "in_progress"])).limit(1)
+                    select(Task)
+                    .join(Escrow, Escrow.id == Task.escrow_id)
+                    .where(
+                        Task.status.in_(["assigned", "in_progress"]),
+                        Escrow.status == "funded",
+                    )
+                    .order_by(Task.created_at)
+                    .limit(1)
                 )
                 task = result.scalar_one_or_none()
                 if not task:
