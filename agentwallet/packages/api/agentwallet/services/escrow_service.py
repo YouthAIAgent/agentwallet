@@ -107,20 +107,20 @@ class EscrowService:
         logger.info("escrow_created", escrow_id=str(escrow.id), status=escrow.status)
         return escrow
 
-    async def _ensure_rent_exempt(
+    async def _rent_exempt_shortfall(
         self,
         client: httpx.AsyncClient,
         *,
         to_address: str,
         amount_lamports: int,
-        action: str,
-    ) -> None:
-        """Verify a disbursement won't leave the recipient below rent-exempt.
+    ) -> int:
+        """Extra lamports needed for the recipient to end rent-exempt, else 0.
 
         Solana rejects transfers that leave the destination account below the
         rent-exempt minimum with an opaque ``InsufficientFundsForRent`` RPC
-        error. Check up front so the API surfaces a clear, action-oriented
-        message instead of a raw RPC failure.
+        error. Returning the shortfall (instead of raising) lets the caller
+        top the recipient up in the same transfer — the platform absorbs the
+        extra lamports as a subsidy — so small escrows just work.
         """
         try:
             current = await get_balance(client, to_address)
@@ -131,16 +131,9 @@ class EscrowService:
             current = 0
             min_lamports = RENT_EXEMPT_MIN_LAMPORTS
 
-        if current + amount_lamports < min_lamports:
-            shortfall = min_lamports - (current + amount_lamports)
-            raise EscrowStateError(
-                f"Cannot {action} escrow: recipient account "
-                f"{to_address[:12]}... would be left below the Solana "
-                f"rent-exempt minimum ({(current + amount_lamports) / 1e9:.6f} SOL, "
-                f"need >= {min_lamports / 1e9:.6f} SOL). Increase the escrow amount "
-                f"by at least {shortfall / 1e9:.6f} SOL, or pre-fund the recipient "
-                f"wallet with {min_lamports / 1e9:.6f} SOL first."
-            )
+        if current + amount_lamports >= min_lamports:
+            return 0
+        return min_lamports - (current + amount_lamports)
 
     async def release_escrow(self, escrow_id: uuid.UUID, org_id: uuid.UUID) -> Escrow:
         """Release escrow funds to the recipient on-chain, then update status.
@@ -152,21 +145,30 @@ class EscrowService:
         escrow = await self._get_escrow(escrow_id, org_id)
         self._validate_transition(escrow.status, "released")
 
-        # Transfer escrowed funds from custody to the recipient on-chain
+        # Transfer escrowed funds from custody to the recipient on-chain.
+        # If the amount would leave the recipient below rent-exempt, the
+        # platform tops the wallet up to the minimum in the same transfer
+        # (absorbed as a platform subsidy) so small escrows just work.
         try:
             keypair = load_platform_keypair()
             async with httpx.AsyncClient(timeout=15) as client:
-                await self._ensure_rent_exempt(
+                topup = await self._rent_exempt_shortfall(
                     client,
                     to_address=escrow.recipient_address,
                     amount_lamports=escrow.amount_lamports,
-                    action="release",
                 )
+                if topup:
+                    logger.info(
+                        "escrow_release_rent_topup",
+                        escrow_id=str(escrow_id),
+                        topup_lamports=topup,
+                        msg="Platform topped recipient up to rent-exempt minimum",
+                    )
                 sig = await transfer_sol(
                     client=client,
                     from_keypair=keypair,
                     to_address=escrow.recipient_address,
-                    lamports=escrow.amount_lamports,
+                    lamports=escrow.amount_lamports + topup,
                 )
                 confirmed = await confirm_transaction(client, sig)
 
@@ -213,22 +215,30 @@ class EscrowService:
         escrow = await self._get_escrow(escrow_id, org_id)
         self._validate_transition(escrow.status, "refunded")
 
-        # Transfer escrowed funds from custody back to the funder wallet
+        # Transfer escrowed funds from custody back to the funder wallet.
+        # Top the funder wallet up to rent-exempt if the refund alone would
+        # leave it below (platform absorbs the extra lamports).
         try:
             wallet = await self.wallet_mgr.get_wallet(escrow.funder_wallet_id, org_id)
             keypair = load_platform_keypair()
             async with httpx.AsyncClient(timeout=15) as client:
-                await self._ensure_rent_exempt(
+                topup = await self._rent_exempt_shortfall(
                     client,
                     to_address=wallet.address,
                     amount_lamports=escrow.amount_lamports,
-                    action="refund",
                 )
+                if topup:
+                    logger.info(
+                        "escrow_refund_rent_topup",
+                        escrow_id=str(escrow_id),
+                        topup_lamports=topup,
+                        msg="Platform topped funder wallet up to rent-exempt minimum",
+                    )
                 sig = await transfer_sol(
                     client=client,
                     from_keypair=keypair,
                     to_address=wallet.address,
-                    lamports=escrow.amount_lamports,
+                    lamports=escrow.amount_lamports + topup,
                 )
                 confirmed = await confirm_transaction(client, sig)
 

@@ -62,12 +62,12 @@ async def test_escrow_action(client, test_escrow):
 
 
 @pytest.mark.asyncio
-async def test_escrow_release_rent_exempt_guard(client, db_session, test_escrow, monkeypatch):
-    """Release below the Solana rent-exempt minimum must fail with a clear error.
+async def test_escrow_release_rent_exempt_topup(client, db_session, test_escrow, monkeypatch):
+    """Release below rent-exempt auto-tops the recipient up to the minimum.
 
     Regression test: a 0.0001 SOL release to a fresh (empty) recipient used to
-    fail with an opaque `InsufficientFundsForRent` RPC error. The guard must
-    reject it up front with an action-oriented message.
+    fail with an opaque `InsufficientFundsForRent` RPC error. The service now
+    adds the shortfall to the same transfer so small escrows just work.
     """
     from agentwallet.services import escrow_service as svc
     from solders.keypair import Keypair
@@ -76,7 +76,8 @@ async def test_escrow_release_rent_exempt_guard(client, db_session, test_escrow,
     test_escrow.amount_lamports = 100_000  # 0.0001 SOL — below rent-exempt
     await db_session.commit()
 
-    monkeypatch.setattr(svc, "load_platform_keypair", lambda: Keypair())
+    platform_kp = Keypair()
+    sent = {}
 
     async def fake_balance(client, address):
         return 0  # recipient is fresh / empty
@@ -85,17 +86,26 @@ async def test_escrow_release_rent_exempt_guard(client, db_session, test_escrow,
         return svc.RENT_EXEMPT_MIN_LAMPORTS  # 890_880
 
     async def fake_transfer(client, from_keypair, to_address, lamports, **kw):
-        raise AssertionError("transfer must not run when the guard rejects")
+        sent["to"] = to_address
+        sent["lamports"] = lamports
+        return "sig-topup-1"
 
+    async def fake_confirm(client_, sig):
+        return True
+
+    monkeypatch.setattr(svc, "load_platform_keypair", lambda: platform_kp)
     monkeypatch.setattr(svc, "get_balance", fake_balance)
     monkeypatch.setattr(svc, "get_rent_exempt_min", fake_rent_exempt)
     monkeypatch.setattr(svc, "transfer_sol", fake_transfer)
+    monkeypatch.setattr(svc, "confirm_transaction", fake_confirm)
 
     resp = await client.post(f"/v1/escrow/{test_escrow.id}/action", json={"action": "release"})
-    assert resp.status_code == 409
-    detail = resp.json()["detail"]
-    assert "rent-exempt minimum" in detail
-    assert "Increase the escrow amount" in detail
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "released"
+    # Shortfall is added to the escrow amount in the same transfer
+    assert sent["to"] == test_escrow.recipient_address
+    assert sent["lamports"] == 100_000 + (890_880 - 100_000) == 890_880
 
 
 @pytest.mark.asyncio

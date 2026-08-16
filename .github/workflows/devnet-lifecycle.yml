@@ -143,11 +143,12 @@ jobs:
           PLATFORM_PRIVATE_KEY_HEX: ${{ secrets.PLATFORM_PRIVATE_KEY_HEX }}
 
       - name: Escrow lifecycle (devnet) — release + refund from custody
-        # Amounts must stay above the Solana rent-exempt minimum (~0.00089 SOL)
-        # so transfers to the fresh (empty) recipient account succeed — a
-        # 0.0001 SOL release to an empty account fails with
-        # InsufficientFundsForRent.
-        run: RPC=https://api.devnet.solana.com AMT1=0.002 AMT2=0.002 FUND_AMT=0.01 bash escrow_lifecycle_test.sh
+        # Amounts stay below the Solana rent-exempt minimum (~0.00089 SOL) on
+        # purpose: the escrow service auto-tops the recipient/funder wallet up
+        # to the minimum in the same transfer (platform subsidy), so this job
+        # proves small escrows work end to end instead of failing with an
+        # opaque InsufficientFundsForRent RPC error.
+        run: RPC=https://api.devnet.solana.com AMT1=0.0001 AMT2=0.0001 FUND_AMT=0.01 bash escrow_lifecycle_test.sh
         env:
           PLATFORM_PRIVATE_KEY_HEX: ${{ secrets.PLATFORM_PRIVATE_KEY_HEX }}
 
