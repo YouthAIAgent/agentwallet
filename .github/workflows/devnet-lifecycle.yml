@@ -40,10 +40,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Set up Node 18 (dashboard build fallback)
+      - name: Set up Node 20 (dashboard build fallback)
         uses: actions/setup-node@v7
         with:
-          node-version: "18"
+          node-version: "20"
 
       - name: Install faucet + env deps
         run: |
