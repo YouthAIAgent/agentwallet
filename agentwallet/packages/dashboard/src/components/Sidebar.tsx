@@ -21,16 +21,16 @@ import { auth } from "../api";
 
 const navItems = [
   { to: "/app", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/agents", icon: Bot, label: "Agents" },
-  { to: "/wallets", icon: Wallet, label: "Wallets" },
-  { to: "/pda-wallets", icon: KeyRound, label: "PDA Wallets" },
-  { to: "/transactions", icon: ArrowLeftRight, label: "Transactions" },
-  { to: "/analytics", icon: BarChart3, label: "Analytics" },
-  { to: "/policies", icon: ShieldCheck, label: "Policies" },
-  { to: "/audit-log", icon: ScrollText, label: "Audit Log" },
-  { to: "/billing", icon: CreditCard, label: "Billing" },
-  { to: "/marketplace", icon: Store, label: "Marketplace" },
-  { to: "/playground", icon: Zap, label: "Playground" },
+  { to: "/app/agents", icon: Bot, label: "Agents" },
+  { to: "/app/wallets", icon: Wallet, label: "Wallets" },
+  { to: "/app/pda-wallets", icon: KeyRound, label: "PDA Wallets" },
+  { to: "/app/transactions", icon: ArrowLeftRight, label: "Transactions" },
+  { to: "/app/analytics", icon: BarChart3, label: "Analytics" },
+  { to: "/app/policies", icon: ShieldCheck, label: "Policies" },
+  { to: "/app/audit-log", icon: ScrollText, label: "Audit Log" },
+  { to: "/app/billing", icon: CreditCard, label: "Billing" },
+  { to: "/app/marketplace", icon: Store, label: "Marketplace" },
+  { to: "/app/playground", icon: Zap, label: "Playground" },
 ];
 
 export default function Sidebar() {
