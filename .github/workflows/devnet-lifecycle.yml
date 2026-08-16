@@ -112,9 +112,10 @@ jobs:
             -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getBalance\",\"params\":[\"$ADDR\"]}" \
             | python -c "import sys,json;print(json.load(sys.stdin).get('result',{}).get('value',0))")
           echo "platform balance: $BAL lamports"
-          # The three lifecycles consume ~0.12 SOL total (smoke 0.05, escrow
-          # 0.05, x402 0.01 + custody/gas), so keep at least 0.12 SOL ready.
-          if [ "${BAL:-0}" -lt 120000000 ]; then
+          # The lifecycles use small amounts (escrow/x402 0.0001-0.01 SOL per
+          # test) plus custody gas, so ~0.005 SOL is enough to run. Faucet is
+          # rate-limited per IP, so a low balance should not hard-fail the run.
+          if [ "${BAL:-0}" -lt 5000000 ]; then
             echo "balance low — requesting devnet airdrops (0.5 SOL each)..."
             for try in 1 2 3; do
               curl -s --max-time 20 -X POST https://api.devnet.solana.com \
@@ -126,12 +127,11 @@ jobs:
                 -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getBalance\",\"params\":[\"$ADDR\"]}" \
                 | python -c "import sys,json;print(json.load(sys.stdin).get('result',{}).get('value',0))")
               echo "  try $try -> $BAL lamports"
-              [ "${BAL:-0}" -ge 120000000 ] && break
+              [ "${BAL:-0}" -ge 5000000 ] && break
             done
           fi
-          if [ "${BAL:-0}" -lt 120000000 ]; then
-            echo "::error::Platform wallet needs devnet SOL (has ${BAL}). Send devnet SOL to $ADDR (faucet.solana.com), then re-run."
-            exit 1
+          if [ "${BAL:-0}" -lt 5000000 ]; then
+            echo "::warning::Platform wallet balance low (${BAL} lamports) — lifecycles may fail on-chain. Top up at faucet.solana.com and re-run."
           fi
         env:
           PLATFORM_WALLET_ADDRESS: ${{ secrets.PLATFORM_WALLET_ADDRESS }}
@@ -143,7 +143,7 @@ jobs:
           PLATFORM_PRIVATE_KEY_HEX: ${{ secrets.PLATFORM_PRIVATE_KEY_HEX }}
 
       - name: Escrow lifecycle (devnet) — release + refund from custody
-        run: RPC=https://api.devnet.solana.com AMT1=0.02 AMT2=0.01 FUND_AMT=0.05 bash escrow_lifecycle_test.sh
+        run: RPC=https://api.devnet.solana.com AMT1=0.0001 AMT2=0.0001 FUND_AMT=0.001 bash escrow_lifecycle_test.sh
         env:
           PLATFORM_PRIVATE_KEY_HEX: ${{ secrets.PLATFORM_PRIVATE_KEY_HEX }}
 
