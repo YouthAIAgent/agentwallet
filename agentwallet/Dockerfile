@@ -13,8 +13,10 @@ COPY pyproject.toml .
 COPY packages/api packages/api
 COPY alembic.ini .
 
-# Force fresh install every deploy
-RUN pip install --no-cache-dir . && python -c "import agentwallet; print('OK')"
+# Force fresh install every deploy; verify seed scripts made it into the image
+RUN pip install --no-cache-dir . && python -c "import agentwallet; print('OK')" \
+    && ls -la /app/packages/api/agentwallet/scripts/ \
+    && python -c "import agentwallet.scripts.seed_specialists; print('SEED_IMPORT_OK')"
 
 EXPOSE 8000
 
