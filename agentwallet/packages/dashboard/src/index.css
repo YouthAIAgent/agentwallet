@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
 @layer base {
   :root {
@@ -310,7 +309,7 @@
   }
 
   .card-hover {
-    @apply card transition-colors hover:border-brand-500/40;
+    @apply bg-ink-900 border border-ink-800 rounded-lg p-6 transition-colors hover:border-brand-500/40;
   }
 
   .badge {
@@ -318,23 +317,23 @@
   }
 
   .badge-green {
-    @apply badge bg-brand-500/10 text-brand-400 border border-brand-500/20;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-brand-500/10 text-brand-400 border border-brand-500/20;
   }
 
   .badge-yellow {
-    @apply badge bg-amber-500/10 text-amber-400 border border-amber-500/20;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20;
   }
 
   .badge-red {
-    @apply badge bg-red-500/10 text-red-400 border border-red-500/20;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20;
   }
 
   .badge-blue {
-    @apply badge bg-sky-500/10 text-sky-400 border border-sky-500/20;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-sky-500/10 text-sky-400 border border-sky-500/20;
   }
 
   .badge-gray {
-    @apply badge bg-ink-600/40 text-ink-400 border border-ink-700;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-ink-600/40 text-ink-400 border border-ink-700;
   }
 
   .btn-primary {
