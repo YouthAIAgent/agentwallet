@@ -47,7 +47,7 @@ dependencies = [
  "blake3",
  "borsh 1.5.3",
  "borsh-derive 1.5.3",
- "constant_time_eq 0.3.1",
+ "constant_time_eq",
  "indexmap",
  "proc-macro-crate 3.4.0",
 ]
@@ -653,7 +653,7 @@ dependencies = [
  "arrayvec",
  "cc",
  "cfg-if",
- "constant_time_eq 0.4.2",
+ "constant_time_eq",
  "cpufeatures",
  "digest 0.10.7",
 ]
@@ -924,12 +924,6 @@ dependencies = [
  "log",
  "web-sys",
 ]
-
-[[package]]
-name = "constant_time_eq"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c74b8349d32d297c9134b8c88677813a227df8f779daa29bfc29c183fe3dca6"
 
 [[package]]
 name = "constant_time_eq"
