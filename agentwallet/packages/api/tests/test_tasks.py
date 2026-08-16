@@ -213,6 +213,35 @@ async def test_run_and_deliver(client: AsyncClient, task_payload, org_wallet, mo
 
 
 @pytest.mark.asyncio
+async def test_mark_failed_after_repeated_failures(
+    client: AsyncClient, task_payload, org_wallet, mock_escrow_fund
+):
+    """Repeated worker failures should persist the counter and cap at failed."""
+    from agentwallet.core.database import get_session_factory
+    from agentwallet.services.task_service import TaskService
+
+    created = await client.post("/v1/marketplace/tasks", json=task_payload)
+    task_id = uuid.UUID(created.json()["id"])
+    org_id = uuid.UUID(created.json()["org_id"])
+
+    # Simulate the worker: in_progress → 5 failures → mark failed
+    async with get_session_factory()() as db:
+        svc = TaskService(db)
+        await svc.mark_in_progress(task_id, org_id)
+        task = await svc._get_task(task_id, org_id)
+        task.failure_count = 5
+        await svc.mark_failed(task_id, org_id)
+        await db.commit()
+
+    # Re-fetch in a fresh session: status failed, counter persisted
+    async with get_session_factory()() as db:
+        svc = TaskService(db)
+        task = await svc._get_task(task_id, org_id)
+        assert task.status == "failed"
+        assert task.failure_count == 5
+
+
+@pytest.mark.asyncio
 async def test_refund_task(client: AsyncClient, task_payload, org_wallet, mock_escrow_fund):
     created = await client.post("/v1/marketplace/tasks", json=task_payload)
     task_id = created.json()["id"]

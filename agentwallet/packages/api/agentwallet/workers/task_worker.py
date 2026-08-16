@@ -65,6 +65,11 @@ class LLMRateLimitedError(Exception):
 
 _LLM_RETRYABLE = {429, 500, 502, 503, 504}
 
+# Cap on consecutive worker execution failures per task before it is marked
+# failed and removed from the pickup queue (prevents queue head-of-line
+# blocking by a perpetually rate-limited task).
+MAX_TASK_FAILURES = int(os.getenv("TASK_MAX_FAILURES", "5"))
+
 
 async def _call_llm(prompt: str, category: str = "general") -> tuple[str, str, str]:
     """Call the configured OpenAI-compatible model; fall back to demo only when unconfigured.
@@ -199,15 +204,36 @@ class TaskWorker(BaseWorker):
                 try:
                     provider, model, content = await _call_llm(prompt, task.category)
                 except LLMRateLimitedError as e:
-                    # Leave the task queued (still in_progress/assigned) so the
-                    # next tick retries it instead of delivering a demo answer.
+                    # Retry the task on later ticks, but cap consecutive failures
+                    # so one perpetually rate-limited task can't block the queue.
+                    # Persist the counter (commit, not rollback) so it survives
+                    # across ticks; the task stays in_progress/assigned and is
+                    # re-picked until it either succeeds or hits the cap.
+                    task.failure_count = (task.failure_count or 0) + 1
+                    if task.failure_count >= MAX_TASK_FAILURES:
+                        await svc.mark_failed(task.id, task.org_id)
+                        await db.commit()
+                        logger.warning(
+                            "task_failed_after_retries",
+                            task_id=str(task.id),
+                            failure_count=task.failure_count,
+                            error=str(e),
+                        )
+                        return
+                    await db.commit()
                     logger.warning(
                         "task_llm_rate_limited",
                         task_id=str(task.id),
+                        failure_count=task.failure_count,
                         error=str(e),
                     )
-                    await db.rollback()
                     return
+
+                # Success — reset the failure counter so a later rate-limit
+                # window starts fresh.
+                if task.failure_count:
+                    task.failure_count = 0
+                    await db.flush()
 
                 # Deliver + auto-release escrow to the agent
                 await svc.deliver(

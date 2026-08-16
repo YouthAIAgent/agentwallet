@@ -9,7 +9,7 @@ States: posted -> funded -> assigned -> in_progress -> delivered -> released | r
 import uuid
 from datetime import datetime
 
-from sqlalchemy import JSON, BigInteger, Boolean, DateTime, ForeignKey, String, Text, func
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -45,6 +45,7 @@ class Task(Base):
     # Lifecycle
     status: Mapped[str] = mapped_column(String(50), default="posted")
     # posted -> funded -> assigned -> in_progress -> delivered -> released | refunded | disputed
+    failure_count: Mapped[int] = mapped_column(Integer, default=0)  # consecutive worker execution failures
 
     # Execution + delivery
     input_data: Mapped[dict] = mapped_column(JSON, default=dict)

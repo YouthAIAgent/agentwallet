@@ -26,13 +26,14 @@ from ..services.fee_collector import FeeCollector
 TASK_TRANSITIONS = {
     "posted": ["funded", "cancelled"],
     "funded": ["assigned", "in_progress", "refunded", "cancelled"],
-    "assigned": ["in_progress", "refunded", "cancelled"],
-    "in_progress": ["delivered", "refunded", "disputed"],
+    "assigned": ["in_progress", "refunded", "cancelled", "failed"],
+    "in_progress": ["delivered", "refunded", "disputed", "failed"],
     "delivered": ["released", "disputed"],
     "released": [],
     "refunded": [],
     "disputed": ["released", "refunded"],
     "cancelled": [],
+    "failed": [],
 }
 
 
@@ -249,6 +250,19 @@ class TaskService:
         task = await self._get_task(task_id, org_id)
         self._validate_transition(task.status, "in_progress")
         task.status = "in_progress"
+        await self.session.flush()
+        return task
+
+    async def mark_failed(self, task_id: uuid.UUID, org_id: uuid.UUID) -> Task:
+        """Mark a task failed after repeated worker execution errors (e.g. rate limits).
+
+        Terminal state — the escrow stays funded so it can be refunded later;
+        the task is removed from the worker's pickup queue.
+        """
+        task = await self._get_task(task_id, org_id)
+        self._validate_transition(task.status, "failed")
+        task.status = "failed"
+        task.delivery_notes = "Failed after repeated execution errors"
         await self.session.flush()
         return task
 
