@@ -8,6 +8,7 @@ import Analytics from "./pages/Analytics";
 import Policies from "./pages/Policies";
 import AuditLog from "./pages/AuditLog";
 import Billing from "./pages/Billing";
+import Marketplace from "./pages/Marketplace";
 import PdaWallets from "./pages/PdaWallets";
 import Playground from "./pages/Playground";
 import Login from "./pages/Login";
@@ -37,6 +38,7 @@ function ProtectedLayout() {
             <Route path="/policies" element={<Policies />} />
             <Route path="/audit-log" element={<AuditLog />} />
             <Route path="/billing" element={<Billing />} />
+            <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/playground" element={<Playground />} />
           </Routes>
         </div>

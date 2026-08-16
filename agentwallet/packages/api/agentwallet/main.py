@@ -22,6 +22,7 @@ from .api.routers import (
     policies,
     public,
     swarms,
+    tasks,
     tokens,
     transactions,
     wallets,
@@ -137,6 +138,7 @@ app.include_router(marketplace.router, prefix="/v1")
 app.include_router(pda_wallets.router, prefix="/v1")
 app.include_router(acp.router, prefix="/v1")
 app.include_router(swarms.router, prefix="/v1")
+app.include_router(tasks.router, prefix="/v1")
 app.include_router(public.router, prefix="/v1")
 app.include_router(playground.router, prefix="/v1")
 

@@ -791,3 +791,81 @@ export const dashboard = {
     };
   },
 };
+
+// --- Task Marketplace ---
+export interface Task {
+  id: string;
+  org_id: string;
+  title: string;
+  description: string;
+  category: string;
+  capability?: string | null;
+  requirements: Record<string, unknown>;
+  price_usdc: number;
+  token_symbol: string;
+  platform_fee_usdc: number;
+  escrow_id?: string | null;
+  agent_id?: string | null;
+  agent_name?: string | null;
+  agent_address?: string | null;
+  status: string;
+  result_data?: Record<string, unknown> | null;
+  delivery_notes?: string | null;
+  provider?: string | null;
+  model?: string | null;
+  posted_at: string;
+  funded_at?: string | null;
+  assigned_at?: string | null;
+  delivered_at?: string | null;
+  released_at?: string | null;
+  created_at: string;
+}
+
+export interface TaskStats {
+  total_tasks: number;
+  delivered_tasks: number;
+  released_tasks: number;
+  platform_fees_usdc: number;
+}
+
+export const tasks = {
+  list: (params: { status?: string; category?: string; limit?: number } = {}) => {
+    const q = new URLSearchParams();
+    if (params.status) q.set("status", params.status);
+    if (params.category) q.set("category", params.category);
+    if (params.limit) q.set("limit", String(params.limit));
+    const qs = q.toString();
+    return request<Task[]>(`/marketplace/tasks${qs ? `?${qs}` : ""}`);
+  },
+  get: (id: string) => request<Task>(`/marketplace/tasks/${id}`),
+  stats: () => request<TaskStats>("/marketplace/tasks/stats"),
+  post: (body: {
+    title: string;
+    description: string;
+    price_usdc: number;
+    category?: string;
+    capability?: string;
+    requirements?: Record<string, unknown>;
+    auto_assign?: boolean;
+  }) => request<Task>("/marketplace/tasks", {
+    method: "POST",
+    body: JSON.stringify(body),
+  }),
+  assign: (id: string, agent_id: string) =>
+    request<Task>(`/marketplace/tasks/${id}/assign`, {
+      method: "POST",
+      body: JSON.stringify({ agent_id }),
+    }),
+  run: (id: string) => request<Task>(`/marketplace/tasks/${id}/run`, { method: "POST" }),
+  deliver: (id: string, result_data: Record<string, unknown>, delivery_notes?: string) =>
+    request<Task>(`/marketplace/tasks/${id}/deliver`, {
+      method: "POST",
+      body: JSON.stringify({ result_data, delivery_notes, auto_release: true }),
+    }),
+  refund: (id: string, reason?: string) =>
+    request<Task>(`/marketplace/tasks/${id}/refund`, {
+      method: "POST",
+      body: JSON.stringify({ reason: reason || "not started" }),
+    }),
+  cancel: (id: string) => request<Task>(`/marketplace/tasks/${id}/cancel`, { method: "POST" }),
+};

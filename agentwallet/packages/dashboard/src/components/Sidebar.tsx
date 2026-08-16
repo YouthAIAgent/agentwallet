@@ -14,6 +14,7 @@ import {
   Sun,
   Moon,
   Zap,
+  Store,
 } from "lucide-react";
 import Brand from "./Brand";
 import { auth } from "../api";
@@ -28,6 +29,7 @@ const navItems = [
   { to: "/policies", icon: ShieldCheck, label: "Policies" },
   { to: "/audit-log", icon: ScrollText, label: "Audit Log" },
   { to: "/billing", icon: CreditCard, label: "Billing" },
+  { to: "/marketplace", icon: Store, label: "Marketplace" },
   { to: "/playground", icon: Zap, label: "Playground" },
 ];
 

@@ -12,6 +12,7 @@ from .organization import Organization
 from .pda_wallet import PDAWallet
 from .policy import Policy
 from .swarm import AgentSwarm, SwarmMember, SwarmTask
+from .task import Task
 from .transaction import Transaction
 from .usage_meter import UsageMeter
 from .user import User
@@ -49,4 +50,5 @@ __all__ = [
     "AgentSwarm",
     "SwarmMember",
     "SwarmTask",
+    "Task",
 ]
