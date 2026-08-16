@@ -1,8 +1,8 @@
 # AgentWallet Protocol
 
-[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://github.com/YouthAIAgent/agentwallet)
+[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://github.com/ChiranjibAI/agent-genesis)
 [![Python](https://img.shields.io/badge/python-3.10+-green.svg)](https://python.org)
-[![Tests](https://img.shields.io/badge/tests-110%20passing-brightgreen.svg)](https://github.com/YouthAIAgent/agentwallet)
+[![Tests](https://img.shields.io/badge/tests-110%20passing-brightgreen.svg)](https://github.com/ChiranjibAI/agent-genesis)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
 [![PyPI](https://img.shields.io/badge/PyPI-aw--protocol--sdk-orange.svg)](https://pypi.org/project/aw-protocol-sdk/)
 
@@ -117,7 +117,7 @@ Done. Your agent has a Solana wallet. Continue to [Core Features](#core-features
 **Command 1 — Clone:**
 
 ```bash
-git clone https://github.com/YouthAIAgent/agentwallet.git && cd agentwallet/agentwallet
+git clone https://github.com/ChiranjibAI/agent-genesis.git && cd agentwallet/agentwallet
 ```
 
 **Command 2 — Setup and start:**

@@ -93,8 +93,8 @@ You can monitor workflow status in the Actions tab of your repository. Each work
 Add these to your README.md to show build status:
 
 ```markdown
-![CI/CD](https://github.com/YouthAIAgent/agentwallet/workflows/CI/CD%20Pipeline/badge.svg)
-![Solana](https://github.com/YouthAIAgent/agentwallet/workflows/Solana%20Program%20CI/badge.svg)
+![CI/CD](https://github.com/ChiranjibAI/agent-genesis/actions/workflows/ci.yml/badge.svg)
+![Solana](https://github.com/ChiranjibAI/agent-genesis/actions/workflows/smoke.yml/badge.svg)
 ```
 
 ## 🔄 Release Process

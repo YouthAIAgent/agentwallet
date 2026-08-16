@@ -24,5 +24,5 @@ async with AgentWallet(api_key="aw_live_...") as aw:
 
 ## Links
 
-- [GitHub](https://github.com/YouthAIAgent/agentwallet)
+- [GitHub](https://github.com/ChiranjibAI/agent-genesis)
 - [API Docs](https://api.agentwallet.fun/docs)

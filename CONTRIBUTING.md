@@ -7,7 +7,7 @@ Thanks for your interest in contributing to AgentWallet! This guide will help yo
 1. **Fork** the repository on GitHub
 2. **Clone** your fork locally:
    ```bash
-   git clone https://github.com/yourusername/agentwallet.git
+   git clone https://github.com/ChiranjibAI/agent-genesis.git
    cd agentwallet/agentwallet
    ```
 3. **Install dependencies**:
@@ -95,7 +95,7 @@ See project docs for the full list of architecture decisions.
 
 ## What to Work On
 
-Check the [GitHub Issues](https://github.com/YouthAIAgent/agentwallet/issues) for open tasks. Good areas for contribution:
+Check the [GitHub Issues](https://github.com/ChiranjibAI/agent-genesis/issues) for open tasks. Good areas for contribution:
 
 - **Stablecoin support** (USDC/USDT transfers)
 - **Multi-chain expansion** (EVM L2 integrations)
@@ -114,7 +114,7 @@ Check the [GitHub Issues](https://github.com/YouthAIAgent/agentwallet/issues) fo
 
 ## Reporting Issues
 
-- Use [GitHub Issues](https://github.com/YouthAIAgent/agentwallet/issues)
+- Use [GitHub Issues](https://github.com/ChiranjibAI/agent-genesis/issues)
 - Include steps to reproduce for bugs
 - Include environment details (OS, Python version, etc.)
 

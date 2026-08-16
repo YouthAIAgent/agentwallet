@@ -391,6 +391,20 @@ iFixAi 3.4.0 (agent-behavior audit — smoke mode).
   HS256-only — the vulnerable dependency tree is gone entirely.
 - Re-audit: **No known vulnerabilities found.** 159 API tests still pass.
 
+#### Methodology correction (2026-08-16): audit declared deps, not the global env ⚠️
+
+- A naive `pip-audit` run against the **system Python 3.14 global environment**
+  reports **174 vulnerabilities in 41 packages** (authlib, etc.). Those packages
+  are **not project dependencies** — they are leftover global-site-packages junk
+  and would be a false alarm.
+- The project's real environment is `.smoke-venv` (Python 3.13) and the Docker
+  image, both built from `pyproject.toml`. Auditing `.smoke-venv`:
+  **No known vulnerabilities found.**
+- **Correct methodology going forward:** audit the **declared dependency set**
+  from `pyproject.toml` (`pip-audit -r <deps-from-pyproject>`), never the raw
+  global environment. This is what the CI workflow
+  (`.github/workflows/security-scan.yml`) and `security_scan.sh` now do.
+
 ### npm audit — fixed, now 0 vulnerabilities ✅
 
 | Package | Before | After |
@@ -425,6 +439,9 @@ Dashboard build + tsc verified clean after the react-router v7 upgrade.
 4. ~~Add `pip-audit` + `npm audit` + `gitleaks` to CI~~ **DONE** —
    `.github/workflows/security-scan.yml` runs gitleaks + bandit + pip-audit +
    npm audit (all JS packages) on every push and PR.
+5. **One-command local scan:** `agentwallet/security_scan.sh` runs all four
+   tools and prints a green/red summary (`./security_scan.sh` full,
+   `./security_scan.sh quick` for uncommitted changes only).
 
 ---
 

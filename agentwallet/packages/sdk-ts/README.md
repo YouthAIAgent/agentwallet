@@ -1,12 +1,12 @@
 # aw-protocol-sdk (TypeScript)
 
-TypeScript/JavaScript SDK for [AgentWallet Protocol](https://github.com/YouthAIAgent/agentwallet) — AI Agent Wallet Infrastructure on Solana.
+TypeScript/JavaScript SDK for [AgentWallet Protocol](https://github.com/ChiranjibAI/agent-genesis) — AI Agent Wallet Infrastructure on Solana.
 
 ## Install
 
 ```bash
 # Install directly from GitHub
-npm install github:YouthAIAgent/agentwallet#master
+npm install github:ChiranjibAI/agent-genesis#master
 ```
 
 > **Note:** The SDK source lives in `packages/sdk-ts/`. Once published to npm, you'll also be able to `npm install aw-protocol-sdk`.
