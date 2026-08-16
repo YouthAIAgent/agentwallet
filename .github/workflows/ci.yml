@@ -119,17 +119,22 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      # Deploys the agentwallet/ subdirectory to Railway.
-      # RAILWAY_TOKEN must be set in GitHub repo settings:
-      #   Settings -> Secrets and variables -> Actions -> New repository secret
-      #   Name: RAILWAY_TOKEN
-      #   Value: <token from `railway login` or Railway dashboard>
-      - name: Link Railway project
-        env:
-          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
-        run: railway link --project 447d110e-0eed-4208-98bd-9b370125476a --environment production --service api
-
+      # Deploys the agentwallet/ subdirectory to Railway with a long-lived
+      # workspace API token (never expires, unlike the short-lived OAuth token
+      # from `railway login`). Create one from the Railway dashboard:
+      #   Settings -> Tokens -> New token  (or `railway token` in newer CLIs)
+      # Name the GitHub secret RAILWAY_API_TOKEN with that value.
+      # NOTE: `railway link` needs user identity and fails with an API token,
+      # so we pass --service/--environment to `railway up` directly instead.
       - name: Deploy to Railway
         env:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
-        run: railway up --detach
+        run: |
+          set -e
+          railway up --service api --environment production --detach --yes || {
+            echo "::error::Railway deploy failed. The RAILWAY_API_TOKEN may have"
+            echo "::error::expired or been rotated. Create a fresh token in the"
+            echo "::error::Railway dashboard (Settings -> Tokens) and update the"
+            echo "::error::RAILWAY_API_TOKEN secret in repo Settings -> Secrets."
+            exit 1
+          }
