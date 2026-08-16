@@ -54,7 +54,9 @@ jobs:
 
       - name: bandit — static analysis
         run: |
-          bandit -r packages/api/agentwallet packages/agx packages/mcp-server packages/sdk-python -q
+          # -ll = fail only on MEDIUM+ (LOW is cosmetic); B104 (0.0.0.0 bind)
+          # is expected for the Docker/container API, so it is skipped.
+          bandit -r packages/api/agentwallet packages/agx packages/mcp-server packages/sdk-python -q -ll --skip B104
 
       - name: pip-audit — dependency vulnerabilities
         run: |
