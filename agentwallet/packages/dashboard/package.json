@@ -12,13 +12,13 @@
   "dependencies": {
     "lucide-react": "^1.31.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.2",
     "recharts": "^2.13.3"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
+    "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.5.4",
     "postcss": "^8.4.49",
