@@ -42,8 +42,13 @@ jobs:
       - name: Start API + Postgres + Redis (Docker)
         run: bash setup.sh
 
-      - name: Run smoke test
-        # VALIDATOR_MODE spins up a local solana-test-validator so the on-chain
-        # checks (escrow fund/release, SOL transfer) run deterministically
-        # instead of depending on the rate-limited public devnet faucet.
-        run: VALIDATOR_MODE=1 bash smoke_test.sh
+      - name: Run smoke test (devnet, platform faucet fallback)
+        # Devnet mode: on-chain checks (escrow fund/release, SOL transfer)
+        # run against the real devnet RPC with the platform custody wallet as
+        # the faucet. A local solana-test-validator (VALIDATOR_MODE) is flaky
+        # on shared GitHub runners because the image pull + startup exceeds the
+        # readiness timeout, so it is not used here.
+        run: bash smoke_test.sh
+        env:
+          SOLANA_RPC: https://api.devnet.solana.com
+          PLATFORM_PRIVATE_KEY_HEX: ${{ secrets.PLATFORM_PRIVATE_KEY_HEX }}
