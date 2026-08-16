@@ -216,13 +216,19 @@ class TaskService:
             if _match(a):
                 return await self.assign_agent(task_id, org_id, a.id)
 
-        # 2: public specialists from the marketplace roster with a capability match
+        # 2: public specialists from the marketplace roster with a capability match.
+        # Seeded roster agents (metadata.source == "agency-agents") rank first so
+        # legacy public test agents can never shadow the curated specialists.
         public_result = await self.session.execute(
-            select(Agent)
-            .where(and_(Agent.is_public.is_(True), Agent.status == "active"))
-            .order_by(Agent.reputation_score.desc())
+            select(Agent).where(and_(Agent.is_public.is_(True), Agent.status == "active"))
         )
         public_agents = list(public_result.scalars().all())
+        public_agents.sort(
+            key=lambda a: (
+                0 if (a.metadata_ or {}).get("source") == "agency-agents" else 1,
+                -a.reputation_score,
+            )
+        )
         for a in public_agents:
             if _match(a):
                 return await self.assign_agent(task_id, org_id, a.id)
