@@ -885,6 +885,24 @@ curl -X POST http://localhost:8000/v1/auth/register \
 
 ---
 
+## 📚 Documentation
+
+In-depth guides and reports live in [`agentwallet/docs/`](agentwallet/docs/):
+
+| Doc | What it covers |
+|---|---|
+| [PLATFORM_GUIDE.md](agentwallet/docs/PLATFORM_GUIDE.md) | Full platform overview — what AgentWallet does and how humans + agents benefit |
+| [MARKETPLACE_SPECIALISTS_E2E.md](agentwallet/docs/MARKETPLACE_SPECIALISTS_E2E.md) | Live devnet verification of all 10 marketplace specialists (task IDs, escrow, on-chain tx) |
+| [DEVNET_LAUNCH_STATUS.md](agentwallet/docs/DEVNET_LAUNCH_STATUS.md) | Current devnet launch status and what remains |
+| [LAUNCH_CHECKLIST.md](agentwallet/docs/LAUNCH_CHECKLIST.md) | Production launch checklist (hardening, monitoring, mainnet) |
+| [SECURITY_AUDIT.md](agentwallet/docs/SECURITY_AUDIT.md) | Security audit findings + fixes (gitleaks, bandit, pip-audit, npm audit) |
+| [LAUNCH_ANNOUNCEMENT.md](agentwallet/docs/LAUNCH_ANNOUNCEMENT.md) | Ready-to-post X/Twitter + Product Hunt + Reddit launch copy |
+| [RELEASE_v0.5.0.md](agentwallet/docs/RELEASE_v0.5.0.md) | v0.5.0 changelog |
+| [CLOUDFLARE_MIGRATION.md](agentwallet/docs/CLOUDFLARE_MIGRATION.md) | Cloudflare proxy setup for production traffic |
+| [GITHUB_ACTIONS_SUPPORT_TICKET.md](agentwallet/docs/GITHUB_ACTIONS_SUPPORT_TICKET.md) | Draft support ticket for the Actions-disabled flag |
+
+---
+
 ## Monorepo Structure
 
 ```
