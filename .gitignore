@@ -59,13 +59,8 @@ nul
 landing-page/
 narration/
 promo-video/
-scripts/
+video/scripts/
 # ...but keep operational scripts (devnet USDC setup etc)
-!agentwallet/packages/api/scripts/
-!agentwallet/packages/api/agentwallet/scripts/
-!agentwallet/packages/api/agentwallet/scripts/seed_specialists.py
-!packages/api/agentwallet/scripts/
-!packages/api/agentwallet/scripts/seed_specialists.py
 tweet-card.html
 tweet-cards/
 test-voice.mp3
