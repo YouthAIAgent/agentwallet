@@ -124,6 +124,7 @@ REL=$(curl -s --max-time 60 -X POST "$API/escrow/$ESC_ID/action" -H "X-API-Key: 
 REL_STAT=$(echo "$REL" | J "['status']")
 REL_SIG=$(echo "$REL" | J "['release_signature']")
 echo "status=$REL_STAT sig=${REL_SIG:0:16}..."
+echo "RAW_REL: $REL"
 SRC=$(TX_SRC "$REL_SIG" 40)
 FB2=$(STABLE_BAL "$FUNDER" 20); PB2=$(STABLE_BAL "$PLATFORM" 20); RB2=$(STABLE_BAL "$RECIP" 20)
 echo "after release: funder=$FB2 (delta $((FB2-FB1))) platform=$PB2 (delta $((PB2-PB1))) recip=$RB2 (delta $((RB2-RB0)))"
@@ -144,6 +145,7 @@ REF=$(curl -s --max-time 60 -X POST "$API/escrow/$ESC2_ID/action" -H "X-API-Key:
 REF_STAT=$(echo "$REF" | J "['status']")
 REF_SIG=$(echo "$REF" | J "['refund_signature']")
 echo "refund status=$REF_STAT sig=${REF_SIG:0:16}..."
+echo "RAW_REF: $REF"
 REF_SRC=$(TX_SRC "$REF_SIG" 40)
 FB4=$(STABLE_BAL "$FUNDER" 20); PB4=$(STABLE_BAL "$PLATFORM" 20)
 echo "after refund: funder=$FB4 (delta $((FB4-FB3))) platform=$PB4 (delta $((PB4-PB3)))"
