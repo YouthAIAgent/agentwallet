@@ -174,6 +174,21 @@ async def assign_task(
         raise HTTPException(status_code=404, detail=str(e))
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=str(e))
+    await db.flush()
+    # Re-attach agent for the response (lazy="noload" blocks implicit loading;
+    # populate_existing forces the relationship refresh past the identity map)
+    from sqlalchemy import select as sa_select
+    from sqlalchemy.orm import joinedload
+
+    from ...models.task import Task
+
+    result = await db.execute(
+        sa_select(Task)
+        .options(joinedload(Task.agent))
+        .where(Task.id == task.id)
+        .execution_options(populate_existing=True)
+    )
+    task = result.scalar_one()
     return _task_to_response(task)
 
 

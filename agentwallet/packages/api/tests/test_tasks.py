@@ -92,6 +92,75 @@ async def test_post_task_auto_assign(
     assert data["status"] in ("assigned", "funded")
 
 
+@pytest.fixture
+async def public_specialist(db_session, test_org):
+    """A public specialist from another org (marketplace roster)."""
+    from agentwallet.models import Agent, Organization, Wallet
+
+    org = Organization(name="Specialists Org", email=f"spec{uuid.uuid4().hex[:10]}@test.dev")
+    db_session.add(org)
+    await db_session.flush()
+
+    agent = Agent(
+        org_id=org.id,
+        name="Security Architect",
+        description="Threat modeling specialist",
+        capabilities=["security", "audit", "threat-modeling"],
+        is_public=True,
+        status="active",
+    )
+    db_session.add(agent)
+    await db_session.flush()
+
+    wallet = Wallet(
+        org_id=org.id,
+        agent_id=agent.id,
+        address=f"Pub{uuid.uuid4().hex[:28]}Addr",
+        wallet_type="agent",
+        encrypted_key="encrypted_test_key_placeholder",
+        label="Specialist Wallet",
+        is_active=True,
+    )
+    db_session.add(wallet)
+    await db_session.flush()
+    agent.default_wallet_id = wallet.id
+    await db_session.commit()
+    await db_session.refresh(agent)
+    return agent
+
+
+@pytest.mark.asyncio
+async def test_auto_assign_falls_back_to_public_specialist(
+    client: AsyncClient, public_specialist, task_payload, org_wallet, mock_escrow_fund
+):
+    """With no matching org agent, a public specialist is auto-assigned."""
+    task_payload["capability"] = "security"
+    task_payload["auto_assign"] = True
+    resp = await client.post("/v1/marketplace/tasks", json=task_payload)
+    assert resp.status_code == 201
+    data = resp.json()
+    assert data["agent_id"] == str(public_specialist.id)
+    assert data["agent_name"] == "Security Architect"
+    assert data["status"] in ("assigned", "funded")
+
+
+@pytest.mark.asyncio
+async def test_manual_assign_public_specialist(
+    client: AsyncClient, public_specialist, task_payload, org_wallet, mock_escrow_fund
+):
+    """A task can be manually assigned to a public specialist directly."""
+    created = await client.post("/v1/marketplace/tasks", json=task_payload)
+    task_id = created.json()["id"]
+    resp = await client.post(
+        f"/v1/marketplace/tasks/{task_id}/assign",
+        json={"agent_id": str(public_specialist.id)},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["agent_id"] == str(public_specialist.id)
+    assert data["agent_name"] == "Security Architect"
+
+
 @pytest.mark.asyncio
 async def test_list_tasks(client: AsyncClient, task_payload, org_wallet, mock_escrow_fund):
     await client.post("/v1/marketplace/tasks", json=task_payload)

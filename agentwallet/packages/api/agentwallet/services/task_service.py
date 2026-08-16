@@ -151,13 +151,17 @@ class TaskService:
     # ── Agent assignment ─────────────────────────────────
 
     async def assign_agent(self, task_id: uuid.UUID, org_id: uuid.UUID, agent_id: uuid.UUID) -> Task:
-        """Assign an agent to execute the task."""
+        """Assign an agent to execute the task.
+
+        Allows assigning public specialists from other organizations so any
+        org can hire from the marketplace roster.
+        """
         task = await self._get_task(task_id, org_id)
         if task.status not in ("funded", "posted"):
             raise ValidationError(f"Cannot assign agent to task in '{task.status}' state")
 
         agent = await self.session.get(Agent, agent_id)
-        if not agent or agent.org_id != org_id:
+        if not agent or (agent.org_id != org_id and not agent.is_public):
             raise NotFoundError("Agent", str(agent_id))
 
         # Resolve the agent's payout address (its default wallet)
@@ -180,32 +184,58 @@ class TaskService:
     async def auto_assign(
         self, task_id: uuid.UUID, org_id: uuid.UUID, capability: Optional[str] = None
     ) -> Optional[Task]:
-        """Pick the best available agent (by capability match) and assign it.
+        """Pick the best available agent and assign it.
+
+        Preference order:
+          1. An active agent in the task's own org whose capabilities match
+             the requested capability (best local fit).
+          2. A public specialist (is_public=True, any org) whose capabilities
+             match the requested capability (best specialist fit).
+          3. Any active agent in the task's own org.
+          4. Any public specialist.
 
         Capability matching happens in Python so it works identically across
         SQLite (tests) and Postgres (prod) JSON columns.
         """
         await self._get_task(task_id, org_id)  # validate ownership + existence
 
-        result = await self.session.execute(
+        def _match(a: Agent) -> bool:
+            if capability:
+                caps = a.capabilities or []
+                return capability in caps
+            return True
+
+        # 1: task org's own agents with a capability match
+        org_result = await self.session.execute(
             select(Agent)
             .where(and_(Agent.org_id == org_id, Agent.status == "active"))
             .order_by(Agent.reputation_score.desc())
         )
-        agents = list(result.scalars().all())
-        if not agents:
-            return None
+        org_agents = list(org_result.scalars().all())
+        for a in org_agents:
+            if _match(a):
+                return await self.assign_agent(task_id, org_id, a.id)
 
-        # Prefer an agent whose capabilities include the requested one
-        matched = None
-        if capability:
-            for a in agents:
-                caps = a.capabilities or []
-                if capability in caps:
-                    matched = a
-                    break
-        agent = matched or agents[0]
-        return await self.assign_agent(task_id, org_id, agent.id)
+        # 2: public specialists from the marketplace roster with a capability match
+        public_result = await self.session.execute(
+            select(Agent)
+            .where(and_(Agent.is_public.is_(True), Agent.status == "active"))
+            .order_by(Agent.reputation_score.desc())
+        )
+        public_agents = list(public_result.scalars().all())
+        for a in public_agents:
+            if _match(a):
+                return await self.assign_agent(task_id, org_id, a.id)
+
+        # 3: any active org agent
+        if org_agents:
+            return await self.assign_agent(task_id, org_id, org_agents[0].id)
+
+        # 4: any public specialist
+        if public_agents:
+            return await self.assign_agent(task_id, org_id, public_agents[0].id)
+
+        return None
 
     # ── Execution ────────────────────────────────────────
 
