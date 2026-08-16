@@ -37,6 +37,8 @@ def _patch_transport(monkeypatch, status_code, json_body=None, retry_after=None)
 
 @pytest.mark.asyncio
 async def test_200_returns_openai_compatible(monkeypatch):
+    monkeypatch.setenv("X402_LLM_BASE_URL", "https://llm.test/v1")
+    monkeypatch.setenv("X402_LLM_KEY", "test-key")
     _patch_transport(
         monkeypatch,
         200,
